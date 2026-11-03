@@ -1,0 +1,671 @@
+# 历法服务规范  
+## CAL v0.1（历法冻结草案）
+
+**文档编号：** CAL-v0.1  
+**对应 SRS：** SRS v0.4  
+**对应 ARS：** ARS v0.2  
+**对应 IR：** IR v0.1  
+**文档状态：** 历法冻结草案；标注“待冻结/待校核”的条目须完成基准测试与专家校核后升版，方可发布正式历法结果  
+**修订日期：** 2026-11-03
+
+---
+
+## 0. 总则
+
+### 0.1 文档职责
+
+CAL（Calendar Service）定义系统所需的**历法基础服务**，为梅花旺衰、纳甲六爻、择吉、黄历、月令/生肖起象提供统一、可验证的历法结果。CAL 负责：
+
+1. 公历与农历换算；
+2. 闰月判定与标注；
+3. 二十四节气精确时刻；
+4. 年柱、月柱、日柱、时柱干支计算；
+5. 日界（子初/子正）处理；
+6. IANA 时区与历史时区处理；
+7. 夏令时重复/不存在时刻处理；
+8. `LUNAR-MONTH-INDEX` 与 `JIEQI-MONTH-BRANCH` 双表分离输出；
+9. 逐日基准测试数据与验收标准。
+
+CAL **不**负责：卦象计算、纳甲装卦、择吉打分、解释文案。这些由 ARS v0.2 与 IR v0.1 完成。
+
+### 0.2 与上下游文档的关系
+
+```text
+CAL v0.1  → 提供历法基础结果
+ARS v0.2  → 消费历法结果，计算旺衰、纳甲、择吉、黄历
+IR v0.1   → 消费 ARS 结果，生成文字解释
+SRS v0.4  → 定义展示、验收、合规要求
+TDS v0.1  → 定义历法库选型、存储、缓存、异常实现
+```
+
+强制约束：
+
+1. ARS 不得自行实现历法换算；必须调用 CAL 接口。
+2. IR 不直接调用 CAL，只消费 ARS 已带历法结果的输出。
+3. CAL 冻结前，纳甲、旺衰、择吉、黄历不得宣称计算正确。
+4. CAL 不定义择吉规则，只提供干支、节气、月建、日支等基础数据。
+
+### 0.3 规则层级
+
+| 层级 | 含义 | 示例 |
+|---|---|---|
+| **CL1** | 传统历法通行规则 | 年柱立春切换、月柱节气切换、五虎遁、五鼠遁 |
+| **CL2** | 本系统工程化解释 | 日柱纪日基准选择、日界默认值、时区处理策略 |
+| **CL3** | 本系统自定义配置 | 默认时区、默认日界、缓存策略 |
+| **CPROV** | 待校核的临时规则 | 尚未通过基准测试的算法或数据 |
+
+### 0.4 版本与标识
+
+```text
+CAL_VERSION = "CAL-v0.1"
+CAL_RULE_SET = "CAL-RULE-v0.1"
+CAL_DATA_VERSION = "CAL-DATA-v0.1"
+CAL_EPHEMERIS = "待冻结（天文算法/预计算表）"
+```
+
+接口/规则 ID 格式：
+
+```text
+CAL-{CATEGORY}-{NNN}
+```
+
+示例：`CAL-CONVERT-001`、`CAL-JIEQI-001`、`CAL-GANZHI-YEAR-001`、`CAL-DAYBOUND-001`、`CAL-TZ-001`、`CAL-DST-001`。
+
+### 0.5 时间表示约定
+
+| 约定 | 规则 |
+|---|---|
+| 公历日期 | ISO 8601：`YYYY-MM-DD` |
+| 时刻 | ISO 8601 含时区偏移：`YYYY-MM-DDTHH:MM:SS+08:00` |
+| 时区 | IANA 名称，如 `Asia/Shanghai` |
+| 农历日期 | `lunar_year, lunar_month, lunar_day, is_leap_month` |
+| 干支 | 天干+地支，如 `甲子` |
+| 日界 | `ZICHU`（子初，23:00 换日）或 `ZIZHENG`（子正，00:00 换日） |
+| 节气时刻 | 精确到秒，含时区 |
+| 索引 | 天干 0—9，地支 0—11；对外展示用 1 基编号 |
+
+---
+
+## 1. 历法服务接口
+
+### 1.1 接口清单
+
+CAL 至少提供以下接口：
+
+```text
+convert_solar_to_lunar(datetime, timezone) -> LunarDate
+convert_lunar_to_solar(lunar_date, timezone) -> datetime
+get_jieqi(datetime, timezone) -> JieqiInfo
+get_jieqi_month_branch(datetime, timezone) -> JieqiMonthInfo
+get_lunar_month_index(datetime, timezone, day_bound) -> LunarMonthIndex
+get_ganzhi(datetime, timezone, day_bound) -> GanzhiResult
+get_effective_date(datetime, day_bound) -> date
+get_xun(datetime, timezone, day_bound) -> XunInfo
+get_huangli_basis(datetime, timezone, day_bound) -> HuangliBasis
+```
+
+### 1.2 输出对象 `CAL-OUT-001`
+
+```json
+{
+  "solar": "2026-11-03T12:00:00+08:00",
+  "timezone": "Asia/Shanghai",
+  "day_bound": "ZICHU",
+  "effective_date": "2026-11-03",
+  "lunar": {
+    "year": 2026,
+    "month": 9,
+    "day": 15,
+    "is_leap_month": false,
+    "month_name": "九月"
+  },
+  "lunar_month_index": {
+    "lunar_index": 9,
+    "leap": false
+  },
+  "jieqi": {
+    "current": "霜降",
+    "current_time": "2026-10-23T...",
+    "next": "立冬",
+    "next_time": "2026-11-07T..."
+  },
+  "jieqi_month_branch": {
+    "branch_id": 11,
+    "branch": "戌",
+    "element": "土",
+    "jieqi": "寒露"
+  },
+  "ganzhi": {
+    "year": "丙午",
+    "month": "戊戌",
+    "day": "辛卯",
+    "hour": "甲午"
+  },
+  "xun": {
+    "xun_head": "甲申",
+    "kong_branches": ["午", "未"]
+  },
+  "versions": {
+    "cal": "CAL-v0.1",
+    "cal_data": "CAL-DATA-v0.1"
+  }
+}
+```
+
+### 1.3 接口行为要求 `CAL-API-001`
+
+1. 所有接口必须显式传入 `timezone` 与 `day_bound`；不得依赖系统默认。
+2. 所有接口必须返回 `versions`，便于日志溯源。
+3. 接口不得静默回退到近似算法；数据缺失时返回 `CAL_DATA_UNAVAILABLE`。
+4. 接口必须对无效日期、越界时区、夏令时歧义返回明确错误码。
+5. 接口结果必须可缓存，但缓存键须含 `timezone`、`day_bound`、`cal_data_version`。
+
+---
+
+## 2. 公历与农历转换
+
+### 2.1 转换规则 `CAL-CONVERT-001`
+
+1. 公历采用格里高利历（Gregorian）。
+2. 农历采用中国传统夏历：以朔日为月首，以冬至所在月为十一月，闰月按无中气置闰规则。
+3. 转换必须覆盖系统支持范围：默认 `1900-01-31` 至 `2100-12-31`；超出范围返回 `CAL_OUT_OF_RANGE`。
+4. 支持范围须在设置中展示，不得静默截断。
+5. 转换结果必须返回 `is_leap_month` 与 `month_name`。
+
+### 2.2 算法实现 `CAL-CONVERT-002`（待冻结）
+
+CAL 允许两种实现方式：
+
+| 方式 | 说明 | 要求 |
+|---|---|---|
+| 预计算表 | 使用经校核的农历数据表 | 表须带版本、校验和、来源 |
+| 天文算法 | 基于朔望月与太阳黄经计算 | 须通过逐日基准测试 |
+
+无论哪种方式，必须通过第 8 章逐日基准测试。TDS 可选型，但 CAL 冻结前必须确定一种并记录 `CAL_EPHEMERIS`。
+
+### 2.3 闰月处理 `CAL-CONVERT-003`
+
+1. 闰月按“无中气置闰”规则确定。
+2. 闰月输出 `is_leap_month=true`，`month_name` 显示“闰X月”。
+3. `LUNAR-MONTH-INDEX` 的 `lunar_index` 取所闰月份月序，`leap=true`。
+4. `JIEQI-MONTH-BRANCH` 不受闰月影响，按节气换月。
+5. 闰月不得与节气月建混用；二者由不同接口输出。
+
+### 2.4 农历反向转换 `CAL-CONVERT-004`
+
+1. 农历转公历须校验该农历日期是否存在；不存在的闰月日期返回 `CAL_INVALID_LUNAR_DATE`。
+2. 反向转换须返回公历日期与时区。
+3. 不得静默将闰月日期映射到非闰月。
+
+---
+
+## 3. 二十四节气
+
+### 3.1 节气定义 `CAL-JIEQI-001`
+
+二十四节气按太阳黄经每 15° 划分。节气时刻为太阳到达对应黄经的精确时刻，精确到秒。
+
+| 节气 | 黄经 | 类型 | 对应月建 |
+|---|---:|---|---|
+| 立春 | 315° | 节 | 寅 |
+| 雨水 | 330° | 气 | — |
+| 惊蛰 | 345° | 节 | 卯 |
+| 春分 | 0° | 气 | — |
+| 清明 | 15° | 节 | 辰 |
+| 谷雨 | 30° | 气 | — |
+| 立夏 | 45° | 节 | 巳 |
+| 小满 | 60° | 气 | — |
+| 芒种 | 75° | 节 | 午 |
+| 夏至 | 90° | 气 | — |
+| 小暑 | 105° | 节 | 未 |
+| 大暑 | 120° | 气 | — |
+| 立秋 | 135° | 节 | 申 |
+| 处暑 | 150° | 气 | — |
+| 白露 | 165° | 节 | 酉 |
+| 秋分 | 180° | 气 | — |
+| 寒露 | 195° | 节 | 戌 |
+| 霜降 | 210° | 气 | — |
+| 立冬 | 225° | 节 | 亥 |
+| 小雪 | 240° | 气 | — |
+| 大雪 | 255° | 节 | 子 |
+| 冬至 | 270° | 气 | — |
+| 小寒 | 285° | 节 | 丑 |
+| 大寒 | 300° | 气 | — |
+
+**规则：** 月建只按“节”切换，不按“气”切换。
+
+### 3.2 节气时刻计算 `CAL-JIEQI-002`（待冻结）
+
+1. 节气时刻须按用户时区输出。
+2. 算法须通过第 8 章基准测试；误差不得超过 ±60 秒（待冻结）。
+3. 支持范围同公农历转换范围。
+4. 节气时刻跨日时，月建按节气实际时刻切换；不得按整日切换。
+5. 节气交接前后必须能区分 `current` 与 `next`。
+
+### 3.3 节气月建输出 `CAL-JIEQI-003`
+
+```json
+{
+  "branch_id": 11,
+  "branch": "戌",
+  "element": "土",
+  "jieqi": "寒露",
+  "jieqi_time": "2026-10-08T...",
+  "next_jieqi": "立冬",
+  "next_time": "2026-11-07T..."
+}
+```
+
+规则：
+
+1. `branch_id` 取 `JIEQI-MONTH-BRANCH` 表。
+2. 月建五行取表 `JIEQI-MONTH-BRANCH`。
+3. 月建用于旺衰、纳甲、择吉、黄历；不用于 `LUNAR-MONTH-INDEX`。
+
+---
+
+## 4. 月令双表分离
+
+### 4.1 `LUNAR-MONTH-INDEX` `CAL-LUNAR-001`
+
+供梅花自定义月序起象使用。
+
+```json
+{
+  "lunar_index": 9,
+  "leap": false,
+  "month_name": "九月"
+}
+```
+
+规则：
+
+1. `lunar_index` 取农历月序 1—12。
+2. 闰月取所闰月份月序，`leap=true`。
+3. 该表不参与旺衰、纳甲、择吉、黄历。
+4. 该表为 L2/L3 工程规则，象数使用见 ARS。
+
+### 4.2 `JIEQI-MONTH-BRANCH` `CAL-JIEQI-004`
+
+供旺衰、纳甲、择吉、黄历使用。
+
+```json
+{
+  "branch_id": 11,
+  "branch": "戌",
+  "element": "土",
+  "jieqi": "寒露"
+}
+```
+
+### 4.3 强制分离 `CAL-SEPARATE-001`
+
+1. `LUNAR-MONTH-INDEX` 与 `JIEQI-MONTH-BRANCH` 不得共用同一数据表。
+2. 同一公历日期可能对应不同农历月序与节气月建；系统必须分别输出。
+3. 任何引擎需要月建时，必须显式调用 `get_jieqi_month_branch`，不得使用农历月序替代。
+4. 日志必须分别记录 `lunar_index` 与 `branch_id`。
+
+---
+
+## 5. 干支计算
+
+### 5.1 年柱 `CAL-GANZHI-YEAR-001`
+
+1. 年柱以**立春时刻**为界，不以正月初一为界。
+2. 立春前属上一年干支，立春后属当年干支。
+3. 计算：
+
+```text
+year_for_ganzhi = (datetime >= lichun_time) ? solar_year : solar_year - 1
+stem_index = (year_for_ganzhi - 4) mod 10
+branch_index = (year_for_ganzhi - 4) mod 12
+```
+
+4. 立春时刻按用户时区计算。
+5. 年柱输出必须附 `lichun_time` 与 `year_for_ganzhi`，便于溯源。
+
+### 5.2 月柱 `CAL-GANZHI-MONTH-001`
+
+1. 月柱以**节**切换，不以农历初一切换。
+2. 月支由 `JIEQI-MONTH-BRANCH` 确定。
+3. 月干按五虎遁：
+
+```text
+甲己之年丙作首，乙庚之岁戊为头，
+丙辛必定寻庚起，丁壬壬位顺行流，
+若问戊癸何方发，甲寅之上好追求。
+```
+
+工程化：
+
+```text
+year_stem_index = 年干索引（0=甲）
+first_month_stem = {
+  甲/己: 丙(2), 乙/庚: 戊(4), 丙/辛: 庚(6),
+  丁/壬: 壬(8), 戊/癸: 甲(0)
+}
+month_stem_index = (first_month_stem + month_order) mod 10
+```
+
+`month_order`：寅月=0，卯月=1，……，丑月=11。
+
+4. 月柱输出必须附 `jieqi` 与 `jieqi_time`。
+
+### 5.3 日柱 `CAL-GANZHI-DAY-001`（待冻结基准）
+
+1. 日柱以连续纪日为基础。
+2. 日界默认 `ZICHU`（23:00 换日），可配置 `ZIZHENG`（00:00 换日）。
+3. 日柱计算须选定并冻结一个基准日。推荐候选：
+
+| 候选 | 说明 | 状态 |
+|---|---|---|
+| 1900-01-31 为甲辰日 | 常见农历表基准 | 待校核 |
+| 2000-01-01 为戊午日 | 部分算法基准 | 待校核 |
+| 儒略日数换算 | 基于 JDN 的连续纪日 | 待校核 |
+
+4. 无论选哪个基准，必须通过第 8 章逐日基准测试。
+5. 日柱输出必须附 `effective_date` 与 `day_bound`。
+
+### 5.4 时柱 `CAL-GANZHI-HOUR-001`
+
+1. 时辰划分：
+
+| 时辰 | 地支 | 时间范围（子初日界） |
+|---|---|---|
+| 子时 | 子 | 23:00—00:59 |
+| 丑时 | 丑 | 01:00—02:59 |
+| 寅时 | 寅 | 03:00—04:59 |
+| 卯时 | 卯 | 05:00—06:59 |
+| 辰时 | 辰 | 07:00—08:59 |
+| 巳时 | 巳 | 09:00—10:59 |
+| 午时 | 午 | 11:00—12:59 |
+| 未时 | 未 | 13:00—14:59 |
+| 申时 | 申 | 15:00—16:59 |
+| 酉时 | 酉 | 17:00—18:59 |
+| 戌时 | 戌 | 19:00—20:59 |
+| 亥时 | 亥 | 21:00—22:59 |
+
+2. 时干按五鼠遁：
+
+```text
+甲己还加甲，乙庚丙作初，
+丙辛从戊起，丁壬庚子居，
+戊癸何方发，壬子是真途。
+```
+
+工程化：
+
+```text
+day_stem_index = 日干索引（按日界确定）
+first_hour_stem = {
+  甲/己: 甲(0), 乙/庚: 丙(2), 丙/辛: 戊(4),
+  丁/壬: 庚(6), 戊/癸: 壬(8)
+}
+hour_stem_index = (first_hour_stem + hour_branch_index) mod 10
+```
+
+`hour_branch_index`：子=0，丑=1，……，亥=11。
+
+3. 子时归属：默认子初换日，23:00 后属次日日柱；子正换日时，00:00 后属次日。必须在结果中标注。
+
+### 5.5 旬与旬空 `CAL-XUN-001`
+
+```text
+stem_index = 天干索引（0..9）
+branch_index = 地支索引（0..11）
+xun_head_branch = (branch_index - stem_index) mod 12
+kong_1 = (xun_head_branch + 10) mod 12
+kong_2 = (xun_head_branch + 11) mod 12
+xun_head_stem = 甲
+xun_head = 甲 + branch[xun_head_branch]
+```
+
+输出：
+
+```json
+{
+  "xun_head": "甲申",
+  "kong_branches": ["午", "未"]
+}
+```
+
+---
+
+## 6. 日界与时区
+
+### 6.1 日界 `CAL-DAYBOUND-001`
+
+1. 默认 `ZICHU`：23:00 换日柱。
+2. 可配置 `ZIZHENG`：00:00 换日柱。
+3. 日界影响：日柱、时柱、旬空、纳甲日辰、择吉日柱、黄历日柱。
+4. 日界不影响：年柱、月柱、节气月建。
+5. 所有输出必须标注 `day_bound`。
+6. 切换日界不得静默重算历史记录；历史记录保留原 `day_bound`。
+
+### 6.2 有效日期 `CAL-DAYBOUND-002`
+
+```text
+if day_bound == ZICHU and hour >= 23:
+    effective_date = date + 1
+elif day_bound == ZIZHENG and hour >= 0:
+    effective_date = date
+else:
+    effective_date = date
+```
+
+`effective_date` 用于日柱、旬空、日辰。
+
+### 6.3 时区 `CAL-TZ-001`
+
+1. 所有接口必须显式传入 IANA 时区。
+2. 默认时区由设置决定，推荐 `Asia/Shanghai`；不得硬编码。
+3. 历史时区变化须按 IANA 数据库处理，如中国 1986—1991 年夏令时。
+4. 跨时区历史记录保留原时区，不自动转换后重算。
+5. 时区数据库版本须记录在 `versions` 中。
+
+### 6.4 夏令时 `CAL-DST-001`
+
+1. **重复时刻（fall back）：** 同一本地时刻出现两次时，默认取第一次（较早的偏移）；可配置取第二次。输出必须标注 `dst_ambiguity=true` 与所选偏移。
+2. **不存在时刻（spring forward）：** 本地时刻不存在时，默认向前平移至有效时刻；输出必须标注 `dst_gap=true` 与平移结果。
+3. 用户界面须提示“该时刻存在夏令时歧义/缺失，系统按 X 规则处理”。
+4. 历史记录保留原始输入与处理结果。
+
+### 6.5 历史时区数据 `CAL-TZ-002`
+
+1. 使用 IANA tzdata，版本记录在 `CAL_DATA_VERSION`。
+2. tzdata 升级不得静默改变历史记录；历史记录保留原 tzdata 版本。
+3. 跨时区推演须记录 `timezone` 与 `tzdata_version`。
+
+---
+
+## 7. 黄历基础数据接口
+
+### 7.1 黄历基础 `CAL-HUANGLI-001`
+
+CAL 只提供黄历所需的基础历法数据，不提供宜忌规则：
+
+```json
+{
+  "solar_date": "2026-11-03",
+  "lunar": {...},
+  "ganzhi": {...},
+  "jieqi_month": {...},
+  "day_branch": "卯",
+  "day_stem": "辛",
+  "xun": {...},
+  "day_bound": "ZICHU",
+  "timezone": "Asia/Shanghai"
+}
+```
+
+宜忌、建除、星宿、神煞由 ARS 择吉规则引擎与 `HL-01` 数据表提供。
+
+### 7.2 建除基础 `CAL-HUANGLI-002`
+
+CAL 提供 `month_branch_id` 与 `day_branch_id`；建除索引计算由 ARS `ZEJI-JIANCHU-001` 完成，CAL 不计算建除。
+
+### 7.3 冲煞基础 `CAL-HUANGLI-003`
+
+CAL 提供日支与年支；冲煞规则由 ARS 择吉规则引擎计算。
+
+---
+
+## 8. 基准测试与验收
+
+### 8.1 逐日基准数据 `CAL-BASE-001`
+
+CAL 冻结前必须提供至少**一整年逐日基准数据**，建议覆盖 2026-01-01 至 2026-12-31，并额外覆盖：
+
+1. 立春前后各 3 天；
+2. 每个节气交接前后各 1 天；
+3. 闰月月份整月；
+4. 23:00—00:59 日界区间；
+5. 夏令时开始/结束日（如适用）；
+6. 跨时区样例：`Asia/Shanghai`、`UTC`、`America/New_York`。
+
+每条基准记录字段：
+
+```json
+{
+  "solar_datetime": "2026-02-04T10:00:00+08:00",
+  "timezone": "Asia/Shanghai",
+  "day_bound": "ZICHU",
+  "lunar": {"year": 2026, "month": 12, "day": 17, "is_leap_month": false},
+  "lunar_month_index": 12,
+  "jieqi": "立春",
+  "jieqi_time": "2026-02-04T...",
+  "jieqi_month_branch": "寅",
+  "ganzhi": {"year": "丙午", "month": "庚寅", "day": "...", "hour": "..."},
+  "xun": {"xun_head": "...", "kong_branches": ["...", "..."]},
+  "source": "基准来源/校核人",
+  "status": "VERIFIED|PENDING"
+}
+```
+
+### 8.2 基准来源 `CAL-BASE-002`
+
+1. 基准数据须注明来源：权威历书、天文台数据、经校核的农历库。
+2. 不得以本系统自身输出作为基准。
+3. 基准数据须由至少两个独立来源交叉校验；冲突条目标 `PENDING` 并记录差异。
+4. 基准数据版本 `CAL-DATA-v0.1`，校验和随文档发布。
+
+### 8.3 验收测试 `CAL-TEST-001`
+
+| 测试 | 要求 |
+|---|---|
+| 公农历往返转换 | 支持范围内逐日往返一致率 100% |
+| 闰月判定 | 基准闰月全部正确 |
+| 节气时刻 | 与基准误差 ≤ 60 秒（待冻结） |
+| 年柱立春切换 | 立春前后样例正确 |
+| 月柱节气切换 | 每个节气交接样例正确 |
+| 日柱基准 | 逐日与基准一致率 100% |
+| 时柱五鼠遁 | 十二时辰样例正确 |
+| 日界 23:00 | 子初/子正切换样例正确 |
+| 时区 | 跨时区样例正确 |
+| 夏令时 | 重复/缺失时刻处理符合 6.4 |
+| 旬空 | 六旬样例正确 |
+
+### 8.4 错误码 `CAL-ERR-001`
+
+| 错误码 | 含义 |
+|---|---|
+| `CAL_OUT_OF_RANGE` | 日期超出支持范围 |
+| `CAL_INVALID_DATE` | 无效公历日期 |
+| `CAL_INVALID_LUNAR_DATE` | 无效农历日期 |
+| `CAL_INVALID_TIMEZONE` | 无效 IANA 时区 |
+| `CAL_DST_AMBIGUOUS` | 夏令时重复时刻 |
+| `CAL_DST_GAP` | 夏令时不存在时刻 |
+| `CAL_DATA_UNAVAILABLE` | 历法数据缺失或未冻结 |
+| `CAL_JIEQI_UNAVAILABLE` | 节气数据缺失 |
+
+---
+
+## 9. 性能与缓存
+
+### 9.1 性能 `CAL-PERF-001`
+
+| 操作 | 目标 | 条件 |
+|---|---|---|
+| 单次公农历转换 | P95 < 5ms | 含缓存命中 |
+| 单次干支计算 | P95 < 5ms | 含日界处理 |
+| 节气查询 | P95 < 10ms | 含缓存 |
+| 一年逐日遍历 | P95 < 500ms | 含干支、节气、月建、旬空 |
+| 首次数据加载 | 不计入上述指标 | 单独记录加载时间 |
+
+测试须记录设备、OS、数据版本、tzdata 版本、是否含缓存。
+
+### 9.2 缓存 `CAL-CACHE-001`
+
+1. 缓存键须含 `timezone`、`day_bound`、`cal_data_version`、`tzdata_version`。
+2. 数据版本升级须失效旧缓存。
+3. 缓存不得跨档案共享敏感信息；历法数据本身不含个人敏感信息，可共享。
+4. 缓存损坏须可重建。
+
+---
+
+## 10. 待冻结项清单
+
+| 编号 | 待冻结内容 | 影响 | 冻结阶段 |
+|---|---|---|---|
+| CF-01 | 公农历转换算法/库选型与数据表版本 | 全系统 | 阶段 0 |
+| CF-02 | 节气算法与误差阈值 | 旺衰、纳甲、择吉、黄历 | 阶段 0 |
+| CF-03 | 日柱纪日基准日 | 纳甲、择吉、黄历 | 阶段 0 |
+| CF-04 | 默认日界 `ZICHU`/`ZIZHENG` 最终确认 | 纳甲、黄历、择吉 | 阶段 0 |
+| CF-05 | 默认时区与用户时区设置策略 | 全系统 | 阶段 0 |
+| CF-06 | 夏令时重复/缺失处理默认策略 | 全系统 | 阶段 0 |
+| CF-07 | 支持日期范围 | 全系统 | 阶段 0 |
+| CF-08 | 至少一年逐日基准数据与交叉校验 | 验收 | 阶段 0 |
+| CF-09 | tzdata 版本与升级策略 | 历史复现 | 阶段 0 |
+| CF-10 | 黄历基础数据 `HL-01` 与 CAL 的接口边界 | 黄历、择吉 | 阶段 4 |
+
+---
+
+## 附录 A：规则 ID 索引
+
+| 前缀 | 模块 | 示例 |
+|---|---|---|
+| `CAL-CONVERT` | 公农历转换 | `CAL-CONVERT-001` |
+| `CAL-JIEQI` | 节气 | `CAL-JIEQI-001` |
+| `CAL-LUNAR` | 农历月序 | `CAL-LUNAR-001` |
+| `CAL-GANZHI` | 干支 | `CAL-GANZHI-YEAR-001` |
+| `CAL-DAYBOUND` | 日界 | `CAL-DAYBOUND-001` |
+| `CAL-TZ` | 时区 | `CAL-TZ-001` |
+| `CAL-DST` | 夏令时 | `CAL-DST-001` |
+| `CAL-XUN` | 旬空 | `CAL-XUN-001` |
+| `CAL-HUANGLI` | 黄历基础 | `CAL-HUANGLI-001` |
+| `CAL-BASE` | 基准数据 | `CAL-BASE-001` |
+| `CAL-ERR` | 错误码 | `CAL-ERR-001` |
+
+## 附录 B：数据表清单
+
+| 表 ID | 名称 | 状态 |
+|---|---|---|
+| `CAL-LUNAR-TABLE` | 公农历转换表（如采用预计算） | 待冻结 |
+| `CAL-JIEQI-TABLE` | 节气时刻表（如采用预计算） | 待冻结 |
+| `JIEQI-MONTH-BRANCH` | 节气月建表 | 待冻结 |
+| `LUNAR-MONTH-INDEX` | 农历月序表 | 待冻结 |
+| `CAL-BASE-2026` | 2026 逐日基准数据 | 待冻结 |
+| `CAL-TZDATA` | IANA tzdata 版本 | 待冻结 |
+
+## 附录 C：与 ARS/IR/SRS 的接口约定
+
+```text
+CAL 输出：
+  lunar, lunar_month_index, jieqi, jieqi_month_branch,
+  ganzhi{year,month,day,hour}, xun, effective_date,
+  timezone, day_bound, versions
+
+ARS 消费：
+  旺衰：jieqi_month_branch
+  纳甲：ganzhi.day, ganzhi.month, xun, day_bound
+  择吉：ganzhi, jieqi_month_branch, day_branch, year_branch
+  黄历：ganzhi, jieqi, lunar, xun
+
+IR 不直接调用 CAL；只消费 ARS 已带历法结果。
+SRS 定义展示与验收；CAL 不定义展示。
+TDS 定义库选型、缓存、存储、错误处理实现。
+```
+
+## 附录 D：CAL v0.1 结论
+
+本规范已建立历法服务的接口、公农历转换、闰月、节气、干支、日界、时区、夏令时、双表分离、逐日基准、错误码、性能与待冻结项。CAL v0.1 **不是**可直接发布的历法实现规范；`CF-01` 至 `CF-10` 完成冻结并生成至少一年逐日基准数据后，方可作为正式历法依据。在此之前，纳甲、旺衰、择吉、黄历相关输出必须标注“历法待校核”。

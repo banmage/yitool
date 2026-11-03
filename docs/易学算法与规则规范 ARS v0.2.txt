@@ -1,0 +1,1007 @@
+# 易学算法与规则规范  
+## ARS v0.2（联合评审修订稿）
+
+**文档编号：** ARS-v0.2  
+**对应 SRS：** SRS v0.4  
+**对应评审：** 联合评审意见 v1.2  
+**文档状态：** 算法规范修订稿；标注“待冻结/待校核”的条目须完成校核并升版后，方可发布正式结果  
+**修订日期：** 2026-11-03  
+**替代文档：** ARS v0.1
+
+---
+
+## 0. 修订说明与总则
+
+### 0.1 v0.2 相对 v0.1 的主要修正
+
+1. **修正梅花起卦输入矛盾：** 九色模式 `C ∈ 1..9`；传统数字起卦独立为另一输入模式，起卦数字可为正整数。v0.1 中 `C=9` 与七色 1—7 的矛盾不再存在。
+2. **九色标准化：** 新增 `COLOR-NUM-02` 九色表；旧七色 `COLOR-NUM-01` 只读兼容，不用于新推演。
+3. **传统数字起卦独立：** 九色起象与传统数字起卦分别定义公式、输入接口和金标准样例。
+4. **Q/B 扰动标 L3：** 问事文本扰动、生辰扰动明确为本系统自定义增强，不冒充传统梅花规则；默认关闭，用户显式启用。
+5. **种子链消除循环依赖：** 拆分为“基础种子 → 抽卡子种子 → 输入快照 → 推演种子 → 子种子”。
+6. **隐私与复现边界：** 问事文本默认不持久化；关联历史使用本地密钥 HMAC；生辰不落盘、不入快照、不参与可长期复现推演种子。
+7. **A/B 统一条件对照：** 定义共同基础种子、共同抽卡子种子、共同随机快照，不因问事文本不同而派生不同随机条件。
+8. **纳甲完整化：** 补齐纳甲干支表、六十四卦八宫表、旬空算法、变卦流程、六亲/六神/世应规则、多卦金标准要求。
+9. **历法拆分引用 CAL：** `LUNAR_MONTH_INDEX` 与 `JIEQI_MONTH_BRANCH` 分离；详细历法由 CAL v0.1 冻结，ARS 只定义接口。
+10. **择吉规则统一抽象：** 建除、神煞、过滤、评分统一为规则记录；不输出单一总分；冲突保留并解释。
+11. **版本/ID 统一：** 统一 `step_id`、`rule_id`、`data_ref`、`source_ref`；统一枚举 `COIN_CAST`、`MANUAL_YAO`、`FIXED_DERIVED`。
+12. **金标准重做：** 九色模式、传统数字模式、纳甲多卦、种子链、随机分布、隐私扫描分别建立样例。
+
+### 0.2 规则层级
+
+| 层级 | 含义 | 处理要求 |
+|---|---|---|
+| **L1** | 典籍原文或传统通行规则 | 标注书名、篇目、版本；原文不得改写 |
+| **L2** | 本系统工程化解释 | 注明“本系统解释”；说明与 L1 关系 |
+| **L3** | 本系统自定义类象/权重/扰动 | 显著标注“本系统自定义，非唯一流派” |
+| **PROVISIONAL** | 尚未校核的临时规则 | 不得作为正式结果；界面显示“规则待校核” |
+
+### 0.3 版本标识
+
+```text
+ARS_VERSION = "ARS-v0.2"
+RULE_SET_VERSION = "RULE-v0.2"
+DATA_VERSION = "DATA-v0.2"
+CAL_VERSION = "CAL-v0.1"
+SEED_ALGO = "SEED-v2"
+RNG_VERSION = "RNG-v1"
+IR_VERSION = "IR-v0.1"
+```
+
+版本冻结后不得原地修改；规则变更须升版并保留旧版本。
+
+### 0.4 数值与索引约定
+
+| 约定 | 规则 |
+|---|---|
+| 取模 | `mod(a,n)` 返回 `0..n-1`；余 0 时按各规则特别说明取 n 或取 0 |
+| 爻位 | 初爻=1，上爻=6；日志与界面统一 1 基 |
+| 八卦编号 | 先天数：乾1、兑2、离3、震4、巽5、坎6、艮7、坤8 |
+| 六十四卦 | 使用附录 A `HEX-01`；以名称和上下卦定位 |
+| 地支 | 子1、丑2、寅3、卯4、辰5、巳6、午7、未8、申9、酉10、戌11、亥12 |
+| 天干 | 甲1、乙2、丙3、丁4、戊5、己6、庚7、辛8、壬9、癸10 |
+| 五行 | 木火土金水；相生：木→火→土→金→水→木；相克：木→土→水→火→金→木 |
+| 爻值 | 6 老阴（变）、7 少阳（静）、8 少阴（静）、9 老阳（变） |
+| 卦符二进制 | `binary_bottom_up` 自初爻至上爻，1=阳，0=阴 |
+
+### 0.5 统一标识关系
+
+```text
+step_id    = 执行步骤编号，如 MEIHUA-QIGUA-001
+rule_id    = 规则编号，如 MEIHUA-QIGUA-001；多规则用 rule_ids[]
+data_ref   = 数据表编号，如 COLOR-NUM-02、G-01、HEX-01
+source_ref = 典籍出处编号，如 SRC-MEIHUA-001
+```
+
+禁止将数据表 ID 当作规则 ID，禁止将步骤 ID 与规则 ID 混用。
+
+---
+
+## 1. 基础数据表
+
+### 1.1 九色象数表 `COLOR-NUM-02`（L3，待冻结）
+
+九色为系统自定义扩展象数体系，不是传统梅花易数原典标准。推荐映射如下；最终色集与映射须按 SRS O-01 冻结。
+
+| color_id | 名称 | 五行 | 象数 |
+|---:|---|---:|---:|
+| 1 | 赤色 | 火 | 1 |
+| 2 | 橙色 | 土 | 2 |
+| 3 | 黄色 | 土 | 3 |
+| 4 | 绿色 | 木 | 4 |
+| 5 | 青色 | 木 | 5 |
+| 6 | 蓝色 | 水 | 6 |
+| 7 | 紫色 | 金 | 7 |
+| 8 | 黑色 | 水 | 8 |
+| 9 | 白色 | 金 | 9 |
+
+规则：
+
+1. 九色模式 `C ∈ {1..9}`。
+2. 灰色列二期可选，不进入 v0.2 标准色集。
+3. 九色象数用于梅花起卦数字、种子输入快照、象意展示；不用于纳甲起卦。
+4. 九色映射变更须升 `COLOR-NUM-03`，旧记录不重算。
+
+### 1.2 旧七色表 `COLOR-NUM-01`（只读兼容）
+
+| color_id | 名称 | 五行 | 象数 |
+|---:|---|---:|---:|
+| 1 | 赤色 | 火 | 1 |
+| 2 | 橙色 | 土 | 2 |
+| 3 | 黄色 | 土 | 3 |
+| 4 | 绿色 | 木 | 4 |
+| 5 | 青色 | 木 | 5 |
+| 6 | 蓝色 | 水 | 6 |
+| 7 | 紫色 | 金 | 7 |
+
+旧七色记录只读展示，保留原规则版本，不用于新推演。
+
+### 1.3 十二生肖表 `Z-01`
+
+| zodiac_id | 生肖 | 地支 | 地支编号 | 五行 | 象数 |
+|---:|---|---|---:|---|---:|
+| 1 | 鼠 | 子 | 1 | 水 | 1 |
+| 2 | 牛 | 丑 | 2 | 土 | 2 |
+| 3 | 虎 | 寅 | 3 | 木 | 3 |
+| 4 | 兔 | 卯 | 4 | 木 | 4 |
+| 5 | 龙 | 辰 | 5 | 土 | 5 |
+| 6 | 蛇 | 巳 | 6 | 火 | 6 |
+| 7 | 马 | 午 | 7 | 火 | 7 |
+| 8 | 羊 | 未 | 8 | 土 | 8 |
+| 9 | 猴 | 申 | 9 | 金 | 9 |
+| 10 | 鸡 | 酉 | 10 | 金 | 10 |
+| 11 | 狗 | 戌 | 11 | 土 | 11 |
+| 12 | 猪 | 亥 | 12 | 水 | 12 |
+
+地支与五行为 L1/L2；象数 1—12 为系统映射，标 L3。
+
+### 1.4 月令拆分：`LUNAR-MONTH-INDEX` 与 `JIEQI-MONTH-BRANCH`
+
+#### 1.4.1 农历月序表 `LUNAR-MONTH-INDEX`（L2/L3，待冻结）
+
+供梅花自定义月序起象使用。
+
+| lunar_index | 农历月 | 月序象数 | 闰月处理 |
+|---:|---|---:|---|
+| 1 | 正月 | 1 | 闰正月标 `leap=true` |
+| 2 | 二月 | 2 | 闰二月标 `leap=true` |
+| 3 | 三月 | 3 | 同上 |
+| 4 | 四月 | 4 | 同上 |
+| 5 | 五月 | 5 | 同上 |
+| 6 | 六月 | 6 | 同上 |
+| 7 | 七月 | 7 | 同上 |
+| 8 | 八月 | 8 | 同上 |
+| 9 | 九月 | 9 | 同上 |
+| 10 | 十月 | 10 | 同上 |
+| 11 | 十一月 | 11 | 同上 |
+| 12 | 十二月 | 12 | 同上 |
+
+#### 1.4.2 节气月建表 `JIEQI-MONTH-BRANCH`（L1/L2，由 CAL v0.1 冻结）
+
+供旺衰、纳甲、择吉、黄历使用。月建按节气换月，不以农历初一为界。
+
+| 节气 | 月建 | 地支编号 | 五行 |
+|---|---|---:|---|
+| 立春 | 寅 | 3 | 木 |
+| 惊蛰 | 卯 | 4 | 木 |
+| 清明 | 辰 | 5 | 土 |
+| 立夏 | 巳 | 6 | 火 |
+| 芒种 | 午 | 7 | 火 |
+| 小暑 | 未 | 8 | 土 |
+| 立秋 | 申 | 9 | 金 |
+| 白露 | 酉 | 10 | 金 |
+| 寒露 | 戌 | 11 | 土 |
+| 立冬 | 亥 | 12 | 水 |
+| 大雪 | 子 | 1 | 水 |
+| 小寒 | 丑 | 2 | 土 |
+
+**强制规则：** `LUNAR-MONTH-INDEX` 与 `JIEQI-MONTH-BRANCH` 不得共用一张表。农历月序与节气月建在月初、节气交接期间可能不一致。
+
+### 1.5 先天八卦表 `G-01`（L1/L2）
+
+| 先天数 | 卦名 | 卦符 | binary_bottom_up | 五行 | 后天方位 |
+|---:|---|---|---|---|---|
+| 1 | 乾 | ☰ | 111 | 金 | 西北 |
+| 2 | 兑 | ☱ | 110 | 金 | 西 |
+| 3 | 离 | ☲ | 101 | 火 | 南 |
+| 4 | 震 | ☳ | 100 | 木 | 东 |
+| 5 | 巽 | ☴ | 011 | 木 | 东南 |
+| 6 | 坎 | ☵ | 010 | 水 | 北 |
+| 7 | 艮 | ☶ | 001 | 土 | 东北 |
+| 8 | 坤 | ☷ | 000 | 土 | 西南 |
+
+数字到八卦：`n mod 8`，余 0 取 8。
+
+### 1.6 六十四卦八宫表 `HEX-01`
+
+完整 64 卦见附录 A。字段：
+
+```text
+name, upper_trigram, lower_trigram, palace, palace_element,
+palace_index (1..8), type, shi_yao, ying_yao
+```
+
+`type`：`PURE|FIRST|SECOND|THIRD|FOURTH|FIFTH|WANDERING|RETURNING`。  
+世应规则：本宫纯卦世6应3；一世世1应4；二世世2应5；三世世3应6；四世世4应1；五世世5应2；游魂世4应1；归魂世3应6。
+
+### 1.7 纳甲干支表 `NJ-01`
+
+完整表见附录 B。六亲以本卦宫五行为“我”计算。变卦独立纳甲并独立计算六亲，同时保留与本卦对应爻的关联。
+
+### 1.8 旬空表 `XK-01`（L1/L2）
+
+十天干配十二地支，六旬空亡：
+
+| 旬首 | 空亡地支 |
+|---|---|
+| 甲子 | 戌、亥 |
+| 甲戌 | 申、酉 |
+| 甲申 | 午、未 |
+| 甲午 | 辰、巳 |
+| 甲辰 | 寅、卯 |
+| 甲寅 | 子、丑 |
+
+### 1.9 建除十二神表 `JC-01`（L1）
+
+```text
+JC_ORDER = ["建","除","满","平","定","执","破","危","成","收","开","闭"]
+```
+
+建除索引：
+
+```text
+idx = (day_branch_id - month_branch_id + 12) mod 12
+jianchu = JC_ORDER[idx]
+```
+
+`month_branch_id` 取 `JIEQI-MONTH-BRANCH` 的节气月建，不取农历月。
+
+### 1.10 焦氏易林索引 `JL-01`
+
+- 键：`(origin_hex_id, target_hex_id)`，`origin` 本卦，`target` 之卦。
+- 规模：64 × 64 = 4096 条。
+- 每条字段：`origin, target, text, edition, collation_status, variants, plain_note`。
+- `collation_status`：`VERIFIED | PENDING`。
+- 缺失条目不回退、不编造，显示“待校勘”。
+
+### 1.11 择吉统一规则表 `ZEJI-RULE-01`（L2/L3，待冻结）
+
+所有择吉规则统一抽象：
+
+```json
+{
+  "rule_id": "ZEJI-JIANCHU-001",
+  "event_type": "MARRY",
+  "rule_category": "JIANCHU|SHEN_SHA|CHONG_SHA|XIU|FILTER",
+  "condition": "建除=成",
+  "result_type": "POSITIVE|NEGATIVE|ABSOLUTE_FILTER|INFORMATION|CONFLICT",
+  "weight": 2,
+  "priority": 100,
+  "source_ref": "SRC-ZEJI-001",
+  "rule_level": "L2/L3"
+}
+```
+
+建除权重、神煞权重、绝对过滤条件、事项适配规则均通过本表配置；不得为每种规则单独硬编码打分逻辑。
+
+---
+
+## 2. 种子与随机算法
+
+### 2.1 文本规范化 `SEED-NORM-001`
+
+```python
+def normalize_text(s: str) -> str:
+    s = unicodedata.normalize("NFC", s)
+    s = s.strip()
+    s = re.sub(r"\s+", " ", s)
+    return s
+```
+
+- 空生辰统一记 `"NONE"`。
+- 问事文本默认不持久化；如需关联历史，使用本地密钥 HMAC：
+
+```text
+question_hmac = HMAC-SHA256(local_hmac_key, normalize_text(question))
+```
+
+不使用裸 SHA256 作为可持久化匿名标识。
+
+### 2.2 基础种子 `SEED-BASE-001`
+
+基础种子输入**不得包含尚未产生的抽卡结果**：
+
+```json
+{
+  "algo": "SEED-v2",
+  "mode": "FIXED|CAST",
+  "profile_id": "string",
+  "run_time": "ISO8601",
+  "timezone": "IANA",
+  "day_bound": "ZICHU|ZIZHENG",
+  "rule_set": "RULE-v0.2",
+  "data_version": "DATA-v0.2",
+  "cal_version": "CAL-v0.1"
+}
+```
+
+```text
+base_seed = SHA256(UTF8(canonical_json))
+```
+
+`canonical_json`：键顺序按定义，`ensure_ascii=False`，分隔符 `(",", ":")`。
+
+### 2.3 抽卡子种子 `SEED-DRAW-001`
+
+```text
+draw_seed = HMAC-SHA256(base_seed, "DRAW|" + draw_purpose)
+color_id, aux_id = draw_with_rejection(draw_seed)
+```
+
+固定模式抽卡由 `draw_seed` 确定性派生；抽卡结果写入输入快照。摇卦模式抽卡使用系统安全随机源并写入随机快照。
+
+### 2.4 输入快照与推演种子 `SEED-RUN-001`
+
+```json
+input_snapshot = {
+  "color_scheme": "NINE_COLOR|TRADITIONAL_NUMBER",
+  "color_id": 1,
+  "aux_type": "ZODIAC|MONTH",
+  "aux_id": 3,
+  "traditional_numbers": null,
+  "question_hmac": "hmac或NONE",
+  "bazi_present": false,
+  "liuyao_input_type": "COIN_CAST|MANUAL_YAO|FIXED_DERIVED",
+  "random_snapshot_digest": "hex或null"
+}
+```
+
+```text
+snapshot_digest = SHA256(canonical_json(input_snapshot))
+run_seed = HMAC-SHA256(base_seed, "RUN|" + snapshot_digest)
+sub_seed(engine, step) = HMAC-SHA256(run_seed, engine + "|" + step + "|" + purpose)
+```
+
+规则：
+
+1. 无生辰时，`run_seed` 可由基础种子与输入快照复现。
+2. 含生辰时，生辰材料仅在内存参与 `run_seed`，不写入快照；该次推演不承诺脱离原始生辰输入长期复现。
+3. `question_hmac` 仅用于历史关联；若用户不保存问事关联，则记 `"NONE"`。
+4. 日志记录 `snapshot_digest`，不记录生辰材料。
+
+### 2.5 A/B 统一条件对照种子 `SEED-AB-001`
+
+统一条件对照模式：
+
+```text
+ab_base_seed = SHA256(canonical_json({algo, mode, profile_id, run_time, rule_set, data_version, cal_version}))
+ab_draw_seed = HMAC(ab_base_seed, "AB_DRAW")
+shared_random_snapshot = generate_snapshot(ab_draw_seed)
+A_run_seed = HMAC(ab_base_seed, "AB_A|" + shared_random_snapshot_digest + "|" + A_question_hmac)
+B_run_seed = HMAC(ab_base_seed, "AB_B|" + shared_random_snapshot_digest + "|" + B_question_hmac)
+```
+
+A/B 共用抽卡与摇卦随机条件；问事文本只影响各自解释上下文，不改变共同随机快照。独立推演模式则各自使用普通种子链。
+
+### 2.6 固定模式与摇卦模式 `SEED-FIXED-001` / `SEED-CAST-001`
+
+- 固定模式：不引入系统随机熵；所有“随机”步骤由子种子确定性派生。
+- 摇卦模式：使用系统安全随机源生成随机快照；`random_snapshot_digest` 写入输入快照；保存快照后可复现。
+- 不得宣称仅凭参数可复现摇卦结果。
+
+### 2.7 拒绝采样 `RNG-REJECT-001`
+
+```python
+def uniform_int(rand_bytes_fn, n):
+    # 返回 0..n-1
+    limit = (256 // n) * n
+    while True:
+        b = rand_bytes_fn(1)[0]
+        if b < limit:
+            return b % n
+```
+
+多字节范围使用足够字节宽度并拒绝采样；禁止直接取模导致偏差。
+
+### 2.8 六爻铜钱编码 `LIUYAO-COIN-001`
+
+每爻三枚公平铜钱，正面=1，反面=0：
+
+```text
+k = b1 + b2 + b3
+yao_value = 6 + k
+```
+
+| k | yao_value | 名称 | 动静 | 理论概率 |
+|---:|---:|---|---|---:|
+| 0 | 6 | 老阴 | 变 | 1/8 |
+| 1 | 7 | 少阳 | 静 | 3/8 |
+| 2 | 8 | 少阴 | 静 | 3/8 |
+| 3 | 9 | 老阳 | 变 | 1/8 |
+
+固定模式：`b_i` 由 `sub_seed("LIUYAO","yao_n","coin_i")` 派生。摇卦模式：`b_i` 来自系统安全随机源并写入快照。
+
+### 2.9 隐私与日志 `SEED-PRIV-001`
+
+日志不得记录：生辰原始值、生辰派生值、问事原文、HMAC 密钥。  
+日志可记录：`bazi_present` 布尔、`question_hmac`（若用户选择关联）、`snapshot_digest`、`rng_version`。
+
+---
+
+## 3. 梅花易数引擎 `MEIHUA`
+
+### 3.1 输入模型
+
+| 字段 | 九色模式 | 传统数字模式 |
+|---|---|---|
+| `color_scheme` | `NINE_COLOR` | `TRADITIONAL_NUMBER` |
+| `C` | `color_id ∈ 1..9` | 不使用 |
+| `A` | `aux_id ∈ 1..12` | 不使用 |
+| `U0,D0` | 不使用 | 两个正整数 |
+| `Q` | 可选扰动，默认 0 | 默认 0；增强时启用 |
+| `B` | 可选扰动，默认 0 | 默认 0；增强时启用 |
+| `month_branch` | 用于旺衰 | 用于旺衰 |
+
+Q/B 扰动为 L3 自定义增强，不启用时 `Q_mod=0, B_mod=0`。
+
+### 3.2 九色起卦 `MEIHUA-QIGUA-001`
+
+```text
+U_num = C mod 8; if U_num == 0: U_num = 8
+D_num = A mod 8; if D_num == 0: D_num = 8
+UPPER = trigram(U_num)
+LOWER = trigram(D_num)
+
+Q_mod = 0 或 int(question_hmac[0:16],16) mod 64
+B_mod = 0 或 int(bazi_material_hash[0:16],16) mod 64
+
+total = C + A + Q_mod + B_mod
+M = total mod 6; if M == 0: M = 6
+```
+
+本卦为上 UPPER、下 LOWER；M 为动爻，初爻=1。
+
+**规则层级：** 数字取模映射 L2；九色参与起卦 L3；Q/B 扰动 L3；不得将整个公式归为 L1 传统规则。
+
+### 3.3 传统数字起卦 `MEIHUA-QIGUA-002`
+
+```text
+U_num = U0 mod 8; if U_num == 0: U_num = 8
+D_num = D0 mod 8; if D_num == 0: D_num = 8
+M = (U0 + D0) mod 6; if M == 0: M = 6
+```
+
+默认不使用 Q/B；用户显式启用增强时，按 L3 追加扰动并标注。该模式用于学习对照。
+
+### 3.4 互卦 `MEIHUA-HUGUA-001`
+
+本卦 binary 自下而上 `lines[0..5]`：
+
+```text
+lower_hu = lines[1:4]   # 二三四爻
+upper_hu = lines[2:5]   # 三四五爻
+HU = (upper_hu, lower_hu)
+```
+
+默认取本卦中间四爻。乾坤特殊规则作为可选配置 `hugua_special=false` 默认关闭；启用时按变卦取互，日志标注。
+
+### 3.5 变卦 `MEIHUA-BIANGUA-001`
+
+```text
+lines = list(binary_bottom_up)
+lines[M-1] = 1 - lines[M-1]
+BIAN = hexagram_from_binary(lines)
+```
+
+### 3.6 体用 `MEIHUA-TIYONG-001`
+
+- 动爻 1—3：下卦为用，上卦为体。
+- 动爻 4—6：上卦为用，下卦为体。
+- 体卦为“我”，用卦为“事”。
+- 互卦体用按体卦所在位置对应取互。
+
+### 3.7 旺衰 `MEIHUA-WANGSHUAI-001`
+
+1. 由 CAL v0.1 取节气月建 `month_branch` 与五行。
+2. 体卦/用卦五行与月建五行比较：同我旺、生我相、我生休、我克囚、克我死。
+3. 旺衰只作为 IR 解释权重，不改变卦象数字。
+4. 完整逐月五行旺衰表 `W-01` 待 CAL/ARS 校核冻结。
+
+### 3.8 九色金标准 `TC-MEIHUA-001`
+
+| 输入 | 值 |
+|---|---|
+| color_scheme | NINE_COLOR |
+| C | 1（赤，火） |
+| A | 3（虎，木） |
+| Q_mod | 0 |
+| B_mod | 0 |
+
+计算：
+
+```text
+U_num = 1 → 乾
+D_num = 3 → 离
+total = 1 + 3 = 4
+M = 4
+```
+
+期望：上乾下离 = **天火同人**；动爻 4；变卦上巽下离 = **风火家人**；互卦上乾下巽 = **天风姤**。  
+该样例所有输入均可通过正式九色接口产生。
+
+### 3.9 传统数字金标准 `TC-MEIHUA-002`
+
+| 输入 | 值 |
+|---|---|
+| U0 | 9 |
+| D0 | 16 |
+
+计算：
+
+```text
+U_num = 9 mod 8 = 1 → 乾
+D_num = 16 mod 8 = 0 → 8 → 坤
+M = (9+16) mod 6 = 1
+```
+
+期望：上乾下坤 = **天地否**；初爻动；变卦 **天雷无妄**。  
+该样例仅用于传统数字模式，不通过九色接口执行。
+
+---
+
+## 4. 焦氏易林引擎 `JIAOLIN`
+
+### 4.1 输入
+
+| 字段 | 来源 |
+|---|---|
+| `origin_hex_id` | 梅花本卦；或用户手动指定 |
+| `target_hex_id` | 梅花变卦；或用户手动指定 |
+| `yao_note` | 动爻，辅助注记，不改变索引 |
+
+### 4.2 取辞 `JIAOLIN-INDEX-001`
+
+```text
+key = (origin_hex_id, target_hex_id)
+verse = JL_TABLE[key]
+```
+
+规则：
+
+1. `origin == target`：取本卦本卦条目。
+2. `origin != target`：取 `(origin, target)`。
+3. `collation_status == PENDING`：显示“待校勘”，白话提示不得作为确定解读。
+4. 缺失条目不回退、不编造。
+
+### 4.3 数据要求 `JIAOLIN-DATA-001`
+
+1. 明确底本与参考注本。
+2. 4096 条全部建立记录；缺失标 `PENDING`。
+3. 原文、异文、校勘说明、来源版本、白话提示分开存储。
+4. 原文不得因程序需要被改写。
+5. 随机抽取人工校验样例。
+
+---
+
+## 5. 纳甲六爻引擎 `LIUYAO`
+
+### 5.1 输入模型
+
+纳甲独立起卦，九色/生肖不作为起卦依据。
+
+| 输入方式 | 枚举 | 说明 |
+|---|---|---|
+| 模拟铜钱 | `COIN_CAST` | 六次投掷，每次三枚正反 |
+| 手动六爻 | `MANUAL_YAO` | 逐爻输入 6/7/8/9 |
+| 固定派生 | `FIXED_DERIVED` | 固定模式由子种子派生六爻 |
+
+### 5.2 完整装卦流程 `LIUYAO-ZHUANG-001`
+
+1. 生成六爻，自初爻至上爻排列。
+2. 确定本卦、动爻、变卦。
+3. 确定本卦所属八宫及宫五行。
+4. 完成本卦内外卦纳甲干支。
+5. 确定世爻、应爻。
+6. 以本卦宫五行为“我”计算六亲。
+7. 按日干排六神。
+8. 按日柱计算旬空。
+9. 计算月建、日辰、动变、生克、冲合。
+10. 变卦独立纳甲、独立宫五行、独立六亲，并保留与本卦对应爻关联。
+11. 按事项类型映射用神；映射表待冻结。
+12. 生成推演日志。
+
+### 5.3 六亲 `LIUYAO-LIUQIN-001`
+
+以卦宫五行为“我”：
+
+| 关系 | 六亲 |
+|---|---|
+| 生我 | 父母 |
+| 我生 | 子孙 |
+| 克我 | 官鬼 |
+| 我克 | 妻财 |
+| 比和 | 兄弟 |
+
+### 5.4 六神 `LIUYAO-LIUSHEN-001`
+
+按日干起，自初爻至上爻顺排：
+
+| 日干 | 初爻起 |
+|---|---|
+| 甲、乙 | 青龙 |
+| 丙、丁 | 朱雀 |
+| 戊 | 勾陈 |
+| 己 | 螣蛇 |
+| 庚、辛 | 白虎 |
+| 壬、癸 | 玄武 |
+
+次序：青龙→朱雀→勾陈→螣蛇→白虎→玄武。
+
+### 5.5 旬空 `LIUYAO-XUNKONG-001`
+
+以 0 基编号：`stem ∈ 0..9`，`branch ∈ 0..11`。
+
+```text
+xun_head_branch = (branch - stem) mod 12
+kong_1 = (xun_head_branch + 10) mod 12
+kong_2 = (xun_head_branch + 11) mod 12
+```
+
+若爻支等于 `kong_1` 或 `kong_2`，标记旬空。空亡解释由 IR 处理，ARS 只输出状态。
+
+**样例：** 甲子日：stem=0,branch=0 → 旬首子；空亡戌、亥。
+
+### 5.6 变卦 `LIUYAO-BIANGUA-001`
+
+- 6 老阴变阳；9 老阳变阴；7、8 不变。
+- 变卦按变后六爻重新确定八宫、宫五行、纳甲干支、世应、六亲。
+- 本卦变爻与变卦对应爻建立关联，展示原爻、变爻、变卦六亲。
+- 伏神等扩展信息待冻结。
+
+### 5.7 用神接口 `LIUYAO-YONGSHEN-001`（待冻结）
+
+```text
+用神 = LIUYAO_YONGSHEN_01[event_type]
+```
+
+不得在代码中临时猜测用神。
+
+### 5.8 纳甲金标准 `TC-LIUYAO-001`：乾为天
+
+日干取甲，初爻青龙。乾宫金，世6应3。
+
+| 爻 | 纳甲 | 五行 | 六亲 | 六神 |
+|---:|---|---|---|---|
+| 初 | 甲子 | 水 | 子孙 | 青龙 |
+| 二 | 甲寅 | 木 | 妻财 | 朱雀 |
+| 三 | 甲辰 | 土 | 父母 | 勾陈 |
+| 四 | 壬午 | 火 | 官鬼 | 螣蛇 |
+| 五 | 壬申 | 金 | 兄弟 | 白虎 |
+| 上 | 壬戌 | 土 | 父母 | 玄武 |
+
+### 5.9 纳甲金标准 `TC-LIUYAO-002`：坤为地
+
+坤宫土，世6应3。
+
+| 爻 | 纳甲 | 五行 | 六亲 |
+|---:|---|---|---|---|
+| 初 | 乙未 | 土 | 兄弟 |
+| 二 | 乙巳 | 火 | 父母 |
+| 三 | 乙卯 | 木 | 官鬼 |
+| 四 | 癸丑 | 土 | 兄弟 |
+| 五 | 癸亥 | 水 | 妻财 |
+| 上 | 癸酉 | 金 | 子孙 |
+
+### 5.10 多卦测试要求 `TC-LIUYAO-003`
+
+至少覆盖：乾、坤、既济、未济、泰、否、同人、家人。每卦验证：八宫、宫五行、纳甲干支、世应、六亲、旬空、变卦。不得只用乾为天。
+
+---
+
+## 6. 择吉规则引擎 `ZEJI`
+
+### 6.1 三层模型
+
+1. **基础历法层：** 干支、节气月建、日支、生肖冲合、时区、日界，由 CAL v0.1 提供。
+2. **规则判定层：** 建除、二十八宿、吉神凶神、月破、岁破、四废、大耗等，统一为 `ZEJI-RULE-01` 记录。
+3. **事项适配层：** `ZEJI-EVENT-01` 按事项类型选择规则集与权重。
+
+### 6.2 建除 `ZEJI-JIANCHU-001`
+
+```text
+idx = (day_branch_id - month_branch_id + 12) mod 12
+jianchu = JC_ORDER[idx]
+```
+
+样例：月建寅(3)，日支午(7) → `(7-3+12) mod 12 = 4 → 定`。日支申(9) → `6 → 破`。
+
+### 6.3 绝对过滤 `ZEJI-FILTER-001`（待冻结）
+
+月破、岁破、四废、大耗的精确定义须配置化并冻结。过滤原因写入日志，不得静默过滤。
+
+### 6.4 评分与冲突 `ZEJI-SCORE-001`
+
+```text
+for each rule in matched_rules:
+    if result_type == ABSOLUTE_FILTER: mark filtered
+    elif result_type == POSITIVE: add weight
+    elif result_type == NEGATIVE: subtract weight
+    elif result_type == CONFLICT: keep for explanation
+```
+
+输出保留：规则命中、过滤原因、加减分依据、事项适配、冲突解释。**不输出单一“吉日总分”作为唯一结论。** 不同事项使用不同规则集，不用同一套权重覆盖所有事项。
+
+### 6.5 二十八宿与黄历数据
+
+二十八宿、吉神凶神、黄历宜忌数据表 `HL-01` 待冻结。ARS 只定义接口：由 CAL 提供日期干支与节气，由 `ZEJI-RULE-01` 与 `HL-01` 提供规则命中。
+
+---
+
+## 7. 历法接口（引用 CAL v0.1）
+
+ARS 不重复定义完整历法算法。CAL v0.1 须提供以下接口：
+
+```text
+get_lunar_month_index(datetime, timezone, day_bound) -> {lunar_index, leap}
+get_jieqi_month_branch(datetime, timezone) -> {branch_id, branch, element}
+get_ganzhi(datetime, timezone, day_bound) -> {year, month, day, hour}
+get_day_bound(datetime, day_bound) -> effective_date
+```
+
+强制要求：
+
+1. 年柱以立春时刻切换。
+2. 月柱以十二节气切换。
+3. 日柱纪日基准与日界由 CAL 冻结；默认子初换日，可配置子正。
+4. 时区使用 IANA；夏令时不存在/重复时刻由 CAL 定义。
+5. CAL v0.1 冻结前，纳甲、旺衰、择吉、黄历不得宣称计算正确。
+
+---
+
+## 8. 日志与溯源
+
+### 8.1 日志结构 `LOG-SCHEMA-001`
+
+```json
+{
+  "run_id": "uuid",
+  "created_at": "ISO8601",
+  "profile_id": "string",
+  "mode": "FIXED|CAST",
+  "versions": {
+    "ars": "ARS-v0.2",
+    "srs": "SRS-v0.4",
+    "ir": "IR-v0.1",
+    "cal": "CAL-v0.1",
+    "rule_set": "RULE-v0.2",
+    "data": "DATA-v0.2",
+    "seed_algo": "SEED-v2",
+    "rng": "RNG-v1"
+  },
+  "engines": ["MEIHUA", "JIAOLIN", "LIUYAO"],
+  "input_summary": {
+    "color_scheme": "NINE_COLOR|TRADITIONAL_NUMBER",
+    "color_id": 1,
+    "aux_type": "ZODIAC|MONTH",
+    "aux_id": 3,
+    "question_hmac": "hmac或NONE",
+    "bazi_present": false,
+    "liuyao_input_type": "COIN_CAST|MANUAL_YAO|FIXED_DERIVED"
+  },
+  "random_snapshot_digest": "hex|null",
+  "steps": [
+    {
+      "step_id": "MEIHUA-QIGUA-001",
+      "engine": "MEIHUA",
+      "rule_ids": ["MEIHUA-QIGUA-001"],
+      "data_refs": ["G-01", "COLOR-NUM-02"],
+      "source_ref": "SRC-MEIHUA-001",
+      "rule_level": "L2/L3",
+      "formula_summary": "九色起卦公式",
+      "output": {"upper": "乾", "lower": "离", "moving": 4}
+    }
+  ],
+  "disclaimer": "本结果为传统易学文化学习与娱乐参考，不构成生活决策唯一依据。"
+}
+```
+
+### 8.2 溯源 `LOG-SOURCE-001`
+
+每个 `rule_id` 关联 `SRC-01`：
+
+```json
+{
+  "rule_id": "MEIHUA-QIGUA-001",
+  "book": "梅花易数",
+  "edition": "待校勘",
+  "chapter": "待核实",
+  "original_excerpt": "卦以八除，爻以六除",
+  "rule_level": "L2",
+  "system_interpretation": "数字取模映射先天八卦；九色与Q/B扰动为本系统L3扩展"
+}
+```
+
+L3 规则的 `book` 必须为“本系统自定义”，不得冒充典籍。
+
+---
+
+## 9. 金标准与测试规范
+
+### 9.1 种子链 `TC-SEED-001`
+
+1. 基础种子不含抽卡结果。
+2. `draw_seed` 产生抽卡结果。
+3. 输入快照包含抽卡结果。
+4. `run_seed` 由基础种子与快照摘要派生。
+5. 固定模式同输入同版本结果逐项相等。
+6. 含生辰推演不承诺脱离原始输入复现。
+
+### 9.2 摇卦快照 `TC-CAST-001`
+
+保存 `random_snapshot` 与 `random_snapshot_digest` 后重放，结果一致。
+
+### 9.3 随机分布 `TC-RNG-001`
+
+1. 九色/生肖抽卡卡方检验。
+2. 六爻每爻分布检验：6=1/8、7=3/8、8=3/8、9=1/8。
+3. 1—99 幸运数拒绝采样均匀性。
+
+### 9.4 梅花 `TC-MEIHUA-001/002`
+
+见 3.8、3.9。九色样例必须通过九色接口；传统数字样例必须通过传统数字接口。
+
+### 9.5 焦氏 `TC-JIAOLIN-001`
+
+遍历 4096 键：每条存在或显式 `PENDING`；`origin==target` 64 条存在；无缺失异常。
+
+### 9.6 纳甲 `TC-LIUYAO-001/002/003`
+
+见 5.8—5.10；多卦验证。
+
+### 9.7 旬空 `TC-XUNKONG-001`
+
+甲子日空戌亥；甲戌日空申酉；甲申日空午未；甲午日空辰巳；甲辰日空寅卯；甲寅日空子丑。
+
+### 9.8 隐私 `TC-PRIV-001`
+
+扫描日志、数据库、导出文件：不得出现生辰原始值/派生值、问事原文、HMAC 密钥。问事默认不落盘；HMAC 关联可验证。
+
+### 9.9 择吉 `TC-ZEJI-001`
+
+建除样例见 6.2；绝对过滤与冲突解释样例待规则冻结后补充。
+
+---
+
+## 10. 待冻结项清单
+
+| 编号 | 待冻结内容 | 影响模块 | 冻结阶段 |
+|---|---|---|---|
+| F-01 | 九色最终色集与映射 `COLOR-NUM-02` | MEIHUA、种子、历史 | 阶段 0 |
+| F-02 | 逐月五行旺衰 `W-01` | MEIHUA、LIUYAO、ZEJI | 阶段 0 |
+| F-03 | 六十四卦八宫表交叉校核 | LIUYAO、JIAOLIN | 阶段 0/3 |
+| F-04 | 纳甲干支表 `NJ-01` 校核 | LIUYAO | 阶段 3 |
+| F-05 | 焦氏底本、4096 条校勘 | JIAOLIN | 阶段 2 |
+| F-06 | 用神映射 `LIUYAO-YONGSHEN-01` | LIUYAO | 阶段 3 |
+| F-07 | 择吉事项规则 `ZEJI-EVENT-01`、权重 | ZEJI | 阶段 4 |
+| F-08 | 月破/岁破/四废/大耗精确定义 | ZEJI | 阶段 4 |
+| F-09 | CAL v0.1 历法基准、日界、时区、夏令时 | CAL、LIUYAO、ZEJI | 阶段 0 |
+| F-10 | 黄历数据 `HL-01`、二十八宿 | ZEJI、黄历 | 阶段 4 |
+| F-11 | 变卦伏神等扩展 | LIUYAO | 阶段 3 后 |
+| F-12 | 本地 HMAC 密钥管理 | 隐私、TDS | 阶段 0 |
+
+---
+
+## 附录 A：六十四卦八宫表 `HEX-01`
+
+> 本表为算法索引结构，须与《卜筮正宗》《增删易》通行表交叉校核后冻结。世应按 1.6 规则。
+
+| 宫 | 宫内序 | 卦名 | 上卦 | 下卦 | 类型 | 世 | 应 |
+|---|---:|---|---|---|---|---:|---:|
+| 乾 | 1 | 乾为天 | 乾 | 乾 | PURE | 6 | 3 |
+| 乾 | 2 | 天风姤 | 乾 | 巽 | FIRST | 1 | 4 |
+| 乾 | 3 | 天山遁 | 乾 | 艮 | SECOND | 2 | 5 |
+| 乾 | 4 | 天地否 | 乾 | 坤 | THIRD | 3 | 6 |
+| 乾 | 5 | 风地观 | 巽 | 坤 | FOURTH | 4 | 1 |
+| 乾 | 6 | 山地剥 | 艮 | 坤 | FIFTH | 5 | 2 |
+| 乾 | 7 | 火地晋 | 离 | 坤 | WANDERING | 4 | 1 |
+| 乾 | 8 | 火天大有 | 离 | 乾 | RETURNING | 3 | 6 |
+| 兑 | 1 | 兑为泽 | 兑 | 兑 | PURE | 6 | 3 |
+| 兑 | 2 | 泽水困 | 兑 | 坎 | FIRST | 1 | 4 |
+| 兑 | 3 | 泽地萃 | 兑 | 坤 | SECOND | 2 | 5 |
+| 兑 | 4 | 泽山咸 | 兑 | 艮 | THIRD | 3 | 6 |
+| 兑 | 5 | 水山蹇 | 坎 | 艮 | FOURTH | 4 | 1 |
+| 兑 | 6 | 地山谦 | 坤 | 艮 | FIFTH | 5 | 2 |
+| 兑 | 7 | 雷山小过 | 震 | 艮 | WANDERING | 4 | 1 |
+| 兑 | 8 | 雷泽归妹 | 震 | 兑 | RETURNING | 3 | 6 |
+| 离 | 1 | 离为火 | 离 | 离 | PURE | 6 | 3 |
+| 离 | 2 | 火山旅 | 离 | 艮 | FIRST | 1 | 4 |
+| 离 | 3 | 火风鼎 | 离 | 巽 | SECOND | 2 | 5 |
+| 离 | 4 | 火水未济 | 离 | 坎 | THIRD | 3 | 6 |
+| 离 | 5 | 山水蒙 | 艮 | 坎 | FOURTH | 4 | 1 |
+| 离 | 6 | 风水涣 | 巽 | 坎 | FIFTH | 5 | 2 |
+| 离 | 7 | 天水讼 | 乾 | 坎 | WANDERING | 4 | 1 |
+| 离 | 8 | 天火同人 | 乾 | 离 | RETURNING | 3 | 6 |
+| 震 | 1 | 震为雷 | 震 | 震 | PURE | 6 | 3 |
+| 震 | 2 | 雷地豫 | 震 | 坤 | FIRST | 1 | 4 |
+| 震 | 3 | 雷水解 | 震 | 坎 | SECOND | 2 | 5 |
+| 震 | 4 | 雷风恒 | 震 | 巽 | THIRD | 3 | 6 |
+| 震 | 5 | 地风升 | 坤 | 巽 | FOURTH | 4 | 1 |
+| 震 | 6 | 水风井 | 坎 | 巽 | FIFTH | 5 | 2 |
+| 震 | 7 | 泽风大过 | 兑 | 巽 | WANDERING | 4 | 1 |
+| 震 | 8 | 泽雷随 | 兑 | 震 | RETURNING | 3 | 6 |
+| 巽 | 1 | 巽为风 | 巽 | 巽 | PURE | 6 | 3 |
+| 巽 | 2 | 风天小畜 | 巽 | 乾 | FIRST | 1 | 4 |
+| 巽 | 3 | 风火家人 | 巽 | 离 | SECOND | 2 | 5 |
+| 巽 | 4 | 风雷益 | 巽 | 震 | THIRD | 3 | 6 |
+| 巽 | 5 | 天雷无妄 | 乾 | 震 | FOURTH | 4 | 1 |
+| 巽 | 6 | 火雷噬嗑 | 离 | 震 | FIFTH | 5 | 2 |
+| 巽 | 7 | 山雷颐 | 艮 | 震 | WANDERING | 4 | 1 |
+| 巽 | 8 | 山风蛊 | 艮 | 巽 | RETURNING | 3 | 6 |
+| 坎 | 1 | 坎为水 | 坎 | 坎 | PURE | 6 | 3 |
+| 坎 | 2 | 水泽节 | 坎 | 兑 | FIRST | 1 | 4 |
+| 坎 | 3 | 水雷屯 | 坎 | 震 | SECOND | 2 | 5 |
+| 坎 | 4 | 水火既济 | 坎 | 离 | THIRD | 3 | 6 |
+| 坎 | 5 | 泽火革 | 兑 | 离 | FOURTH | 4 | 1 |
+| 坎 | 6 | 雷火丰 | 震 | 离 | FIFTH | 5 | 2 |
+| 坎 | 7 | 地火明夷 | 坤 | 离 | WANDERING | 4 | 1 |
+| 坎 | 8 | 地水师 | 坤 | 坎 | RETURNING | 3 | 6 |
+| 艮 | 1 | 艮为山 | 艮 | 艮 | PURE | 6 | 3 |
+| 艮 | 2 | 山火贲 | 艮 | 离 | FIRST | 1 | 4 |
+| 艮 | 3 | 山天大畜 | 艮 | 乾 | SECOND | 2 | 5 |
+| 艮 | 4 | 山泽损 | 艮 | 兑 | THIRD | 3 | 6 |
+| 艮 | 5 | 火泽睽 | 离 | 兑 | FOURTH | 4 | 1 |
+| 艮 | 6 | 天泽履 | 乾 | 兑 | FIFTH | 5 | 2 |
+| 艮 | 7 | 风泽中孚 | 巽 | 兑 | WANDERING | 4 | 1 |
+| 艮 | 8 | 风山渐 | 巽 | 艮 | RETURNING | 3 | 6 |
+| 坤 | 1 | 坤为地 | 坤 | 坤 | PURE | 6 | 3 |
+| 坤 | 2 | 地雷复 | 坤 | 震 | FIRST | 1 | 4 |
+| 坤 | 3 | 地泽临 | 坤 | 兑 | SECOND | 2 | 5 |
+| 坤 | 4 | 地天泰 | 坤 | 乾 | THIRD | 3 | 6 |
+| 坤 | 5 | 雷天大壮 | 震 | 乾 | FOURTH | 4 | 1 |
+| 坤 | 6 | 泽天夬 | 兑 | 乾 | FIFTH | 5 | 2 |
+| 坤 | 7 | 水天需 | 坎 | 乾 | WANDERING | 4 | 1 |
+| 坤 | 8 | 水地比 | 坎 | 坤 | RETURNING | 3 | 6 |
+
+## 附录 B：纳甲干支表 `NJ-01`
+
+> 天干按“乾纳甲壬、坤纳乙癸、震纳庚、巽纳辛、坎纳戊、离纳己、艮纳丙、兑纳丁”；地支按传统纳甲排列。须校核后冻结。
+
+| 卦 | 初爻 | 二爻 | 三爻 | 四爻 | 五爻 | 上爻 |
+|---|---|---|---|---|---|---|
+| 乾 | 甲子 | 甲寅 | 甲辰 | 壬午 | 壬申 | 壬戌 |
+| 坤 | 乙未 | 乙巳 | 乙卯 | 癸丑 | 癸亥 | 癸酉 |
+| 震 | 庚子 | 庚寅 | 庚辰 | 庚午 | 庚申 | 庚戌 |
+| 巽 | 辛丑 | 辛亥 | 辛酉 | 辛未 | 辛巳 | 辛卯 |
+| 坎 | 戊寅 | 戊辰 | 戊午 | 戊申 | 戊戌 | 戊子 |
+| 离 | 己卯 | 己丑 | 己亥 | 己酉 | 己未 | 己巳 |
+| 艮 | 丙辰 | 丙午 | 丙申 | 丙戌 | 丙子 | 丙寅 |
+| 兑 | 丁巳 | 丁卯 | 丁丑 | 丁亥 | 丁酉 | 丁未 |
+
+## 附录 C：规则 ID 索引
+
+| 前缀 | 模块 | 示例 |
+|---|---|---|
+| `MEIHUA` | 梅花易数 | `MEIHUA-QIGUA-001` |
+| `JIAOLIN` | 焦氏易林 | `JIAOLIN-INDEX-001` |
+| `LIUYAO` | 纳甲六爻 | `LIUYAO-ZHUANG-001` |
+| `CAL` | 历法接口 | `CAL-DAYBOUND-001` |
+| `ZEJI` | 择吉 | `ZEJI-JIANCHU-001` |
+| `SEED` / `RNG` | 种子与随机 | `SEED-BASE-001` |
+| `LOG` | 日志 | `LOG-SCHEMA-001` |
+
+## 附录 D：数据表清单
+
+| 表 ID | 名称 | 状态 |
+|---|---|---|
+| `COLOR-NUM-01` | 旧七色表 | 只读兼容 |
+| `COLOR-NUM-02` | 九色表 | 待冻结 |
+| `Z-01` | 十二生肖表 | v0.2 |
+| `LUNAR-MONTH-INDEX` | 农历月序表 | 待冻结 |
+| `JIEQI-MONTH-BRANCH` | 节气月建表 | 由 CAL 冻结 |
+| `W-01` | 逐月五行旺衰表 | 待冻结 |
+| `G-01` | 先天八卦表 | v0.2 |
+| `HEX-01` | 六十四卦八宫表 | 待交叉校核 |
+| `NJ-01` | 纳甲干支表 | 待校核 |
+| `XK-01` | 旬空表 | v0.2 |
+| `JL-01` | 焦氏易林表 | 待校勘 |
+| `LIUYAO-YONGSHEN-01` | 纳甲用神映射 | 待冻结 |
+| `ZEJI-EVENT-01` | 择吉事项规则 | 待冻结 |
+| `ZEJI-RULE-01` | 择吉统一规则表 | 待冻结 |
+| `HL-01` | 黄历宜忌表 | 待冻结 |
+| `SRC-01` | 典籍溯源表 | v0.2 |
+
+## 附录 E：与 SRS/CAL/IR 的关系
+
+```text
+SRS v0.4  → 定义行为、输入输出、验收
+ARS v0.2  → 定义计算、映射、索引、金标准
+CAL v0.1  → 定义历法、节气、日界、时区
+IR v0.1   → 定义计算结果到文字解释、措辞等级、冲突解释
+TDS v0.1  → 定义架构、接口、存储、异常实现
+```
+
+ARS 不输出最终文字解释；解释由 IR 完成。ARS 不重复定义完整历法；历法由 CAL 冻结。ARS 不定义技术栈与存储实现。
+
+---
+
+**ARS v0.2 结论：** 本版已修正 v0.1 的梅花输入与金标准矛盾，建立九色/传统数字双模式，消除固定模式种子循环依赖，明确隐私复现边界，补齐纳甲八宫/干支/旬空/变卦与多卦测试要求，拆分历法并统一择吉规则抽象。`COLOR-NUM-02`、`W-01`、`HEX-01`、`NJ-01`、`JL-01`、`LIUYAO-YONGSHEN-01`、`ZEJI-EVENT-01`、`CAL v0.1` 等仍须按第 10 章冻结后，对应引擎方可发布正式结果；冻结前输出必须标记“规则待校核”。

@@ -1,0 +1,814 @@
+# 技术设计说明书  
+## TDS v0.1（技术设计冻结草案）
+
+**文档编号：** TDS-v0.1  
+**对应 SRS：** SRS v0.4  
+**对应 ARS：** ARS v0.2  
+**对应 IR：** IR v0.1  
+**对应 CAL：** CAL v0.1  
+**文档状态：** 技术设计冻结草案；标注“待冻结”的技术选型须完成验证后升版  
+**修订日期：** 2026-11-03
+
+---
+
+## 0. 总则
+
+### 0.1 文档职责
+
+TDS 定义系统**如何实现**，包括：技术栈选型、架构分层实现、模块边界、接口契约、数据结构、本地存储、缓存、日志、加密、异常处理、部署、测试策略与版本迁移。
+
+TDS **不**负责：重新定义易学算法（ARS）、解释规则（IR）、历法规则（CAL）、功能需求（SRS）。遇到算法争议，以 ARS/IR/CAL 为准；遇到行为与验收争议，以 SRS 为准。
+
+### 0.2 与上下游文档的关系
+
+```text
+SRS v0.4  → 定义做什么、行为边界、验收
+ARS v0.2  → 定义易学计算、映射、金标准
+IR v0.1   → 定义计算结果到文字解释
+CAL v0.1  → 定义历法服务
+TDS v0.1  → 定义架构、模块、接口、存储、技术选型、异常实现、部署
+```
+
+强制约束：
+
+1. TDS 不得重新定义易学算法；引擎实现必须调用 ARS 规则表与公式。
+2. TDS 不得重新定义解释模板；解释渲染必须消费 IR 输出。
+3. TDS 不得自行实现历法换算；必须调用 CAL 接口。
+4. TDS 中任何与 ARS/IR/CAL 冲突的实现，以 ARS/IR/CAL 为准并回退修订 TDS。
+
+### 0.3 设计原则
+
+1. **离线优先：** 核心功能不依赖网络；天气为可选扩展。
+2. **规则与程序分离：** 规则表、权重表、模板、古籍数据以配置文件/数据表形式加载，不硬编码。
+3. **引擎隔离：** 梅花、焦氏、纳甲、择吉、IR、CAL 通过明确接口交互，不互相直接调用内部实现。
+4. **可复现：** 固定模式保存输入快照与版本；摇卦模式保存随机快照与版本。
+5. **隐私最小化：** 生辰不落盘、不写日志、不入导出；问事默认不持久化。
+6. **可测试：** 每个引擎有独立接口与金标准测试入口。
+7. **可迁移：** 规则/数据/算法/历法/IR 版本独立记录，历史记录按原版本渲染。
+8. **本地轻量：** 面向个人及家庭自用，不引入重型服务端依赖。
+
+### 0.4 版本标识
+
+```text
+TDS_VERSION = "TDS-v0.1"
+APP_VERSION = "APP-v0.1"
+DB_SCHEMA_VERSION = "DB-v0.1"
+CONFIG_SCHEMA_VERSION = "CFG-v0.1"
+LOG_SCHEMA_VERSION = "LOG-v0.1"
+```
+
+---
+
+## 1. 技术栈选型
+
+### 1.1 选型原则
+
+1. 本地运行、离线优先、安装简单。
+2. 支持 Windows/macOS/Linux 主流桌面环境。
+3. 易学规则表可用 YAML/JSON 管理；古籍文本可用 SQLite/文件存储。
+4. 界面需支持抽卡动画、折叠日志、三栏对照、九宫图。
+5. 技术栈须便于后续维护与个人开发。
+
+### 1.2 推荐技术栈 `TDS-STACK-001`（待冻结）
+
+| 层 | 推荐方案 | 备选 | 理由 |
+|---|---|---|---|
+| 桌面壳 | Tauri 2.x | Electron、PySide6 | 体积小、本地能力强、跨平台 |
+| 前端 | React + TypeScript + Vite | Vue、Svelte | 组件生态、动画与表格支持 |
+| 图表/九宫图 | SVG 自绘 + D3 轻量 | Canvas | 九宫图结构固定，SVG 易维护 |
+| 后端/引擎 | Rust（Tauri 命令层） | Python（PyO3/子进程）、Node | 性能、类型安全、打包简单 |
+| 规则表 | YAML + JSON Schema 校验 | TOML | 可读、可版本化、易校核 |
+| 本地数据库 | SQLite（WAL 模式） | DuckDB、文件 JSON | 单文件、事务、查询、备份简单 |
+| 古籍文本 | SQLite 表 + 静态资源 | Markdown 文件 | 结构化检索与版本管理 |
+| 日志 | JSON Lines + SQLite 索引 | — | 便于追溯与查询 |
+| 加密 | OS Keychain/Secret Service + AES-GCM | age、SQLCipher | 本地密钥与数据库加密 |
+| 打包 | Tauri bundler | — | 各平台安装包 |
+
+> **待冻结：** 最终技术栈须在阶段 0 完成原型验证后冻结。若团队更熟悉 Python，可将引擎层改为 Python + PyO3，但接口契约不变。
+
+### 1.3 运行环境 `TDS-ENV-001`
+
+| 项 | 要求 |
+|---|---|
+| 操作系统 | Windows 10+、macOS 12+、主流 Linux 桌面 |
+| 内存 | 建议 4GB 以上 |
+| 磁盘 | 安装包 + 数据 < 500MB（不含古籍大文本） |
+| 网络 | 核心功能不需要；天气为可选 |
+| 时区 | 依赖系统 IANA tzdata，应用内记录版本 |
+| 字体 | 需支持中文与卦符 ☰☱☲☳☴☵☶☷ |
+
+---
+
+## 2. 架构设计
+
+### 2.1 分层架构 `TDS-ARCH-001`
+
+```text
+┌──────────────────────────────────────────────┐
+│ 交互展示层 UI                                 │
+│ 起卦/抽卡 · 结果三栏 · 日志折叠 · 历史 · 设置 │
+├──────────────────────────────────────────────┤
+│ 应用服务层 App Services                       │
+│ 一事推演 · A/B 对照 · 择吉 · 黄历 · 方位 · 档案│
+├──────────────────────────────────────────────┤
+│ 引擎层 Engines                                │
+│ MEIHUA · JIAOLIN · LIUYAO · ZEJI · IR · CAL  │
+├──────────────────────────────────────────────┤
+│ 领域模型层 Domain                             │
+│ 卦象 · 干支 · 五行 · 六亲 · 规则 · 版本       │
+├──────────────────────────────────────────────┤
+│ 基础设施层 Infra                              │
+│ 随机 · 哈希/HMAC · SQLite · 日志 · 加密 · 导入导出│
+└──────────────────────────────────────────────┘
+```
+
+### 2.2 模块边界 `TDS-ARCH-002`
+
+| 模块 | 职责 | 不负责 |
+|---|---|---|
+| `cal` | 公农历、节气、干支、日界、时区、旬空 | 卦象、择吉规则、解释 |
+| `meihua` | 梅花起卦、互变体用、旺衰 | 解释文案、纳甲装卦 |
+| `jiaolin` | 64×64 索引查询、原文与校勘状态 | 独立起卦、趋势打分 |
+| `liuyao` | 六爻起卦、装卦、六亲世应六神旬空变卦 | 解释文案、择吉 |
+| `zeji` | 建除、规则命中、过滤、排序 | 历法换算、解释文案 |
+| `ir` | 结构化结果→解释模板、措辞等级、合规扫描 | 重新计算卦象 |
+| `seed` | 基础种子、抽卡子种子、输入快照、推演种子 | 业务规则 |
+| `store` | SQLite 持久化、档案、历史、版本 | 业务计算 |
+| `crypto` | 本地 HMAC 密钥、数据库加密、导出摘要 | 业务规则 |
+| `ui` | 交互、渲染、动画、可访问性 | 算法实现 |
+
+### 2.3 引擎调用关系 `TDS-ARCH-003`
+
+```text
+UI → App Service
+App Service → CAL（取历法）
+App Service → Seed（取种子/快照）
+App Service → MEIHUA / LIUYAO（取结构化结果）
+App Service → JIAOLIN（用梅花本卦/变卦查询）
+App Service → ZEJI（择吉）
+App Service → IR（解释）
+App Service → Store（保存历史）
+```
+
+规则：
+
+1. 引擎之间不直接互相调用；由 App Service 编排。
+2. JIAOLIN 只接收卦 ID，不调用 MEIHUA 内部函数。
+3. IR 只接收结构化结果，不调用引擎。
+4. CAL 不依赖任何引擎。
+
+---
+
+## 3. 核心接口契约
+
+### 3.1 通用约定 `TDS-API-001`
+
+1. 所有接口输入输出使用 JSON 兼容结构；内部可用强类型结构体。
+2. 所有接口必须携带 `versions` 对象。
+3. 所有错误返回统一错误结构：
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "CAL_OUT_OF_RANGE",
+    "message": "日期超出支持范围",
+    "details": {}
+  },
+  "versions": {...}
+}
+```
+
+4. 成功返回：
+
+```json
+{
+  "ok": true,
+  "data": {...},
+  "versions": {...}
+}
+```
+
+5. 接口不得静默吞错；不得用默认值掩盖数据缺失。
+6. 接口版本变更须升 `TDS_VERSION` 并保留旧接口适配层。
+
+### 3.2 CAL 接口 `TDS-API-CAL-001`
+
+遵循 CAL v0.1 第 1 章接口清单。TDS 实现要求：
+
+1. 所有接口显式传 `timezone`、`day_bound`。
+2. 返回 `versions` 含 `cal`、`cal_data`、`tzdata`。
+3. 错误码使用 `CAL-ERR-001`。
+4. 结果可缓存，缓存键含 `timezone`、`day_bound`、`cal_data_version`、`tzdata_version`。
+5. CAL 数据未冻结时返回 `CAL_DATA_UNAVAILABLE`，不得回退近似算法。
+
+### 3.3 种子接口 `TDS-API-SEED-001`
+
+```text
+create_base_seed(input) -> base_seed
+derive_draw_seed(base_seed, purpose) -> draw_seed
+draw_with_rejection(draw_seed, range) -> result
+build_input_snapshot(draw_result, inputs) -> snapshot
+derive_run_seed(base_seed, snapshot) -> run_seed
+derive_sub_seed(run_seed, engine, step, purpose) -> sub_seed
+```
+
+约束：
+
+1. `base_seed` 输入不得包含抽卡结果。
+2. 含生辰时，生辰材料仅在内存参与；不写入 `snapshot`。
+3. `question_hmac` 使用本地 HMAC 密钥；密钥不写日志。
+4. 固定模式与摇卦模式通过 `mode` 区分；摇卦模式快照写入 `snapshot`。
+
+### 3.4 梅花接口 `TDS-API-MEIHUA-001`
+
+```text
+cast_meihua(input) -> MeihuaResult
+```
+
+输入：
+
+```json
+{
+  "color_scheme": "NINE_COLOR|TRADITIONAL_NUMBER",
+  "color_id": 1,
+  "aux_type": "ZODIAC|MONTH",
+  "aux_id": 3,
+  "traditional_numbers": null,
+  "question_hmac": "hmac或NONE",
+  "bazi_present": false,
+  "bazi_material": "仅内存，不落盘",
+  "datetime": "ISO8601",
+  "timezone": "IANA",
+  "day_bound": "ZICHU",
+  "random_snapshot": null
+}
+```
+
+输出：`MeihuaResult` 含本卦、互卦、变卦、动爻、体用、五行、旺衰、忌神、弱势卦位、`step_logs[]`、`versions`。
+
+约束：
+
+1. 九色模式 `color_id ∈ 1..9`；传统数字模式使用 `traditional_numbers`。
+2. Q/B 扰动默认关闭；启用时标 L3。
+3. 旺衰调用 CAL `get_jieqi_month_branch`，不自行计算月建。
+4. 每步日志含 `step_id`、`rule_ids[]`、`data_refs[]`、`source_ref`、`rule_level`。
+
+### 3.5 焦氏接口 `TDS-API-JIAOLIN-001`
+
+```text
+lookup_jiaolin(origin_hex_id, target_hex_id, yao_note) -> JiaolinResult
+```
+
+约束：
+
+1. 只查询，不起卦。
+2. `PENDING` 条目返回 `collation_status=PENDING`，不生成确定白话。
+3. 缺失条目返回 `JIAOLIN_ENTRY_MISSING`，不静默回退。
+4. 原文与白话提示分开字段。
+
+### 3.6 纳甲接口 `TDS-API-LIUYAO-001`
+
+```text
+cast_liuyao(input) -> LiuyaoResult
+```
+
+输入：
+
+```json
+{
+  "input_type": "COIN_CAST|MANUAL_YAO|FIXED_DERIVED",
+  "coins": [[1,0,1], ...],
+  "manual_yao": [7,8,9,6,7,8],
+  "datetime": "ISO8601",
+  "timezone": "IANA",
+  "day_bound": "ZICHU",
+  "event_type": "GENERAL",
+  "random_snapshot": null
+}
+```
+
+输出：本卦、动爻、变卦、八宫、宫五行、纳甲干支、世应、六亲、六神、旬空、月建、日辰、动变、用神、`step_logs[]`、`versions`。
+
+约束：
+
+1. 九色/生肖不得作为纳甲起卦依据。
+2. 固定模式由子种子派生六爻；摇卦模式保存快照。
+3. 用神映射未冻结时返回 `LIUYAO_YONGSHEN_UNAVAILABLE`。
+4. 变卦独立纳甲、独立六亲，并保留与本卦对应爻关联。
+
+### 3.7 择吉接口 `TDS-API-ZEJI-001`
+
+```text
+query_zeji(start_date, end_date, event_type, profile_zodiac, timezone, day_bound) -> ZejiResult
+```
+
+约束：
+
+1. 调用 CAL 获取干支、节气月建、日支。
+2. 规则命中来自 `ZEJI-RULE-01`；事项规则来自 `ZEJI-EVENT-01`。
+3. 输出保留规则命中、过滤原因、加减分依据、冲突解释；不输出单一总分。
+4. 周期上限 366 天；超过返回 `ZEJI_RANGE_EXCEEDED`。
+
+### 3.8 IR 接口 `TDS-API-IR-001`
+
+```text
+interpret(input) -> IrOutput
+```
+
+约束：
+
+1. 输入为 ARS 结构化结果；不接收自然语言。
+2. 输出含 `sections`、`tone_level`、`ir_rule_ids[]`、`compliance`。
+3. 禁用措辞扫描必须执行；命中则拒绝输出并记录。
+4. `PENDING` 规则结果继承“解释待校核”标记。
+
+### 3.9 存储接口 `TDS-API-STORE-001`
+
+```text
+save_run(run_record) -> run_id
+list_runs(profile_id, filters, pagination) -> RunList
+get_run(run_id) -> RunRecord
+delete_run(run_id) -> DeleteResult
+delete_profile(profile_id) -> DeleteResult
+export_snapshot(run_id, options) -> SnapshotFile
+backup_database(path) -> BackupResult
+restore_database(path) -> RestoreResult
+```
+
+约束：
+
+1. 保存前执行隐私扫描：不得包含生辰原始值/派生值、问事原文（除非用户显式选择加密保存）。
+2. 历史记录保存完整版本信息。
+3. 删除语义遵循 SRS 4.12。
+4. 导出快照默认不含生辰与问事原文。
+
+---
+
+## 4. 数据存储设计
+
+### 4.1 SQLite 数据库 `TDS-DB-001`
+
+单文件 SQLite，WAL 模式，启用外键。数据库文件位于应用数据目录，按档案隔离或单库多档案。
+
+推荐表：
+
+| 表 | 说明 |
+|---|---|
+| `profiles` | 档案 |
+| `settings` | 档案级设置 |
+| `runs` | 推演记录主表 |
+| `run_steps` | 步骤日志 |
+| `run_versions` | 版本快照 |
+| `random_snapshots` | 随机快照 |
+| `draw_results` | 抽卡结果 |
+| `interpretations` | IR 解释结果 |
+| `zeji_queries` | 择吉查询记录 |
+| `zeji_hits` | 规则命中明细 |
+| `notes` | 复盘笔记 |
+| `exports` | 导出记录 |
+| `audit_log` | 应用审计日志（非计算日志） |
+| `data_versions` | 数据表版本与校验和 |
+
+### 4.2 关键表结构 `TDS-DB-002`
+
+```sql
+CREATE TABLE profiles (
+  profile_id TEXT PRIMARY KEY,
+  display_name TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  is_default INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE runs (
+  run_id TEXT PRIMARY KEY,
+  profile_id TEXT NOT NULL REFERENCES profiles(profile_id),
+  created_at TEXT NOT NULL,
+  mode TEXT NOT NULL,              -- FIXED|CAST
+  engine_scope TEXT NOT NULL,      -- MEIHUA|MEIHUA+JIAOLIN|ALL
+  question_hmac TEXT,              -- 可空
+  question_saved INTEGER NOT NULL DEFAULT 0,
+  bazi_present INTEGER NOT NULL DEFAULT 0,
+  random_snapshot_digest TEXT,
+  ars_version TEXT NOT NULL,
+  ir_version TEXT NOT NULL,
+  cal_version TEXT NOT NULL,
+  rule_set TEXT NOT NULL,
+  data_version TEXT NOT NULL,
+  tzdata_version TEXT,
+  disclaimer_present INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE run_steps (
+  run_id TEXT NOT NULL REFERENCES runs(run_id),
+  step_index INTEGER NOT NULL,
+  engine TEXT NOT NULL,
+  step_id TEXT NOT NULL,
+  rule_ids_json TEXT NOT NULL,
+  data_refs_json TEXT NOT NULL,
+  source_ref TEXT,
+  rule_level TEXT,
+  formula_summary TEXT,
+  output_json TEXT NOT NULL,
+  PRIMARY KEY (run_id, step_index)
+);
+
+CREATE TABLE random_snapshots (
+  run_id TEXT PRIMARY KEY REFERENCES runs(run_id),
+  snapshot_json TEXT NOT NULL,
+  snapshot_digest TEXT NOT NULL,
+  rng_version TEXT NOT NULL
+);
+```
+
+### 4.3 规则与数据文件 `TDS-DB-003`
+
+规则表、映射表、模板、古籍文本作为**只读资源**随应用发布，不写入用户数据库：
+
+```text
+resources/
+├── rules/
+│   ├── meihua/
+│   ├── jiaolin/
+│   ├── liuyao/
+│   ├── zeji/
+│   └── cal/
+├── ir/
+│   ├── templates/
+│   └── compliance/
+├── data/
+│   ├── hex64.json
+│   ├── najia.json
+│   ├── jiaolin_4096.json
+│   ├── zeji_events.json
+│   └── huangli.json
+├── texts/
+│   ├── zhouyi/
+│   ├── jiaolin/
+│   └── tui bei tu/
+└── manifests/
+    ├── rules.manifest.json
+    └── data.manifest.json
+```
+
+要求：
+
+1. 每个资源文件带 `version`、`checksum`、`status`、`source`。
+2. 加载时校验 checksum；失败则拒绝加载并提示。
+3. `PENDING` 资源可加载但相关结果标“待校核”。
+4. 资源升级不修改用户历史记录；历史按原版本渲染。
+
+### 4.4 缓存 `TDS-CACHE-001`
+
+| 缓存 | 键 | 失效条件 |
+|---|---|---|
+| CAL 结果 | datetime+timezone+day_bound+cal_data+tzdata | 版本升级 |
+| 规则表 | rule_set+data_version | 版本升级 |
+| 卦象查询 | hex_id+data_version | 版本升级 |
+| IR 模板 | ir_version+template_set | 版本升级 |
+
+缓存不得跨档案共享敏感信息；CAL 与规则表不含个人敏感信息，可共享。
+
+---
+
+## 5. 隐私与安全实现
+
+### 5.1 生辰处理 `TDS-PRIV-001`
+
+1. 生辰仅在内存结构 `BaziMaterial` 中存在，生命周期限于单次 `cast_*` 调用。
+2. `BaziMaterial` 不实现序列化；不写入日志、数据库、导出、快照。
+3. 含生辰推演在 `runs.bazi_present=1`，但不保存任何生辰材料。
+4. 重新推演须用户重新输入生辰。
+5. 单元测试须扫描日志、数据库、导出文件，确认无生辰材料。
+
+### 5.2 问事文本 `TDS-PRIV-002`
+
+1. 默认不持久化。
+2. 若用户选择关联历史，计算 `question_hmac = HMAC-SHA256(local_key, normalized_text)`，只保存 HMAC。
+3. 若用户选择保存原文，须显式确认并本地加密保存。
+4. HMAC 密钥存于 OS Keychain/Secret Service；不写数据库、不写日志。
+5. 密钥轮换策略：新记录用新密钥；旧记录保留 `key_id` 以验证；轮换不重算旧 HMAC。
+
+### 5.3 数据库加密 `TDS-PRIV-003`（待冻结）
+
+| 方案 | 说明 | 状态 |
+|---|---|---|
+| 不加密 + 应用内脱敏 | 依赖 OS 账户隔离 | 最低要求 |
+| SQLCipher | 数据库整库加密 | 推荐 |
+| 字段级 AES-GCM | 仅加密问事原文等敏感字段 | 备选 |
+
+密钥管理：
+
+1. 主密钥存 OS Keychain/Secret Service。
+2. 数据库密钥由主密钥派生；不硬编码。
+3. 备份文件须加密；备份密码由用户设置或主密钥派生。
+4. 密钥丢失时数据不可恢复，须在设置中提示。
+
+### 5.4 删除语义 `TDS-PRIV-004`
+
+| 操作 | 实现 |
+|---|---|
+| 应用内删除记录 | 删除 `runs` 及关联 `run_steps`、`random_snapshots`、`interpretations`、`zeji_hits`；VACUUM 可选 |
+| 删除档案 | 删除该档案全部数据；提示备份/导出不受控 |
+| 备份清理 | 按保留期限删除备份文件；提供手动清理 |
+| 彻底删除 | 删除主库、备份、应用内导出记录；提示 OS 备份不受控 |
+| 导出文件 | 应用内删除不控制用户已导出文件；界面提示 |
+
+### 5.5 日志安全 `TDS-PRIV-005`
+
+1. 计算日志保存结构化结果与版本，不保存生辰、问事原文、HMAC 密钥。
+2. 应用审计日志保存操作类型、时间、档案，不保存敏感内容。
+3. 日志文件权限限制为当前用户。
+4. 日志导出默认脱敏。
+
+---
+
+## 6. 随机与种子实现
+
+### 6.1 随机源 `TDS-RNG-001`
+
+1. 使用 OS CSPRNG：Windows `BCryptGenRandom`、macOS `SecRandomCopyBytes`、Linux `getrandom`。
+2. 禁止使用语言默认 `random` 作为安全随机源。
+3. 拒绝采样实现遵循 ARS `RNG-REJECT-001`。
+4. 摇卦模式快照保存原始比特组合，不只保存最终爻值。
+
+### 6.2 种子链实现 `TDS-RNG-002`
+
+1. `base_seed` 输入不含抽卡结果。
+2. `draw_seed` 由 `base_seed` 派生。
+3. 抽卡结果写入 `input_snapshot`。
+4. `run_seed` 由 `base_seed + snapshot_digest` 派生。
+5. 各引擎 `sub_seed` 由 `run_seed` 派生。
+6. 含生辰时，生辰材料仅参与内存中的 `run_seed` 计算，不进入 `input_snapshot`。
+7. A/B 统一条件对照使用共同 `ab_base_seed`、`ab_draw_seed`、`shared_random_snapshot`。
+
+### 6.3 固定模式与摇卦模式 `TDS-RNG-003`
+
+1. 固定模式：所有随机步骤由子种子确定性派生；不调用 OS CSPRNG。
+2. 摇卦模式：六爻与抽卡调用 OS CSPRNG，保存快照。
+3. 历史记录保存 `mode`、`random_snapshot_digest`、`rng_version`。
+4. 固定模式复现只依赖输入与版本；摇卦模式复现依赖快照。
+
+---
+
+## 7. 日志与可观测性
+
+### 7.1 计算日志 `TDS-LOG-001`
+
+1. 每次推演生成 `run_id`。
+2. 步骤日志写入 `run_steps`，字段遵循 SRS 附录 B 与 ARS `LOG-SCHEMA-001`。
+3. 日志包含 `step_id`、`rule_ids[]`、`data_refs[]`、`source_ref`、`rule_level`、`formula_summary`、`output_json`。
+4. 日志不含生辰、问事原文、HMAC 密钥。
+5. 日志支持按 `run_id`、`profile_id`、时间范围查询。
+
+### 7.2 应用日志 `TDS-LOG-002`
+
+1. 记录启动、数据加载、资源校验、错误、导出、备份、删除。
+2. 不记录敏感内容。
+3. 日志轮转：单文件上限与保留数量可配置。
+4. 崩溃日志须脱敏后保存。
+
+### 7.3 错误码 `TDS-LOG-003`
+
+统一错误码前缀：
+
+| 前缀 | 模块 |
+|---|---|
+| `CAL_` | 历法 |
+| `SEED_` | 种子/随机 |
+| `MEIHUA_` | 梅花 |
+| `JIAOLIN_` | 焦氏 |
+| `LIUYAO_` | 纳甲 |
+| `ZEJI_` | 择吉 |
+| `IR_` | 解释 |
+| `STORE_` | 存储 |
+| `CRYPTO_` | 加密 |
+| `UI_` | 交互 |
+
+---
+
+## 8. 异常处理实现
+
+### 8.1 异常分类 `TDS-ERR-001`
+
+| 类型 | 示例 | 处理 |
+|---|---|---|
+| 输入错误 | 无效日期、超长文本、无效枚举 | 阻止提交，提示修正 |
+| 数据缺失 | 规则表未冻结、焦氏条目缺失、CAL 数据缺失 | 返回明确错误码，显示“待校核/不可用” |
+| 版本不匹配 | 历史记录版本与当前资源不兼容 | 按原版本只读展示；不静默重算 |
+| 资源损坏 | checksum 失败 | 拒绝加载，提示修复/重装 |
+| 加密失败 | 密钥不可用、备份密码错误 | 提示，不覆盖原数据 |
+| 性能超时 | 择吉周期过长 | 提示分段查询 |
+| 动画中断 | 抽卡中途关闭 | 状态回滚到一致状态 |
+
+### 8.2 降级策略 `TDS-ERR-002`
+
+1. CAL 未冻结：纳甲、旺衰、择吉、黄历禁用正式结果，显示“历法待校核”。
+2. 用神映射未冻结：纳甲结果标记“用神待冻结”，不输出确定解释。
+3. 焦氏条目 PENDING：显示原文与“待校勘”，不输出确定白话。
+4. IR 模板缺失：显示结构化结果，不生成确定解释。
+5. 天气离线：仅影响二期天气提醒，不影响核心推演。
+
+### 8.3 版本不兼容 `TDS-ERR-003`
+
+1. 历史记录保存完整版本信息。
+2. 打开旧记录时按原版本资源渲染；若原资源已移除，显示“原版本资源不可用”，不静默替换。
+3. 用户可手动“按当前版本重新解释”，须标注“重新解释，非原始记录”。
+4. 数据库 schema 升级须备份并支持回滚。
+
+---
+
+## 9. 部署与安装
+
+### 9.1 安装包 `TDS-DEPLOY-001`
+
+1. 提供 Windows `.msi`/`.exe`、macOS `.dmg`、Linux `.AppImage`/`.deb`。
+2. 安装包不包含用户数据；首次启动创建应用数据目录与默认档案。
+3. 安装包签名与校验和随发布提供。
+4. 不强制联网；不包含遥测。
+
+### 9.2 应用数据目录 `TDS-DEPLOY-002`
+
+```text
+<app_data>/
+├── app.db
+├── app.db-wal
+├── app.db-shm
+├── logs/
+├── exports/
+├── backups/
+├── cache/
+└── resources/         # 只读资源，随安装包发布，可校验
+```
+
+1. 目录权限限制为当前用户。
+2. 备份文件默认加密。
+3. 导出目录可由用户选择。
+4. 资源目录只读；升级时替换并校验 checksum。
+
+### 9.3 升级 `TDS-DEPLOY-003`
+
+1. 升级前自动备份数据库。
+2. 数据库 schema 升级须版本化迁移脚本。
+3. 资源升级须 checksum 校验；旧版本资源可保留以支持历史记录渲染。
+4. 升级失败须回滚到备份并提示。
+5. 不静默修改用户历史记录。
+
+### 9.4 离线与网络 `TDS-DEPLOY-004`
+
+1. 核心功能不发起网络请求。
+2. 天气为可选扩展；启用时明确提示联网范围。
+3. 不包含自动更新强制联网；更新由用户手动触发或安装包覆盖。
+
+---
+
+## 10. 测试策略
+
+### 10.1 单元测试 `TDS-TEST-001`
+
+覆盖：
+
+1. CAL 公农历、节气、干支、日界、时区、旬空。
+2. 种子链：基础种子→抽卡→快照→推演种子，无循环依赖。
+3. 梅花九色与传统数字起卦金标准。
+4. 焦氏 4096 索引完整性。
+5. 纳甲多卦装卦金标准。
+6. 择吉建除、规则命中、过滤、冲突。
+7. IR 模板匹配、禁用措辞扫描、措辞等级。
+8. 隐私扫描：日志/数据库/导出无生辰与问事原文。
+
+### 10.2 集成测试 `TDS-TEST-002`
+
+1. 一事推演全链路：输入→CAL→种子→梅花→焦氏→IR→存储→展示。
+2. 三引擎平行对照：结果不串引擎、不合成总分。
+3. A/B 统一条件对照：共同随机快照验证。
+4. 历史复现：固定模式无生辰可复现；摇卦模式快照可复现。
+5. 版本不兼容：旧记录按原版本渲染。
+6. 删除与备份清理。
+
+### 10.3 性能测试 `TDS-TEST-003`
+
+按 SRS 6.2 与 CAL 9.1 指标测试；记录设备、OS、数据库规模、样本量、是否含缓存与初始化。
+
+### 10.4 安全测试 `TDS-TEST-004`
+
+1. 数据库文件扫描：无生辰、无问事原文（未显式保存时）。
+2. 日志扫描：无敏感内容。
+3. 导出文件扫描：默认脱敏。
+4. 密钥不可用时降级提示。
+5. 资源 checksum 篡改检测。
+
+### 10.5 可访问性测试 `TDS-TEST-005`
+
+1. 键盘完成抽卡、长按幸运数、展开日志。
+2. 色盲友好标识。
+3. 动画可关闭。
+4. 字体缩放不破坏布局。
+
+---
+
+## 11. 版本管理与迁移
+
+### 11.1 版本记录 `TDS-VER-001`
+
+每次推演记录：
+
+```text
+app_version, tds_version, db_schema_version,
+ars_version, ir_version, cal_version,
+rule_set, data_version, cal_data_version, tzdata_version,
+seed_algo, rng_version, ir_rule_set, ir_template_set
+```
+
+### 11.2 迁移策略 `TDS-VER-002`
+
+1. 数据库迁移脚本按版本顺序执行。
+2. 迁移前自动备份。
+3. 迁移失败回滚。
+4. 资源升级不重算历史记录；历史按原版本渲染。
+5. 旧资源可保留多个版本；界面显示“原版本资源”。
+6. 不静默删除旧版本记录。
+
+### 11.3 导出快照 `TDS-VER-003`
+
+1. 导出含非敏感输入、版本、步骤日志、解释结果、随机快照摘要。
+2. 不含生辰、问事原文（除非用户显式选择加密导出）。
+3. 含完整性摘要与导出时间。
+4. 导入时校验版本与摘要；不兼容时提示。
+
+---
+
+## 12. 待冻结项清单
+
+| 编号 | 待冻结内容 | 影响 | 冻结阶段 |
+|---|---|---|---|
+| TF-01 | 最终技术栈（Tauri/Rust 或备选） | 全系统 | 阶段 0 |
+| TF-02 | 数据库加密方案（SQLCipher/字段级/不加密） | 隐私 | 阶段 0 |
+| TF-03 | 本地 HMAC 密钥存储与轮换细节 | 隐私 | 阶段 0 |
+| TF-04 | 资源 manifest 与 checksum 规范 | 规则加载 | 阶段 0 |
+| TF-05 | CAL 库/算法选型与缓存策略 | 历法 | 阶段 0 |
+| TF-06 | 日志轮转与保留策略 | 运维 | 阶段 1 |
+| TF-07 | 备份保留期限与清理交互 | 数据管理 | 阶段 1 |
+| TF-08 | 数据库 schema 迁移框架 | 升级 | 阶段 0 |
+| TF-09 | 性能基准设备与数据规模 | 验收 | 阶段 0 |
+| TF-10 | 安装包签名与发布流程 | 部署 | 阶段 1 |
+| TF-11 | 古籍文本存储与检索方案 | 古籍 | 阶段 5 |
+| TF-12 | 天气 API 与离线降级实现 | 二期 | 二期 |
+
+---
+
+## 附录 A：模块与目录建议
+
+```text
+src/
+├── app/                 # 应用服务编排
+│   ├── run_service
+│   ├── ab_service
+│   ├── zeji_service
+│   ├── history_service
+│   └── profile_service
+├── engines/
+│   ├── cal/
+│   ├── meihua/
+│   ├── jiaolin/
+│   ├── liuyao/
+│   ├── zeji/
+│   └── ir/
+├── domain/
+│   ├── hexagram
+│   ├── ganzhi
+│   ├── wuxing
+│   ├── rules
+│   └── versions
+├── infra/
+│   ├── seed
+│   ├── rng
+│   ├── crypto
+│   ├── store
+│   ├── logging
+│   └── resources
+└── ui/
+    ├── pages
+    ├── components
+    ├── animations
+    └── accessibility
+```
+
+## 附录 B：关键 ADR（架构决策记录）清单
+
+| ADR | 决策 | 状态 |
+|---|---|---|
+| ADR-001 | 采用本地桌面应用而非 Web 服务 | 待确认 |
+| ADR-002 | 引擎与规则表分离，规则表只读资源 | 待确认 |
+| ADR-003 | SQLite 单文件 + WAL | 待确认 |
+| ADR-004 | 生辰仅内存、不序列化 | 已确定 |
+| ADR-005 | 问事默认不持久化，HMAC 关联 | 已确定 |
+| ADR-006 | 三引擎不合成总分 | 已确定 |
+| ADR-007 | IR 独立于 ARS | 已确定 |
+| ADR-008 | CAL 独立服务，ARS 不自行换算 | 已确定 |
+| ADR-009 | 历史记录按原版本渲染 | 已确定 |
+| ADR-010 | 资源 checksum 校验 | 待确认 |
+
+## 附录 C：TDS v0.1 结论
+
+本规范已建立技术栈选型、分层架构、模块边界、接口契约、SQLite 数据模型、资源文件管理、隐私与加密实现、种子链实现、日志、异常处理、部署、测试与版本迁移。TDS v0.1 **不是**可直接编码的最终技术方案；`TF-01` 至 `TF-12` 完成原型验证与冻结后，方可进入阶段 0 开发。TDS 不重新定义 ARS/IR/CAL 规则；任何实现冲突以 ARS/IR/CAL 为准并回退修订 TDS。

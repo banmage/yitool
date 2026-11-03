@@ -1,0 +1,43 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# AI agent local state (skills can be regenerated with `specify init`)
+.dsh/
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# Rust / Tauri
+target/
+src-tauri/target/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local runtime data (never commit user data)
+app.db
+app.db-wal
+app.db-shm
+logs/
+exports/
+backups/
+cache/
+*.log
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Local overrides
+.specify/feature.json
