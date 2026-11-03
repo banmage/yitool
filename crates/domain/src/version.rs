@@ -27,18 +27,13 @@ impl Default for VersionSet {
             rule_set: "RULE-v0.2".into(),
             data: "DATA-v0.2".into(),
             cal_data: "CAL-DATA-v0.1".into(),
-            tzdata: chrono_tz_version(),
+            tzdata: chrono_tz::IANA_TZDB_VERSION.to_string(),
             seed_algo: "SEED-v2".into(),
             rng: "RNG-v1".into(),
             app: "APP-v0.1".into(),
             db_schema: "DB-v0.1".into(),
         }
     }
-}
-
-fn chrono_tz_version() -> String {
-    // domain 不依赖 chrono-tz；由调用方在需要时覆盖。
-    "2026a".into()
 }
 
 impl VersionSet {
