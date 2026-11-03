@@ -1,0 +1,18 @@
+[package]
+name = "gen-cal"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "gen-cal"
+path = "src/main.rs"
+
+[dependencies]
+cal = { package = "yitool-cal", path = "../../crates/cal" }
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+mingli-astro.workspace = true

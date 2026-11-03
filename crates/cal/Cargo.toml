@@ -1,0 +1,22 @@
+[package]
+name = "yitool-cal"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+name = "cal"
+path = "src/lib.rs"
+
+[dependencies]
+domain = { package = "yitool-domain", path = "../domain" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+chrono-tz.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

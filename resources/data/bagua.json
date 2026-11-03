@@ -1,0 +1,111 @@
+{
+  "version": "G-01",
+  "status": "VERIFIED",
+  "source": "ARS v0.2 附录 A / 先天八卦",
+  "trigrams": [
+    {
+      "key": "QIAN",
+      "number": 1,
+      "name": "乾",
+      "symbol": "☰",
+      "element": "金",
+      "lines_bottom_up": [
+        1,
+        1,
+        1
+      ],
+      "image": "天"
+    },
+    {
+      "key": "DUI",
+      "number": 2,
+      "name": "兑",
+      "symbol": "☱",
+      "element": "金",
+      "lines_bottom_up": [
+        1,
+        1,
+        0
+      ],
+      "image": "泽"
+    },
+    {
+      "key": "LI",
+      "number": 3,
+      "name": "离",
+      "symbol": "☲",
+      "element": "火",
+      "lines_bottom_up": [
+        1,
+        0,
+        1
+      ],
+      "image": "火"
+    },
+    {
+      "key": "ZHEN",
+      "number": 4,
+      "name": "震",
+      "symbol": "☳",
+      "element": "木",
+      "lines_bottom_up": [
+        1,
+        0,
+        0
+      ],
+      "image": "雷"
+    },
+    {
+      "key": "XUN",
+      "number": 5,
+      "name": "巽",
+      "symbol": "☴",
+      "element": "木",
+      "lines_bottom_up": [
+        0,
+        1,
+        1
+      ],
+      "image": "风"
+    },
+    {
+      "key": "KAN",
+      "number": 6,
+      "name": "坎",
+      "symbol": "☵",
+      "element": "水",
+      "lines_bottom_up": [
+        0,
+        1,
+        0
+      ],
+      "image": "水"
+    },
+    {
+      "key": "GEN",
+      "number": 7,
+      "name": "艮",
+      "symbol": "☶",
+      "element": "土",
+      "lines_bottom_up": [
+        0,
+        0,
+        1
+      ],
+      "image": "山"
+    },
+    {
+      "key": "KUN",
+      "number": 8,
+      "name": "坤",
+      "symbol": "☷",
+      "element": "土",
+      "lines_bottom_up": [
+        0,
+        0,
+        0
+      ],
+      "image": "地"
+    }
+  ]
+}

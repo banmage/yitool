@@ -1,0 +1,113 @@
+{
+  "version": "COLOR-NUM-02",
+  "status": "PENDING",
+  "source": "ARS v0.2 1.1 / ADR-002",
+  "description": "九色为系统自定义扩展象数体系，非传统梅花原典标准；旧七色只读兼容。",
+  "nine_color": [
+    {
+      "color_id": 1,
+      "name": "赤色",
+      "element": "火",
+      "xiangshu": 1
+    },
+    {
+      "color_id": 2,
+      "name": "橙色",
+      "element": "土",
+      "xiangshu": 2
+    },
+    {
+      "color_id": 3,
+      "name": "黄色",
+      "element": "土",
+      "xiangshu": 3
+    },
+    {
+      "color_id": 4,
+      "name": "绿色",
+      "element": "木",
+      "xiangshu": 4
+    },
+    {
+      "color_id": 5,
+      "name": "青色",
+      "element": "木",
+      "xiangshu": 5
+    },
+    {
+      "color_id": 6,
+      "name": "蓝色",
+      "element": "水",
+      "xiangshu": 6
+    },
+    {
+      "color_id": 7,
+      "name": "紫色",
+      "element": "金",
+      "xiangshu": 7
+    },
+    {
+      "color_id": 8,
+      "name": "黑色",
+      "element": "水",
+      "xiangshu": 8
+    },
+    {
+      "color_id": 9,
+      "name": "白色",
+      "element": "金",
+      "xiangshu": 9
+    }
+  ],
+  "seven_color_readonly": [
+    {
+      "color_id": 1,
+      "name": "赤色",
+      "element": "火",
+      "xiangshu": 1,
+      "status": "READONLY"
+    },
+    {
+      "color_id": 2,
+      "name": "橙色",
+      "element": "土",
+      "xiangshu": 2,
+      "status": "READONLY"
+    },
+    {
+      "color_id": 3,
+      "name": "黄色",
+      "element": "土",
+      "xiangshu": 3,
+      "status": "READONLY"
+    },
+    {
+      "color_id": 4,
+      "name": "绿色",
+      "element": "木",
+      "xiangshu": 4,
+      "status": "READONLY"
+    },
+    {
+      "color_id": 5,
+      "name": "青色",
+      "element": "木",
+      "xiangshu": 5,
+      "status": "READONLY"
+    },
+    {
+      "color_id": 6,
+      "name": "蓝色",
+      "element": "水",
+      "xiangshu": 6,
+      "status": "READONLY"
+    },
+    {
+      "color_id": 7,
+      "name": "紫色",
+      "element": "金",
+      "xiangshu": 7,
+      "status": "READONLY"
+    }
+  ]
+}

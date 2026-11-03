@@ -1,0 +1,21 @@
+[package]
+name = "yitool-store"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+name = "store"
+path = "src/lib.rs"
+
+[dependencies]
+domain = { package = "yitool-domain", path = "../domain" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+rusqlite.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

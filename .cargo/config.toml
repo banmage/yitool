@@ -1,0 +1,6 @@
+[build]
+# 本项目本地离线优先；不使用遥测。
+incremental = true
+
+[net]
+offline = false

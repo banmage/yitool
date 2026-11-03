@@ -1,0 +1,42 @@
+{
+  "version": "IR-COMPLIANCE-v0.1",
+  "disclaimer": "本工具仅供个人学习、文化研究与娱乐，不构成任何决策、医疗、法律或投资建议；请勿据此替代专业意见。",
+  "forbidden_phrases": [
+    {
+      "phrase": "必定",
+      "reason": "绝对断语"
+    },
+    {
+      "phrase": "一定会",
+      "reason": "绝对断语"
+    },
+    {
+      "phrase": "百分之百",
+      "reason": "绝对断语"
+    },
+    {
+      "phrase": "绝对会",
+      "reason": "绝对断语"
+    },
+    {
+      "phrase": "必然发生",
+      "reason": "绝对断语"
+    },
+    {
+      "phrase": "注定",
+      "reason": "宿命断语"
+    },
+    {
+      "phrase": "包治",
+      "reason": "医疗承诺"
+    },
+    {
+      "phrase": "稳赚",
+      "reason": "投资承诺"
+    },
+    {
+      "phrase": "改运",
+      "reason": "效果承诺"
+    }
+  ]
+}

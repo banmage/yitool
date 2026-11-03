@@ -1,0 +1,75 @@
+{
+  "version": "W-01",
+  "status": "PENDING",
+  "source": "ARS v0.2 3.7（待 CAL/ARS 校核冻结）",
+  "relation_rule": "同我旺、生我相、我生休、我克囚、克我死",
+  "branches": [
+    {
+      "branch": "子",
+      "branch_id": 0,
+      "element": "水"
+    },
+    {
+      "branch": "丑",
+      "branch_id": 1,
+      "element": "土"
+    },
+    {
+      "branch": "寅",
+      "branch_id": 2,
+      "element": "木"
+    },
+    {
+      "branch": "卯",
+      "branch_id": 3,
+      "element": "木"
+    },
+    {
+      "branch": "辰",
+      "branch_id": 4,
+      "element": "土"
+    },
+    {
+      "branch": "巳",
+      "branch_id": 5,
+      "element": "火"
+    },
+    {
+      "branch": "午",
+      "branch_id": 6,
+      "element": "火"
+    },
+    {
+      "branch": "未",
+      "branch_id": 7,
+      "element": "土"
+    },
+    {
+      "branch": "申",
+      "branch_id": 8,
+      "element": "金"
+    },
+    {
+      "branch": "酉",
+      "branch_id": 9,
+      "element": "金"
+    },
+    {
+      "branch": "戌",
+      "branch_id": 10,
+      "element": "土"
+    },
+    {
+      "branch": "亥",
+      "branch_id": 11,
+      "element": "水"
+    }
+  ],
+  "relations": [
+    "旺",
+    "相",
+    "休",
+    "囚",
+    "死"
+  ]
+}

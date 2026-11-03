@@ -1,0 +1,409 @@
+{
+  "version": "RULE-v0.2",
+  "status": "PENDING",
+  "source": "ARS v0.2 附录 C/D + SRS v0.4",
+  "rules": [
+    {
+      "rule_id": "SEED-BASE-001",
+      "engine": "SEED",
+      "category": "base",
+      "rule_level": "L2",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-SEED-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-SEED-001"
+      ]
+    },
+    {
+      "rule_id": "SEED-DRAW-001",
+      "engine": "SEED",
+      "category": "draw",
+      "rule_level": "L2",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-SEED-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-SEED-001"
+      ]
+    },
+    {
+      "rule_id": "SEED-SNAPSHOT-001",
+      "engine": "SEED",
+      "category": "snapshot",
+      "rule_level": "L2",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-SEED-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-SEED-002"
+      ]
+    },
+    {
+      "rule_id": "SEED-RUN-001",
+      "engine": "SEED",
+      "category": "run",
+      "rule_level": "L2",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-SEED-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-SEED-001"
+      ]
+    },
+    {
+      "rule_id": "RNG-UNIFORM-001",
+      "engine": "RNG",
+      "category": "uniform",
+      "rule_level": "L2",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-SEED-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-RNG-001"
+      ]
+    },
+    {
+      "rule_id": "CAL-LUNAR-001",
+      "engine": "CAL",
+      "category": "lunar",
+      "rule_level": "L1",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-CAL-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-CAL-001",
+        "TC-CAL-002"
+      ]
+    },
+    {
+      "rule_id": "CAL-JIEQI-001",
+      "engine": "CAL",
+      "category": "jieqi",
+      "rule_level": "L1",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-CAL-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-CAL-003"
+      ]
+    },
+    {
+      "rule_id": "CAL-DAYBOUND-001",
+      "engine": "CAL",
+      "category": "day_bound",
+      "rule_level": "L1",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-CAL-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-CAL-004"
+      ]
+    },
+    {
+      "rule_id": "CAL-XUN-001",
+      "engine": "CAL",
+      "category": "xun",
+      "rule_level": "L1",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-CAL-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-CAL-005"
+      ]
+    },
+    {
+      "rule_id": "MEIHUA-QIGUA-001",
+      "engine": "MEIHUA",
+      "category": "qigua",
+      "rule_level": "L3",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-MEIHUA-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-MEIHUA-001"
+      ]
+    },
+    {
+      "rule_id": "MEIHUA-QIGUA-002",
+      "engine": "MEIHUA",
+      "category": "qigua",
+      "rule_level": "L2",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-MEIHUA-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-MEIHUA-002"
+      ]
+    },
+    {
+      "rule_id": "MEIHUA-HUGUA-001",
+      "engine": "MEIHUA",
+      "category": "hugua",
+      "rule_level": "L2",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-MEIHUA-002",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-MEIHUA-001"
+      ]
+    },
+    {
+      "rule_id": "MEIHUA-BIANGUA-001",
+      "engine": "MEIHUA",
+      "category": "biangua",
+      "rule_level": "L2",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-MEIHUA-003",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-MEIHUA-001",
+        "TC-MEIHUA-002"
+      ]
+    },
+    {
+      "rule_id": "MEIHUA-TIYONG-001",
+      "engine": "MEIHUA",
+      "category": "tiyong",
+      "rule_level": "L2",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-MEIHUA-004",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-MEIHUA-001"
+      ]
+    },
+    {
+      "rule_id": "MEIHUA-WANGSHUAI-001",
+      "engine": "MEIHUA",
+      "category": "wangshuai",
+      "rule_level": "L2",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-MEIHUA-005",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-MEIHUA-003"
+      ]
+    },
+    {
+      "rule_id": "MEIHUA-JISHEN-001",
+      "engine": "MEIHUA",
+      "category": "jishen",
+      "rule_level": "PROVISIONAL",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-MEIHUA-006",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-MEIHUA-004"
+      ]
+    },
+    {
+      "rule_id": "LOG-SCHEMA-001",
+      "engine": "LOG",
+      "category": "schema",
+      "rule_level": "L1",
+      "condition": {},
+      "result_type": "INFORMATION",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-LOG-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-LOG-001"
+      ]
+    },
+    {
+      "rule_id": "IR-COMPLIANCE-001",
+      "engine": "IR",
+      "category": "compliance",
+      "rule_level": "L1",
+      "condition": {},
+      "result_type": "ABSOLUTE_FILTER",
+      "weight": null,
+      "priority": null,
+      "source_ref": "SRC-IR-001",
+      "version": "RULE-v0.2",
+      "status": "PENDING",
+      "test_refs": [
+        "TC-IR-001"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "source_ref": "SRC-MEIHUA-001",
+      "book": "梅花易数",
+      "edition": "传世本",
+      "chapter": "起卦",
+      "original_excerpt": "九色/传统数字起卦公式",
+      "modern_note": "系统按 ARS v0.2 重述",
+      "rule_level": "L2",
+      "collation_status": "PENDING",
+      "copyright_status": "公有领域"
+    },
+    {
+      "source_ref": "SRC-MEIHUA-002",
+      "book": "梅花易数",
+      "edition": "传世本",
+      "chapter": "互卦",
+      "original_excerpt": "取中间四爻",
+      "modern_note": "系统按 ARS v0.2 重述",
+      "rule_level": "L2",
+      "collation_status": "PENDING",
+      "copyright_status": "公有领域"
+    },
+    {
+      "source_ref": "SRC-MEIHUA-003",
+      "book": "梅花易数",
+      "edition": "传世本",
+      "chapter": "变卦",
+      "original_excerpt": "动爻阴阳互变",
+      "modern_note": "系统按 ARS v0.2 重述",
+      "rule_level": "L2",
+      "collation_status": "PENDING",
+      "copyright_status": "公有领域"
+    },
+    {
+      "source_ref": "SRC-MEIHUA-004",
+      "book": "梅花易数",
+      "edition": "传世本",
+      "chapter": "体用",
+      "original_excerpt": "动爻定体用",
+      "modern_note": "系统按 ARS v0.2 重述",
+      "rule_level": "L2",
+      "collation_status": "PENDING",
+      "copyright_status": "公有领域"
+    },
+    {
+      "source_ref": "SRC-MEIHUA-005",
+      "book": "梅花易数",
+      "edition": "传世本",
+      "chapter": "旺衰",
+      "original_excerpt": "月建五行生克",
+      "modern_note": "W-01 待冻结",
+      "rule_level": "L2",
+      "collation_status": "PENDING",
+      "copyright_status": "公有领域"
+    },
+    {
+      "source_ref": "SRC-MEIHUA-006",
+      "book": "本系统自定义",
+      "edition": "v0.1",
+      "chapter": "忌神",
+      "original_excerpt": "未定义算法",
+      "modern_note": "阶段 0 阻断正式结果",
+      "rule_level": "PROVISIONAL",
+      "collation_status": "PENDING",
+      "copyright_status": "系统自定义"
+    },
+    {
+      "source_ref": "SRC-CAL-001",
+      "book": "历法服务规范 CAL v0.1",
+      "edition": "v0.1",
+      "chapter": "历法",
+      "original_excerpt": "公农历/节气/四柱/日界/旬空",
+      "modern_note": "CAL 数据待权威历书校核",
+      "rule_level": "L1",
+      "collation_status": "PENDING",
+      "copyright_status": "系统文档"
+    },
+    {
+      "source_ref": "SRC-SEED-001",
+      "book": "技术设计说明书 TDS v0.1",
+      "edition": "v0.1",
+      "chapter": "种子链",
+      "original_excerpt": "SHA-256 派生与 HMAC",
+      "modern_note": "阶段 0 实现",
+      "rule_level": "L2",
+      "collation_status": "PENDING",
+      "copyright_status": "系统文档"
+    },
+    {
+      "source_ref": "SRC-IR-001",
+      "book": "推演解释规则规范 IR v0.1",
+      "edition": "v0.1",
+      "chapter": "合规",
+      "original_excerpt": "免责声明与禁用绝对断语",
+      "modern_note": "阶段 0 最小实现",
+      "rule_level": "L1",
+      "collation_status": "PENDING",
+      "copyright_status": "系统文档"
+    },
+    {
+      "source_ref": "SRC-LOG-001",
+      "book": "推演解释规则规范 IR v0.1",
+      "edition": "v0.1",
+      "chapter": "日志",
+      "original_excerpt": "步骤日志字段",
+      "modern_note": "阶段 0 最小实现",
+      "rule_level": "L1",
+      "collation_status": "PENDING",
+      "copyright_status": "系统文档"
+    }
+  ]
+}

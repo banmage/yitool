@@ -1,0 +1,55 @@
+{
+  "version": "XK-01",
+  "status": "VERIFIED",
+  "source": "ARS v0.2 / 六十甲子旬空",
+  "items": [
+    {
+      "xun_head": "甲子",
+      "cycle_start": 0,
+      "kong_branches": [
+        "戌",
+        "亥"
+      ]
+    },
+    {
+      "xun_head": "甲戌",
+      "cycle_start": 10,
+      "kong_branches": [
+        "申",
+        "酉"
+      ]
+    },
+    {
+      "xun_head": "甲申",
+      "cycle_start": 20,
+      "kong_branches": [
+        "午",
+        "未"
+      ]
+    },
+    {
+      "xun_head": "甲午",
+      "cycle_start": 30,
+      "kong_branches": [
+        "辰",
+        "巳"
+      ]
+    },
+    {
+      "xun_head": "甲辰",
+      "cycle_start": 40,
+      "kong_branches": [
+        "寅",
+        "卯"
+      ]
+    },
+    {
+      "xun_head": "甲寅",
+      "cycle_start": 50,
+      "kong_branches": [
+        "子",
+        "丑"
+      ]
+    }
+  ]
+}

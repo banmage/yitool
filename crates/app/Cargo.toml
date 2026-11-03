@@ -1,0 +1,30 @@
+[package]
+name = "yitool-app"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+name = "app"
+path = "src/lib.rs"
+
+[dependencies]
+domain = { package = "yitool-domain", path = "../domain" }
+cal = { package = "yitool-cal", path = "../cal" }
+seed = { package = "yitool-seed", path = "../seed" }
+rules = { package = "yitool-rules", path = "../rules" }
+meihua = { package = "yitool-meihua", path = "../meihua" }
+ir = { package = "yitool-ir", path = "../ir" }
+store = { package = "yitool-store", path = "../store" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+chrono-tz.workspace = true
+sha2.workspace = true
+hex.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

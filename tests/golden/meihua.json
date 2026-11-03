@@ -1,0 +1,4 @@
+{"version":"GOLDEN-MEIHUA-v0.1","cases":[
+  {"case_id":"TC-MEIHUA-001","rule_id":"MEIHUA-QIGUA-001","input":{"scheme":"NINE_COLOR","color":1,"aux":3,"q_mod":0,"b_mod":0},"month_branch":10,"expected":{"original":"天火同人","moving_line":4,"changed":"风火家人","mutual":"天风姤","ti":"离","yong":"乾"}},
+  {"case_id":"TC-MEIHUA-002","rule_id":"MEIHUA-QIGUA-002","input":{"scheme":"TRADITIONAL_NUMBER","u0":9,"d0":16,"q_mod":0,"b_mod":0},"month_branch":10,"expected":{"original":"天地否","moving_line":1,"changed":"天雷无妄","mutual":"风山渐","ti":"乾","yong":"坤"}}
+]}
