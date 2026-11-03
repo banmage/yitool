@@ -136,44 +136,33 @@ LOG_SCHEMA         = LOG-v0.1
 
 ---
 
-## 5. 资源目录映射（TDS 4.3）
+## 5. 资源目录映射（TDS 4.3，阶段 0 实际落地）
 
 ```text
 resources/
-├── rules/
-│   ├── meihua/         # MEIHUA-* 规则
-│   ├── jiaolin/        # JIAOLIN-* 规则
-│   ├── liuyao/         # LIUYAO-* 规则
-│   ├── zeji/           # ZEJI-* 规则
-│   └── cal/            # CAL-* 规则
 ├── ir/
-│   ├── rules/          # IR-* 规则
-│   ├── templates/      # TPL-* 模板
-│   └── compliance/     # 禁用词表、免责声明
+│   └── compliance/
+│       └── forbidden_phrases.json   # IR-COMPLIANCE-01
 ├── data/
 │   ├── hex64.json              # HEX-01
-│   ├── najia.json              # NJ-01
-│   ├── jiaolin_4096.json       # JL-01
-│   ├── zeji_events.json        # ZEJI-EVENT-01
-│   ├── zeji_rules.json         # ZEJI-RULE-01 / W-02
-│   ├── huangli.json            # HL-01
-│   ├── color_num.json          # COLOR-NUM-01/02
+│   ├── najia.json              # NJ-01（阶段 0 仅占位，未用于装卦）
+│   ├── color_num.json          # COLOR-NUM-01/02（七色只读 + 九色）
 │   ├── zodiac.json             # Z-01
+│   ├── bagua.json              # G-01
+│   ├── xun.json                # XK-01
 │   ├── wuxing_wangshuai.json   # W-01
-│   └── luoshu.json             # L-01
+│   └── rules.json              # RULE-SET-01（规则 + 出处注册表）
 ├── cal/
-│   ├── lunar_table.json        # CAL-LUNAR-TABLE
-│   ├── jieqi_table.json        # CAL-JIEQI-TABLE
-│   └── baseline/               # CAL-BASE-*
-├── texts/
-│   ├── zhouyi/
-│   ├── jiaolin/
-│   └── tuibeitu/               # 注意：不要用带空格目录名（A-21）
+│   ├── lunar_months.json       # CAL-LUNAR-DATA
+│   ├── jieqi.json              # CAL-JIEQI-DATA
+│   └── baseline/
+│       ├── 2025.json           # CAL-BASELINE-2025
+│       └── 2026.json           # CAL-BASELINE-2026
 └── manifests/
-    ├── rules.manifest.json
-    ├── data.manifest.json
-    └── texts.manifest.json
+    └── data.manifest.json      # MANIFEST-data
 ```
+
+阶段 1–5 再补充 `rules/`、`texts/`、`jiaolin_4096.json`、`zeji_*`、`huangli.json` 等；未实现目录不得提前声明为已冻结。
 
 每个资源文件必须带：
 

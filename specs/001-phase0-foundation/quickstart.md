@@ -1,0 +1,188 @@
+# Quickstart: 阶段 0 验收指南
+
+**Date**: 2026-11-03
+**Purpose**: 用最小命令验证阶段 0 的核心能力；本文件不包含实现代码。
+
+---
+
+## 1. 前置条件
+
+```bash
+# Rust stable（本机已安装 1.99.1）
+rustc --version
+cargo --version
+
+# 项目依赖（由 Cargo 自动拉取）
+# 阶段 0 不需要 WebKitGTK / Node（GUI 属阶段 1）
+```
+
+## 2. 一键测试
+
+```bash
+cargo test --workspace
+```
+
+预期：
+
+- 全部单元测试、金标准测试、资源校验、隐私扫描通过。
+- 任一失败输出 `rule_id`、输入、期望值、实际值。
+- 测试运行时间 < 2 分钟（不含首次编译）。
+
+## 3. 历法验证
+
+```bash
+cargo run -p yitool-cli -- cal \
+  --datetime "2026-11-03T12:00:00+08:00" \
+  --timezone "Asia/Shanghai" \
+  --day-bound ZICHU
+```
+
+预期关键字段：
+
+```json
+{
+  "lunar": {"year": 2026, "month": 9, "day": 25, "leap": false},
+  "ganzhi": {"year": "丙午", "month": "戊戌", "day": "辛巳", "hour": "甲午"},
+  "xun": {"xun_head": "甲戌", "kong_branches": ["申", "酉"]},
+  "jieqi_month_branch": {"branch": "戌", "element": "土", "jieqi": "寒露"},
+  "status": "PENDING"
+}
+```
+
+立春边界：
+
+```bash
+cargo run -p yitool-cli -- cal \
+  --datetime "2026-02-04T10:00:00+08:00" \
+  --timezone "Asia/Shanghai" --day-bound ZICHU
+```
+
+预期：农历 2025-12-17；年柱 丙午（立春后）；月柱 庚寅；日柱 己酉。
+
+闰月：
+
+```bash
+cargo run -p yitool-cli -- cal \
+  --datetime "2025-08-15T12:00:00+08:00" \
+  --timezone "Asia/Shanghai" --day-bound ZICHU
+```
+
+预期：农历 2025 闰六月（`leap=true`），`lunar_index=6`；节气月建仍按节气输出。
+
+## 4. 梅花金标准
+
+九色（TC-MEIHUA-001）：
+
+```bash
+cargo run -p yitool-cli -- meihua \
+  --color 1 --aux 3 \
+  --datetime "2026-11-03T12:00:00+08:00" \
+  --timezone "Asia/Shanghai" --day-bound ZICHU
+```
+
+预期：
+
+- 本卦：上乾下离 = 天火同人
+- 动爻：4
+- 变卦：上巽下离 = 风火家人
+- 互卦：上乾下巽 = 天风姤
+
+传统数字（TC-MEIHUA-002）：
+
+```bash
+cargo run -p yitool-cli -- meihua --traditional 9 16 \
+  --datetime "2026-11-03T12:00:00+08:00" \
+  --timezone "Asia/Shanghai" --day-bound ZICHU
+```
+
+预期：
+
+- 本卦：上乾下坤 = 天地否
+- 动爻：初爻（1）
+- 变卦：天雷无妄
+
+## 5. 种子链
+
+```bash
+cargo run -p yitool-cli -- seed \
+  --profile family-a \
+  --run-time "2026-11-03T12:00:00+08:00" \
+  --timezone "Asia/Shanghai" --day-bound ZICHU \
+  --mode FIXED --color 1 --aux 3
+```
+
+验证：
+
+- 同参数运行两次，`base_seed/draw_seed/run_seed` 完全一致。
+- 修改 `--color`，`base_seed/draw_seed` 不变，输入快照与 `run_seed` 变化。
+- 输出不含生辰与问事原文。
+
+## 6. 资源校验
+
+```bash
+cargo run -p yitool-cli -- verify --resources resources
+```
+
+预期：所有资源 `checksum_ok=true`；`PENDING` 资源显示状态但不阻断。
+
+故意修改一个资源文件后再运行，预期退出码 3，`all_ok=false` 且对应条目 `checksum_ok=false`。
+
+## 7. 隐私扫描
+
+```bash
+cargo run -p yitool-cli -- privacy-scan \
+  --db /tmp/yitool-test.db \
+  --logs /tmp/yitool-logs \
+  --exports /tmp/yitool-exports \
+  --needle "1990-01-01T12:00:00+08:00"
+```
+
+预期：`hits=[]`；命中退出码 4。
+
+## 8. 数据库
+
+```bash
+cargo run -p yitool-cli -- db init --path /tmp/yitool-test.db
+cargo run -p yitool-cli -- db check --path /tmp/yitool-test.db
+```
+
+预期：创建 `profiles/settings/runs/run_steps/random_snapshots/notes/meta`；`runs.hmac_key_id` 存在；WAL 与外键开启。
+
+## 9. 性能冒烟
+
+```bash
+cargo test -p yitool-app --test perf -- --nocapture
+```
+
+预期：种子 P95 < 50ms、单引擎 P95 < 200ms、一年逐日遍历 P95 < 500ms（本机基线；输出含 OS/架构）。
+
+## 10. 阶段 0 验收清单
+
+- [x] `cargo test --workspace` 全绿
+- [x] 九色与传统数字金标准通过
+- [x] 2026-11-03 / 2026-02-04 / 2025 闰月样例通过
+- [x] 种子链两次运行一致；问事 HMAC 不改变共同随机条件
+- [x] 资源 checksum 校验通过
+- [x] 隐私扫描 0 命中；SQLite 明文可被扫描命中
+- [x] DB schema 含 `hmac_key_id`；备份/恢复与档案隔离通过
+- [x] 2025/2026 逐日基准对照通过（730 天）
+- [x] 文档版本/数据字典/决策登记同步
+
+## 11. 验收记录
+
+**执行日期**：2026-11-03
+**环境**：Linux x86_64；Rust 1.99.1；SQLite bundled；`chrono-tz` tzdata 2025b。
+**命令**：`./scripts/check.sh`
+
+| 项目 | 结果 |
+|---|---|
+| `cargo fmt --check` | 通过 |
+| `cargo clippy -D warnings` | 通过 |
+| `cargo test --workspace` | 全部通过（含 730 天基准、金标准、隐私、分布、性能） |
+| `yitool verify` | 13 个资源 checksum 全部通过 |
+| `yitool db init` | schema `DB-v0.1`，WAL，外键开启 |
+| `yitool privacy-scan` | 0 命中 |
+| CAL 锚点 | 2026-11-03 → 农历 09-25 / 丙午 戊戌 辛巳 甲午 / 甲戌旬空申酉 |
+| 梅花金标准 | TC-MEIHUA-001、TC-MEIHUA-002 通过 |
+
+**遗留**：CAL/HEX/NJ/W 资源仍为 `PENDING`，需权威历书与易学评审交叉校核；旧七色只读 UI 延期阶段 1；Q/B 材料定义与 HMAC Keychain 实现延期。

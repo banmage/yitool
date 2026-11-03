@@ -59,43 +59,69 @@
 ## 5. 目录约定
 
 ```text
-docs/                 五份规范 + 项目管理文档
+docs/                 五份规范 + 项目管理文档 + ADR
 specs/                Spec Kit 特性规格
 .specify/             章程、模板、脚本
 .dsh/skills/          Spec Kit 技能（本地生成，不入库）
-src/                  未来代码（TDS 附录 A）
-  app/                应用服务编排
-  engines/            cal/meihua/jiaolin/liuyao/zeji/ir
-  domain/             hexagram/ganzhi/wuxing/rules/versions
-  infra/              seed/rng/crypto/store/logging/resources
-  ui/                 pages/components/animations/accessibility
-resources/            只读规则/数据/模板/古籍（带 manifest/checksum）
-tests/                单元、金标准、集成、隐私、性能
+Cargo.toml            Rust workspace
+rust-toolchain.toml   stable
+crates/
+  domain/             ID、版本、干支、五行、卦象、步骤日志、生辰内存对象
+  cal/                公农历、节气、四柱、日界、时区、旬空
+  seed/               种子链、HMAC、无偏随机
+  rules/              manifest、checksum、规则/出处注册表
+  meihua/             九色/传统数字、互卦、变卦、体用、旺衰
+  ir/                 免责声明与禁用词扫描
+  store/              SQLite schema、档案/推演/步骤/快照
+  app/                编排、隐私扫描、快照导出、日志白名单
+  cli/                `yitool` 验收入口
+tools/gen-cal/        历法预计算表与基准生成器（mingli-astro）
+resources/            只读规则/数据/历法/合规词表（带 manifest/checksum）
+scripts/              资源生成、manifest、质量门
+tests/golden/         跨 crate 金标准 JSON
 ```
 
 ## 6. 当前状态与下一步
 
-- 五份规范：草案已齐，均未冻结。
-- 代码：无。
-- 当前阶段：**阶段 0（未开始）**。
-- 阻塞点：决策登记册 D-01～D-20，尤其是九色映射、技术栈、日界、日柱基准、版本号、A/B 种子、Q/B 材料、数据字典、忌神算法。
-- 下一步：关闭 D-01～D-11 → 建立统一数据字典 → 阶段 0 plan/tasks → CAL 内核 + 种子链 + 隐私扫描 + 金标准框架。
+- 五份规范：草案已齐，均未冻结；所有未校核资源显式标 `PENDING`。
+- 代码：Rust workspace + `yitool` CLI 已落地；阶段 0 P1 内核（CAL/种子/溯源/隐私/梅花金标准）已通过测试。
+- 当前阶段：**阶段 0（进行中）**。
+- 已批准：D-01 九色、D-02 技术栈；D-03/D-04/D-12/D-13/D-20 已按建议值实现，待正式写入 ADR。
+- 阻塞点：CAL 权威历书交叉校核、HEX-01/NJ-01/W-01 校勘、Q/B 材料定义、忌神算法、旧七色只读 UI（阶段 1）。
+- 下一步：交叉校核 CAL 数据 → 关闭剩余决策 → 阶段 1 Tauri/React 接入。
 
-## 7. 代码与提交约定（待代码落地后生效）
+## 7. 代码与提交约定
 
 - 提交前缀：`docs:`、`spec:`、`feat:`、`fix:`、`test:`、`chore:`。
 - 一个提交只做一件事；规则/数据变更必须同步版本与测试。
-- 禁止硬编码规则表、权重表、解释模板；从 `resources/` 加载并校验 checksum。
+- 禁止硬编码规则表、权重表、解释模板；从 `resources/` 加载并校验 checksum（`hex64` 名称表在 `domain` 中保留镜像，并由资源测试交叉校验）。
 - 禁止在日志/错误信息/调试输出中打印生辰、问事原文、HMAC 密钥。
 - 新增规则必须补 `rule_id`、层级、来源、版本、测试样例。
+- 未冻结规则输出必须带 `PENDING`/“待校核”，不得作为正式结论。
 
 ## 8. 常用命令
 
 ```bash
+source ~/.cargo/env                # 本机 Rust 安装路径
+cargo build --workspace            # 构建
+cargo test --workspace             # 单元 + 金标准 + 基准 + 隐私 + 分布 + 性能
+cargo clippy --workspace --all-targets -- -D warnings
+cargo fmt --all -- --check
+./scripts/check.sh                 # 全量质量门
+
+cargo run -p yitool-cli -- cal --datetime "2026-11-03T12:00:00+08:00"
+cargo run -p yitool-cli -- meihua --color 1 --aux 3 --datetime "2026-11-03T12:00:00+08:00"
+cargo run -p yitool-cli -- meihua --traditional 9 16 --datetime "2026-11-03T12:00:00+08:00"
+cargo run -p yitool-cli -- seed --profile family-a --run-time "2026-11-03T12:00:00+08:00" --color 1 --aux 3
+cargo run -p yitool-cli -- verify --resources resources
+cargo run -p yitool-cli -- db init --path /tmp/yitool.db
+
+python3 scripts/gen_resources.py   # 从 ARS 生成 JSON 资源
+python3 scripts/gen_cal_data.py all # 生成 CAL 表与逐日基准
+python3 scripts/gen_manifest.py    # 重算 checksum
+
 specify check                      # 检查工具与集成
 specify version                    # 版本信息
 specify integration list           # 已装集成
 cat .specify/feature.json          # 当前特性目录
 ```
-
-测试与构建命令待阶段 0 工程骨架建立后补充到 `README.md` 与本文件。

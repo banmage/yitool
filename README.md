@@ -12,9 +12,10 @@
 |---|---|
 | Spec Kit | ✅ 已初始化（`specify-cli 1.2.5`，DSH 集成） |
 | 规范文档 | ✅ SRS v0.4、ARS v0.2、IR v0.1、CAL v0.1、TDS v0.1 草案已齐 |
-| 规范冻结 | ⏳ 未冻结，62 项待冻结/待校核 |
-| 代码 | ⏳ 未开始 |
-| 当前阶段 | **阶段 0 — 可信基础与可复现内核（未开始）** |
+| 规范冻结 | ⏳ 未冻结；CAL/规则/数据均以 `PENDING` 显式标注 |
+| 代码 | ✅ Rust workspace + `yitool` CLI（9 个 crate，阶段 0 内核） |
+| 自动测试 | ✅ 单元/金标准/CAL 逐日基准/隐私扫描/分布/性能（`cargo test --workspace`） |
+| 当前阶段 | **阶段 0 — 可信基础与可复现内核（进行中，P1 内核已验收）** |
 | 当前规格 | [`specs/001-phase0-foundation/spec.md`](specs/001-phase0-foundation/spec.md) |
 
 ---
@@ -25,13 +26,24 @@
 # 1. 检查 Spec Kit 环境
 specify check
 
-# 2. 查看当前特性
-cat .specify/feature.json
+# 2. 构建并运行阶段 0 验收入口
+source ~/.cargo/env
+cargo build --workspace
+cargo run -p yitool-cli -- cal --datetime "2026-11-03T12:00:00+08:00"
+cargo run -p yitool-cli -- meihua --color 1 --aux 3 --datetime "2026-11-03T12:00:00+08:00"
+cargo run -p yitool-cli -- verify --resources resources
 
-# 3. 在 DSH 中使用技能（在项目目录启动 dsh web）
-#    /speckit-constitution  /speckit-specify  /speckit-plan
-#    /speckit-tasks  /speckit-implement  /speckit-analyze
+# 3. 全量质量门（fmt + clippy + test + verify + privacy-scan）
+./scripts/check.sh
+
+# 4. 重新生成资源（可选）
+python3 scripts/gen_resources.py
+python3 scripts/gen_cal_data.py all
+python3 scripts/gen_manifest.py
 ```
+
+阶段 0 CLI 命令：`cal`、`seed`、`meihua`、`verify`、`privacy-scan`、`db init|check`。
+详细验收见 [`specs/001-phase0-foundation/quickstart.md`](specs/001-phase0-foundation/quickstart.md)。
 
 若在其他机器克隆后没有 `.dsh/skills/`，执行：
 
@@ -88,10 +100,11 @@ SRS ── ARS ── 易学计算结果
 
 ## 下一步
 
-1. 关闭阶段 0 关键决策 D-01～D-11（见 [决策登记册](docs/02-DECISION-REGISTER.md)）。
-2. 修正文档 P0 冲突 A-01～A-06、A-15，升级 SRS v0.5。
-3. 建立统一数据字典 `docs/04-DATA-DICTIONARY.md`。
-4. 生成阶段 0 的 `plan.md` 与 `tasks.md`，开始工程骨架、CAL 内核、种子链与金标准框架。
+1. 关闭阶段 0 剩余决策 D-03～D-20（实现已按建议值落地，待正式批准并写入 ADR）。
+2. 用权威历书/专业软件交叉校核 `CAL-DATA-v0.1`，通过后把 CAL 相关资源从 `PENDING` 升为 `VERIFIED/FROZEN`。
+3. 校准 `HEX-01`、`NJ-01`、`W-01` 与九色象意文案；未冻结前保持 `PENDING`。
+4. 阶段 1：接入 Tauri 2 + React UI，复用现有 `app` 服务层；实现旧七色只读渲染与选择器隔离（T075）。
+5. 补充 Q/B 扰动材料定义、HMAC OS Keychain 真实实现与密钥轮换流程。
 
 ---
 
