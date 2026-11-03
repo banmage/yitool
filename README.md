@@ -49,6 +49,7 @@ specify init . --here --force --non-interactive --integration dsh
 | [项目路线图](docs/00-PROJECT-ROADMAP.md) | 现状、阶段 0–5、里程碑、关键路径、风险、下一步 |
 | [文档分析](docs/01-DOC-ANALYSIS.md) | 五文档逐项分析、22 项一致性问题（A-01～A-22）、覆盖矩阵 |
 | [决策登记册](docs/02-DECISION-REGISTER.md) | D-01～D-40 决策、建议、截止阶段 |
+| [统一数据字典](docs/04-DATA-DICTIONARY.md) | 合并五文档表清单、版本基线、资源目录映射 |
 | [阶段 0 规格](specs/001-phase0-foundation/spec.md) | 6 个用户故事、23 条功能需求、10 条成功标准 |
 | [开发指引](AGENTS.md) | 代理/开发者运行时约定、目录、流程 |
 

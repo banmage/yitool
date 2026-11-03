@@ -19,7 +19,8 @@
 7. `docs/00-PROJECT-ROADMAP.md` — 阶段、里程碑、风险
 8. `docs/01-DOC-ANALYSIS.md` — 文档冲突与缺口（A-01～A-22）
 9. `docs/02-DECISION-REGISTER.md` — 决策登记（D-01～D-40）
-10. `specs/001-phase0-foundation/spec.md` — 当前特性规格
+10. `docs/04-DATA-DICTIONARY.md` — 统一数据字典与版本基线
+11. `specs/001-phase0-foundation/spec.md` — 当前特性规格
 
 遇到规则/算法争议，以 ARS/IR/CAL 为准；遇到行为/验收争议，以 SRS 为准；任何实现与它们冲突时，回退修订实现，不得反向改规范。
 
