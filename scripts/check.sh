@@ -10,6 +10,7 @@ cargo fmt --all -- --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 cargo run --quiet -p yitool-cli -- verify --resources resources
+rm -f /tmp/yitool-check.db /tmp/yitool-check.db-wal /tmp/yitool-check.db-shm
 cargo run --quiet -p yitool-cli -- db init --path /tmp/yitool-check.db
 cargo run --quiet -p yitool-cli -- privacy-scan --needle "1966-06-06 06:06" --needle "测试问事原文" || true
 

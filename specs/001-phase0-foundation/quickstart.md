@@ -146,7 +146,7 @@ cargo run -p yitool-cli -- db init --path /tmp/yitool-test.db
 cargo run -p yitool-cli -- db check --path /tmp/yitool-test.db
 ```
 
-预期：创建 `profiles/settings/runs/run_steps/random_snapshots/notes/meta`；`runs.hmac_key_id` 存在；WAL 与外键开启。
+预期：创建 `profiles/settings/runs/run_steps/random_snapshots/notes/meta`；`runs.hmac_key_id` 存在；WAL 与外键开启；`schema_version=DB-v0.2`，首次建库 `migration.applied=[DB-v0.1, DB-v0.2]`。对旧库升级时输出 `migration.backup` 备份路径。
 
 ## 9. 性能冒烟
 

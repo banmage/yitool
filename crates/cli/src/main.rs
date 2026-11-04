@@ -353,12 +353,12 @@ fn run(cli: &Cli, resources: &PathBuf) -> Result<(serde_json::Value, String), (S
         }
         Command::Db { action } => match action {
             DbAction::Init { path } => {
-                let store = store::Store::init(path).map_err(|e| ("DATA".into(), e.to_string()))?;
+                let (store, migration) = store::Store::init_with_report(path)
+                    .map_err(|e| ("DATA".into(), e.to_string()))?;
                 let check = store.check().map_err(|e| ("DATA".into(), e.to_string()))?;
-                Ok((
-                    serde_json::to_value(check).unwrap(),
-                    "database initialized".into(),
-                ))
+                let mut value = serde_json::to_value(check).unwrap();
+                value["migration"] = serde_json::to_value(migration).unwrap();
+                Ok((value, "database initialized".into()))
             }
             DbAction::Check { path } => {
                 let store = store::Store::open(path).map_err(|e| ("DATA".into(), e.to_string()))?;

@@ -2,7 +2,8 @@
 //!
 //! 生辰与问事原文不进入任何字段；`runs` 仅保留 `bazi_present` 布尔与 `question_hmac`。
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use domain::{StepLog, VersionSet};
 use rusqlite::{params, Connection, OptionalExtension};
@@ -21,6 +22,25 @@ pub enum StoreError {
     Conflict(String),
     #[error("数据格式错误: {0}")]
     Invalid(String),
+    #[error("未知的 schema 版本: {0}")]
+    UnknownSchemaVersion(String),
+    #[error("迁移失败: {0}")]
+    Migration(String),
+}
+
+/// 一次 `migrate` 的结果；用于 CLI 输出与测试。
+#[derive(Debug, Clone, Serialize)]
+pub struct MigrationReport {
+    pub from: String,
+    pub to: String,
+    pub applied: Vec<String>,
+    pub backup: Option<PathBuf>,
+}
+
+impl MigrationReport {
+    pub fn changed(&self) -> bool {
+        !self.applied.is_empty()
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -87,30 +107,173 @@ pub struct StoreCheck {
 
 pub struct Store {
     conn: Connection,
+    path: PathBuf,
 }
 
 impl Store {
     pub fn open(path: impl AsRef<Path>) -> Result<Self, StoreError> {
-        let conn = Connection::open(path)?;
+        let path = path.as_ref().to_path_buf();
+        let conn = Connection::open(&path)?;
         conn.pragma_update(None, "foreign_keys", "ON")?;
-        Ok(Self { conn })
+        Ok(Self { conn, path })
     }
 
     pub fn init(path: impl AsRef<Path>) -> Result<Self, StoreError> {
-        let store = Self::open(path)?;
-        store.migrate()?;
+        let (store, _) = Self::init_with_report(path)?;
         Ok(store)
     }
 
-    pub fn migrate(&self) -> Result<(), StoreError> {
+    /// 同 [`Store::init`]，并返回本次迁移报告（是否升级、备份路径）。
+    pub fn init_with_report(path: impl AsRef<Path>) -> Result<(Self, MigrationReport), StoreError> {
+        let store = Self::open(path)?;
+        let report = store.migrate()?;
+        Ok((store, report))
+    }
+
+    /// 按版本顺序执行迁移；升级前自动备份，失败回滚。
+    ///
+    /// 新库从 `DB-v0.1` 基线开始，再逐版本升级到 [`SCHEMA_VERSION`]。
+    pub fn migrate(&self) -> Result<MigrationReport, StoreError> {
         self.conn.pragma_update(None, "journal_mode", "WAL")?;
-        self.conn.execute_batch(SCHEMA_SQL)?;
-        self.conn.execute(
-            "INSERT INTO meta(key, value) VALUES('schema_version', ?1)
-             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-            params![SCHEMA_VERSION],
+
+        let existing: Vec<String> = self.table_names()?;
+        let had_meta = existing.iter().any(|t| t == "meta");
+        if !had_meta {
+            if !existing.is_empty() {
+                return Err(StoreError::UnknownSchemaVersion(
+                    "MISSING（存在表但无 meta）".into(),
+                ));
+            }
+            self.ensure_meta()?;
+        }
+
+        let current = if had_meta {
+            self.read_schema_version()?
+                .ok_or_else(|| StoreError::UnknownSchemaVersion("MISSING".into()))?
+        } else {
+            String::new()
+        };
+
+        let start = if current.is_empty() {
+            0
+        } else {
+            MIGRATIONS
+                .iter()
+                .position(|m| m.version == current)
+                .map(|i| i + 1)
+                .ok_or_else(|| StoreError::UnknownSchemaVersion(current.clone()))?
+        };
+
+        let pending = &MIGRATIONS[start..];
+        if pending.is_empty() {
+            return Ok(MigrationReport {
+                from: if current.is_empty() {
+                    "NONE".into()
+                } else {
+                    current
+                },
+                to: SCHEMA_VERSION.into(),
+                applied: Vec::new(),
+                backup: None,
+            });
+        }
+
+        let backup = if current.is_empty() {
+            None
+        } else {
+            Some(self.backup_before_migration(&current)?)
+        };
+
+        let mut applied = Vec::new();
+        self.conn.pragma_update(None, "foreign_keys", "OFF")?;
+        let result = (|| -> Result<(), StoreError> {
+            let tx = self.conn.unchecked_transaction()?;
+            for migration in pending {
+                tx.execute_batch(migration.sql)?;
+                applied.push(migration.version.to_string());
+            }
+            tx.execute(
+                "INSERT INTO meta(key, value) VALUES('schema_version', ?1)
+                 ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                params![SCHEMA_VERSION],
+            )?;
+            let violations: i64 =
+                tx.query_row("SELECT count(*) FROM pragma_foreign_key_check", [], |row| {
+                    row.get(0)
+                })?;
+            if violations > 0 {
+                return Err(StoreError::Migration(format!(
+                    "迁移后外键校验失败：{violations} 条"
+                )));
+            }
+            tx.commit()?;
+            Ok(())
+        })();
+        self.conn.pragma_update(None, "foreign_keys", "ON")?;
+        result?;
+
+        Ok(MigrationReport {
+            from: if current.is_empty() {
+                "NONE".into()
+            } else {
+                current
+            },
+            to: SCHEMA_VERSION.into(),
+            applied,
+            backup,
+        })
+    }
+
+    fn table_names(&self) -> Result<Vec<String>, StoreError> {
+        let mut stmt = self.conn.prepare(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
+        )?;
+        let rows = stmt
+            .query_map([], |row| row.get::<_, String>(0))?
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(rows)
+    }
+
+    fn ensure_meta(&self) -> Result<(), StoreError> {
+        self.conn.execute_batch(
+            "CREATE TABLE IF NOT EXISTS meta (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            );",
         )?;
         Ok(())
+    }
+
+    fn read_schema_version(&self) -> Result<Option<String>, StoreError> {
+        Ok(self
+            .conn
+            .query_row(
+                "SELECT value FROM meta WHERE key='schema_version'",
+                [],
+                |row| row.get(0),
+            )
+            .optional()?)
+    }
+
+    /// 迁移前备份。文件名包含旧版本与时间戳，避免覆盖既有备份。
+    fn backup_before_migration(&self, current: &str) -> Result<PathBuf, StoreError> {
+        if self.path.as_os_str() == ":memory:" {
+            return Err(StoreError::Migration("内存数据库无法在迁移前备份".into()));
+        }
+        let file = self
+            .path
+            .file_name()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_else(|| "yitool.db".into());
+        let stamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        let backup = self
+            .path
+            .with_file_name(format!("{file}.bak-{current}-{stamp}"));
+        self.backup_to(&backup)?;
+        Ok(backup)
     }
 
     pub fn check(&self) -> Result<StoreCheck, StoreError> {
@@ -359,9 +522,7 @@ impl Store {
     }
 }
 
-const SCHEMA_SQL: &str = r#"
-PRAGMA foreign_keys = ON;
-
+const MIGRATION_V1_SQL: &str = r#"
 CREATE TABLE IF NOT EXISTS meta (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -410,8 +571,7 @@ CREATE TABLE IF NOT EXISTS runs (
     rng_version TEXT NOT NULL,
     disclaimer_present INTEGER NOT NULL DEFAULT 1 CHECK(disclaimer_present IN (0,1)),
     CHECK(mode <> 'CAST' OR random_snapshot_digest IS NOT NULL),
-    CHECK(question_hmac IS NULL OR hmac_key_id IS NOT NULL),
-    CHECK(question_saved = 0 OR question_hmac IS NOT NULL)
+    CHECK(question_saved = 0 OR (question_hmac IS NOT NULL AND hmac_key_id IS NOT NULL))
 );
 CREATE INDEX IF NOT EXISTS runs_by_profile_time ON runs(profile_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS runs_by_mode_time ON runs(mode, created_at);
@@ -445,6 +605,69 @@ CREATE TABLE IF NOT EXISTS notes (
     created_at TEXT NOT NULL
 );
 "#;
+
+/// DB-v0.2：任何已保存的 `question_hmac` 都必须带 `hmac_key_id`。
+///
+/// SQLite 不能直接修改 CHECK 约束，因此重建 `runs` 并迁移数据。
+const MIGRATION_V2_SQL: &str = r#"
+CREATE TABLE runs_v2 (
+    run_id TEXT PRIMARY KEY,
+    profile_id TEXT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL,
+    mode TEXT NOT NULL CHECK(mode IN ('FIXED','CAST')),
+    engine_scope TEXT NOT NULL CHECK(engine_scope IN ('MEIHUA','MEIHUA+JIAOLIN','ALL')),
+    question_hmac TEXT,
+    question_saved INTEGER NOT NULL DEFAULT 0 CHECK(question_saved IN (0,1)),
+    bazi_present INTEGER NOT NULL DEFAULT 0 CHECK(bazi_present IN (0,1)),
+    hmac_key_id TEXT,
+    random_snapshot_digest TEXT,
+    srs_version TEXT NOT NULL,
+    ars_version TEXT NOT NULL,
+    ir_version TEXT NOT NULL,
+    cal_version TEXT NOT NULL,
+    rule_set TEXT NOT NULL,
+    data_version TEXT NOT NULL,
+    tzdata_version TEXT,
+    seed_algo TEXT NOT NULL,
+    rng_version TEXT NOT NULL,
+    disclaimer_present INTEGER NOT NULL DEFAULT 1 CHECK(disclaimer_present IN (0,1)),
+    CHECK(mode <> 'CAST' OR random_snapshot_digest IS NOT NULL),
+    CHECK(question_hmac IS NULL OR hmac_key_id IS NOT NULL),
+    CHECK(question_saved = 0 OR question_hmac IS NOT NULL)
+);
+INSERT INTO runs_v2 (
+    run_id, profile_id, created_at, mode, engine_scope, question_hmac,
+    question_saved, bazi_present, hmac_key_id, random_snapshot_digest,
+    srs_version, ars_version, ir_version, cal_version, rule_set, data_version,
+    tzdata_version, seed_algo, rng_version, disclaimer_present
+)
+SELECT
+    run_id, profile_id, created_at, mode, engine_scope, question_hmac,
+    question_saved, bazi_present, hmac_key_id, random_snapshot_digest,
+    srs_version, ars_version, ir_version, cal_version, rule_set, data_version,
+    tzdata_version, seed_algo, rng_version, disclaimer_present
+FROM runs;
+DROP TABLE runs;
+ALTER TABLE runs_v2 RENAME TO runs;
+CREATE INDEX runs_by_profile_time ON runs(profile_id, created_at DESC);
+CREATE INDEX runs_by_mode_time ON runs(mode, created_at);
+"#;
+
+struct Migration {
+    version: &'static str,
+    sql: &'static str,
+}
+
+const MIGRATIONS: &[Migration] = &[
+    Migration {
+        version: "DB-v0.1",
+        sql: MIGRATION_V1_SQL,
+    },
+    Migration {
+        version: "DB-v0.2",
+        sql: MIGRATION_V2_SQL,
+    },
+];
 
 #[cfg(test)]
 mod tests {
@@ -535,5 +758,124 @@ mod tests {
         let check = restored.check().unwrap();
         assert_eq!(check.schema_version, SCHEMA_VERSION);
         assert!(restored.run_visible("a", "r1").unwrap());
+    }
+
+    fn legacy_v1_db(path: &Path) {
+        let conn = Connection::open(path).unwrap();
+        conn.execute_batch(MIGRATION_V1_SQL).unwrap();
+        conn.execute(
+            "INSERT INTO meta(key, value) VALUES('schema_version', 'DB-v0.1')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO profiles(profile_id, display_name, created_at, is_default)
+             VALUES('a', 'a', '2026-11-04T12:00:00+08:00', 1)",
+            [],
+        )
+        .unwrap();
+    }
+
+    fn insert_legacy_run(
+        conn: &Connection,
+        run_id: &str,
+        hmac: Option<&str>,
+        key_id: Option<&str>,
+    ) {
+        conn.execute(
+            "INSERT INTO runs(run_id, profile_id, created_at, mode, engine_scope,
+                 question_hmac, question_saved, bazi_present, hmac_key_id,
+                 random_snapshot_digest, srs_version, ars_version, ir_version,
+                 cal_version, rule_set, data_version, tzdata_version, seed_algo,
+                 rng_version, disclaimer_present)
+             VALUES(?1, 'a', '2026-11-04T12:00:00+08:00', 'FIXED', 'MEIHUA',
+                 ?2, 0, 0, ?3, NULL, 'SRS-v0.4', 'ARS-v0.2', 'IR-v0.1',
+                 'CAL-v0.1', 'RULE-v0.2', 'DATA-v0.2', '2025b', 'SEED-v2',
+                 'RNG-v1', 1)",
+            params![run_id, hmac, key_id],
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn fresh_db_runs_all_migrations_without_backup() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(dir.path().join("app.db")).unwrap();
+        let report = store.migrate().unwrap();
+        assert_eq!(report.from, "NONE");
+        assert_eq!(report.to, SCHEMA_VERSION);
+        assert_eq!(
+            report.applied,
+            vec!["DB-v0.1".to_string(), "DB-v0.2".to_string()]
+        );
+        assert!(report.backup.is_none());
+        assert_eq!(store.check().unwrap().schema_version, SCHEMA_VERSION);
+    }
+
+    #[test]
+    fn migrate_is_idempotent() {
+        let (_dir, store) = open_temp();
+        let report = store.migrate().unwrap();
+        assert!(!report.changed());
+        assert!(report.backup.is_none());
+    }
+
+    #[test]
+    fn v1_db_is_backed_up_and_upgraded() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("app.db");
+        legacy_v1_db(&path);
+        {
+            let conn = Connection::open(&path).unwrap();
+            insert_legacy_run(&conn, "r1", None, None);
+        }
+
+        let store = Store::open(&path).unwrap();
+        assert_eq!(store.check().unwrap().schema_version, "DB-v0.1");
+        let report = store.migrate().unwrap();
+        assert_eq!(report.from, "DB-v0.1");
+        assert_eq!(report.applied, vec!["DB-v0.2".to_string()]);
+        let backup = report.backup.expect("升级前必须备份");
+        assert!(backup.exists());
+        assert!(store.run_visible("a", "r1").unwrap());
+        assert_eq!(store.check().unwrap().schema_version, SCHEMA_VERSION);
+    }
+
+    #[test]
+    fn failed_migration_rolls_back() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("app.db");
+        legacy_v1_db(&path);
+        {
+            let conn = Connection::open(&path).unwrap();
+            // v0.1 允许“仅关联”的 HMAC 不带 key_id；v0.2 不允许。
+            insert_legacy_run(&conn, "bad", Some(&"aa".repeat(32)), None);
+        }
+
+        let store = Store::open(&path).unwrap();
+        let err = store.migrate().unwrap_err();
+        assert!(matches!(err, StoreError::Sqlite(_)));
+        assert_eq!(store.check().unwrap().schema_version, "DB-v0.1");
+        assert!(store.run_visible("a", "bad").unwrap());
+    }
+
+    #[test]
+    fn unknown_schema_version_is_rejected() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("app.db");
+        {
+            let conn = Connection::open(&path).unwrap();
+            conn.execute_batch(MIGRATION_V1_SQL).unwrap();
+            conn.execute(
+                "INSERT INTO meta(key, value) VALUES('schema_version', 'DB-v9.9')",
+                [],
+            )
+            .unwrap();
+        }
+        let store = Store::open(&path).unwrap();
+        assert!(matches!(
+            store.migrate(),
+            Err(StoreError::UnknownSchemaVersion(_))
+        ));
     }
 }
