@@ -244,7 +244,11 @@ pub fn query(data: &CalData, query: &CalQuery) -> Result<CalResult, CalError> {
         } else {
             Status::Verified
         },
-        disclaimer: "本工具仅供个人学习与娱乐，不构成任何决策建议；历法数据待权威历书校核。".into(),
+        disclaimer: if data.status == "PENDING" {
+            "本工具仅供个人学习与娱乐，不构成任何决策建议；历法数据待权威历书校核。".into()
+        } else {
+            "本工具仅供个人学习与娱乐，不构成任何决策建议；历法日期已按香港天文台 1901–2100 对照表校核，节气时刻为天文计算值。".into()
+        },
     })
 }
 

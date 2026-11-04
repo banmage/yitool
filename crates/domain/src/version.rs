@@ -26,7 +26,7 @@ impl Default for VersionSet {
             cal: "CAL-v0.1".into(),
             rule_set: "RULE-v0.2".into(),
             data: "DATA-v0.2".into(),
-            cal_data: "CAL-DATA-v0.1".into(),
+            cal_data: "CAL-DATA-v0.2".into(),
             tzdata: chrono_tz::IANA_TZDB_VERSION.to_string(),
             seed_algo: "SEED-v2".into(),
             rng: "RNG-v1".into(),

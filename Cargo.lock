@@ -285,7 +285,6 @@ name = "gen-cal"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "mingli-astro",
  "serde",
  "serde_json",
  "yitool-cal",
@@ -444,22 +443,6 @@ name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
-
-[[package]]
-name = "mingli-astro"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c836f662279543ad256cde50578c3baf0d4fcf1486ea16a59e16123731b53119"
-dependencies = [
- "mingli-core",
- "serde",
-]
-
-[[package]]
-name = "mingli-core"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5dc91f628ea0f3ebf64d63e061faeb431b5b37593b49c432ea2064d86b4d9ea2"
 
 [[package]]
 name = "num-traits"

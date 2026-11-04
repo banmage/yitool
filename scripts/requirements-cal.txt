@@ -1,0 +1,5 @@
+# CAL 预计算表生成依赖（Python）
+# 用法：
+#   python3 -m venv .venv-cal
+#   .venv-cal/bin/pip install -r scripts/requirements-cal.txt
+sxtwl==2.0.7

@@ -15,4 +15,3 @@ cal = { package = "yitool-cal", path = "../../crates/cal" }
 chrono.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-mingli-astro.workspace = true

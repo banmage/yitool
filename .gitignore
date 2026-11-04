@@ -21,6 +21,7 @@ src-tauri/target/
 __pycache__/
 *.py[cod]
 .venv/
+.venv-cal/
 venv/
 
 # Local runtime data (never commit user data)

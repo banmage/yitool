@@ -34,7 +34,6 @@ unicode-normalization = "0.1"
 rusqlite = { version = "0.32", features = ["bundled"] }
 clap = { version = "4", features = ["derive"] }
 tempfile = "3"
-mingli-astro = "1.2"
 
 [profile.release]
 opt-level = 3
