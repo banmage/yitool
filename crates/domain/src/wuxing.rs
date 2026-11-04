@@ -73,6 +73,17 @@ impl WuXing {
         }
     }
 
+    /// 克我之行（反查 `controls`）。
+    pub fn controlled_by(self) -> Self {
+        match self {
+            Self::Wood => Self::Metal,
+            Self::Fire => Self::Water,
+            Self::Earth => Self::Wood,
+            Self::Metal => Self::Fire,
+            Self::Water => Self::Earth,
+        }
+    }
+
     /// 以月建五行衡量某卦五行：同我旺、生我相、我生休、我克囚、克我死。
     pub fn relation_to(self, month: Self) -> Relation {
         if self == month {
@@ -132,5 +143,18 @@ mod tests {
         assert_eq!(WuXing::Fire.relation_to(WuXing::Earth), Relation::Xiu);
         assert_eq!(WuXing::Fire.relation_to(WuXing::Metal), Relation::Qiu);
         assert_eq!(WuXing::Fire.relation_to(WuXing::Water), Relation::Si);
+    }
+
+    #[test]
+    fn controlled_by_is_inverse_of_controls() {
+        for element in [
+            WuXing::Wood,
+            WuXing::Fire,
+            WuXing::Earth,
+            WuXing::Metal,
+            WuXing::Water,
+        ] {
+            assert_eq!(element.controlled_by().controls(), element);
+        }
     }
 }

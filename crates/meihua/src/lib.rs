@@ -63,6 +63,21 @@ pub struct WangShuaiEntry {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct WeakPosition {
+    pub trigram: String,
+    pub direction: String,
+    pub element: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct JishenOut {
+    pub element: String,
+    pub weak_positions: Vec<WeakPosition>,
+    pub rule_level: String,
+    pub note: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct MeihuaResult {
     pub scheme: String,
     pub original: HexOut,
@@ -74,7 +89,7 @@ pub struct MeihuaResult {
     pub ti_element: String,
     pub yong_element: String,
     pub wangshuai: Vec<WangShuaiEntry>,
-    pub jishen: String,
+    pub jishen: JishenOut,
     pub steps: Vec<StepLog>,
     pub status: Status,
     pub formal_allowed: bool,
@@ -163,6 +178,24 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
     let month_element = WuXing::from_branch(month_branch);
     let ti_relation = ti.element().relation_to(month_element);
     let yong_relation = yong.element().relation_to(month_element);
+
+    // ADR-011 / MEIHUA-JISHEN-001：克体五行为忌神，同五行卦位为弱势方位。
+    // 本系统自定义 L3；W-01 未校核前整体结果仍为 PENDING。
+    let jishen_element = ti.element().controlled_by();
+    let jishen = JishenOut {
+        element: jishen_element.name().into(),
+        weak_positions: Trigram::ALL
+            .into_iter()
+            .filter(|trigram| trigram.element() == jishen_element)
+            .map(|trigram| WeakPosition {
+                trigram: trigram.name().into(),
+                direction: trigram.direction().into(),
+                element: trigram.element().name().into(),
+            })
+            .collect(),
+        rule_level: "L3".into(),
+        note: "本系统自定义：以克体五行为忌神，同五行卦位为弱势方位；非典籍唯一流派".into(),
+    };
 
     let mut steps = Vec::new();
 
@@ -256,19 +289,20 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
             .map_err(|e| MeihuaError::Step(e.to_string()))?,
     );
 
-    // FR-012：忌神/弱势卦位在 ARS 未定义算法，阶段 0 阻断正式结论。
+    // ADR-011：算法已定义，但 W-01 未校核，步骤仍标记 PENDING。
     steps.push(
         StepLogBuilder::new(5, "MEIHUA-JISHEN", Engine::Meihua)
             .rule_id("MEIHUA-JISHEN-001")
-            .data_ref("W-01")
+            .data_ref("G-01")
             .source("SRC-MEIHUA-006")
-            .level(RuleLevel::Provisional)
-            .formula("待冻结：ARS 未定义忌神/弱势卦位算法")
+            .level(RuleLevel::L3)
+            .formula("E_ji=克体之行；weak_positions={卦 | 卦五行=E_ji}")
             .status(Status::Pending)
             .output(serde_json::json!({
-                "jishen": "PENDING",
-                "formal_allowed": false,
-                "note": "忌神/弱势卦位规则待冻结，方位象意不得发布正式结果"
+                "jishen_element": &jishen.element,
+                "weak_positions": &jishen.weak_positions,
+                "rule_level": &jishen.rule_level,
+                "note": "算法已按 ADR-011 冻结；W-01 未校核，整体仍待校核"
             }))
             .build()
             .map_err(|e| MeihuaError::Step(e.to_string()))?,
@@ -296,7 +330,7 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
                 relation: yong_relation.name().into(),
             },
         ],
-        jishen: "PENDING".into(),
+        jishen,
         steps,
         status: Status::Pending,
         formal_allowed: false,
@@ -342,6 +376,11 @@ mod tests {
         assert_eq!(r.mutual.name, "天风姤");
         assert_eq!(r.ti, "离");
         assert_eq!(r.yong, "乾");
+        assert_eq!(r.jishen.element, "水");
+        assert_eq!(r.jishen.weak_positions.len(), 1);
+        assert_eq!(r.jishen.weak_positions[0].trigram, "坎");
+        assert_eq!(r.jishen.weak_positions[0].direction, "北");
+        assert_eq!(r.jishen.rule_level, "L3");
         assert_eq!(r.status, Status::Pending);
         assert!(!r.formal_allowed);
     }
@@ -363,6 +402,33 @@ mod tests {
         assert_eq!(r.changed.name, "天雷无妄");
         assert_eq!(r.ti, "乾");
         assert_eq!(r.yong, "坤");
+        assert_eq!(r.jishen.element, "火");
+        assert_eq!(r.jishen.weak_positions.len(), 1);
+        assert_eq!(r.jishen.weak_positions[0].trigram, "离");
+        assert_eq!(r.jishen.weak_positions[0].direction, "南");
+    }
+
+    #[test]
+    fn jishen_can_have_multiple_weak_positions() {
+        let r = cast(
+            MeihuaInput::NineColor {
+                color: 8,
+                aux: 8,
+                q_mod: 0,
+                b_mod: 0,
+            },
+            10,
+        )
+        .unwrap();
+        assert_eq!(r.ti, "坤");
+        assert_eq!(r.jishen.element, "木");
+        let directions: Vec<_> = r
+            .jishen
+            .weak_positions
+            .iter()
+            .map(|p| p.direction.as_str())
+            .collect();
+        assert_eq!(directions, vec!["东", "东南"]);
     }
 
     #[test]

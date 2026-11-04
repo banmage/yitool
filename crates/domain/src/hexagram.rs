@@ -65,6 +65,20 @@ impl Trigram {
         }
     }
 
+    /// 后天八卦方位（`G-01` 镜像；资源测试交叉校验）。
+    pub fn direction(self) -> &'static str {
+        match self {
+            Self::Qian => "西北",
+            Self::Dui => "西",
+            Self::Li => "南",
+            Self::Zhen => "东",
+            Self::Xun => "东南",
+            Self::Kan => "北",
+            Self::Gen => "东北",
+            Self::Kun => "西南",
+        }
+    }
+
     /// 三爻，自下而上；true = 阳。
     pub fn lines(self) -> [bool; 3] {
         match self {

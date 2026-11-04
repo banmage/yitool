@@ -97,21 +97,21 @@ def gen_zodiac() -> None:
 
 def gen_bagua() -> None:
     trigrams = [
-        ("QIAN", 1, "乾", "☰", "金", [1, 1, 1], "天"),
-        ("DUI", 2, "兑", "☱", "金", [1, 1, 0], "泽"),
-        ("LI", 3, "离", "☲", "火", [1, 0, 1], "火"),
-        ("ZHEN", 4, "震", "☳", "木", [1, 0, 0], "雷"),
-        ("XUN", 5, "巽", "☴", "木", [0, 1, 1], "风"),
-        ("KAN", 6, "坎", "☵", "水", [0, 1, 0], "水"),
-        ("GEN", 7, "艮", "☶", "土", [0, 0, 1], "山"),
-        ("KUN", 8, "坤", "☷", "土", [0, 0, 0], "地"),
+        ("QIAN", 1, "乾", "☰", "金", [1, 1, 1], "天", "西北"),
+        ("DUI", 2, "兑", "☱", "金", [1, 1, 0], "泽", "西"),
+        ("LI", 3, "离", "☲", "火", [1, 0, 1], "火", "南"),
+        ("ZHEN", 4, "震", "☳", "木", [1, 0, 0], "雷", "东"),
+        ("XUN", 5, "巽", "☴", "木", [0, 1, 1], "风", "东南"),
+        ("KAN", 6, "坎", "☵", "水", [0, 1, 0], "水", "北"),
+        ("GEN", 7, "艮", "☶", "土", [0, 0, 1], "山", "东北"),
+        ("KUN", 8, "坤", "☷", "土", [0, 0, 0], "地", "西南"),
     ]
     write_json(
         "data/bagua.json",
         {
-            "version": "G-01",
+            "version": "G-01-v0.2",
             "status": "VERIFIED",
-            "source": "ARS v0.2 附录 A / 先天八卦",
+            "source": "ARS v0.2 附录 A / 先天八卦；方位按 G-01 后天方位",
             "trigrams": [
                 {
                     "key": k,
@@ -121,8 +121,9 @@ def gen_bagua() -> None:
                     "element": e,
                     "lines_bottom_up": lines,
                     "image": image,
+                    "direction": direction,
                 }
-                for k, n, name, sym, e, lines, image in trigrams
+                for k, n, name, sym, e, lines, image, direction in trigrams
             ],
         },
     )
@@ -267,7 +268,7 @@ def gen_rules() -> None:
         ("SRC-MEIHUA-003", "梅花易数", "传世本", "变卦", "动爻阴阳互变", "系统按 ARS v0.2 重述", "L2", "PENDING", "公有领域"),
         ("SRC-MEIHUA-004", "梅花易数", "传世本", "体用", "动爻定体用", "系统按 ARS v0.2 重述", "L2", "PENDING", "公有领域"),
         ("SRC-MEIHUA-005", "梅花易数", "传世本", "旺衰", "月建五行生克", "W-01 待冻结", "L2", "PENDING", "公有领域"),
-        ("SRC-MEIHUA-006", "本系统自定义", "v0.1", "忌神", "未定义算法", "阶段 0 阻断正式结果", "PROVISIONAL", "PENDING", "系统自定义"),
+        ("SRC-MEIHUA-006", "本系统自定义", "v0.2", "忌神与弱势卦位", "E_ji=克体之行；弱势卦位=同忌神五行卦位", "ADR-011；L3 自定义，W-01 未校核前整体仍待校核", "L3", "PENDING", "系统自定义"),
         ("SRC-CAL-001", "历法服务规范 CAL v0.1", "v0.1", "历法", "公农历/节气/四柱/日界/旬空", "CAL 数据待权威历书校核", "L1", "PENDING", "系统文档"),
         ("SRC-SEED-001", "技术设计说明书 TDS v0.1", "v0.1", "种子链", "SHA-256 派生与 HMAC", "阶段 0 实现", "L2", "PENDING", "系统文档"),
         ("SRC-IR-001", "推演解释规则规范 IR v0.1", "v0.1", "合规", "免责声明与禁用绝对断语", "阶段 0 最小实现", "L1", "PENDING", "系统文档"),
@@ -306,7 +307,7 @@ def gen_rules() -> None:
         rule("MEIHUA-BIANGUA-001", "MEIHUA", "biangua", "L2", "SRC-MEIHUA-003", "PENDING", ["TC-MEIHUA-001", "TC-MEIHUA-002"]),
         rule("MEIHUA-TIYONG-001", "MEIHUA", "tiyong", "L2", "SRC-MEIHUA-004", "PENDING", ["TC-MEIHUA-001"]),
         rule("MEIHUA-WANGSHUAI-001", "MEIHUA", "wangshuai", "L2", "SRC-MEIHUA-005", "PENDING", ["TC-MEIHUA-003"]),
-        rule("MEIHUA-JISHEN-001", "MEIHUA", "jishen", "PROVISIONAL", "SRC-MEIHUA-006", "PENDING", ["TC-MEIHUA-004"]),
+        rule("MEIHUA-JISHEN-001", "MEIHUA", "jishen", "L3", "SRC-MEIHUA-006", "PENDING", ["TC-MEIHUA-004"]),
         rule("LOG-SCHEMA-001", "LOG", "schema", "L1", "SRC-LOG-001", "PENDING", ["TC-LOG-001"]),
         rule("IR-COMPLIANCE-001", "IR", "compliance", "L1", "SRC-IR-001", "PENDING", ["TC-IR-001"], result_type="ABSOLUTE_FILTER"),
     ]

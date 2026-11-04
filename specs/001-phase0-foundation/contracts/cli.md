@@ -80,7 +80,7 @@ yitool meihua --traditional 9 16 \
   --timezone "Asia/Shanghai" --day-bound ZICHU
 ```
 
-输出：本卦、互卦、变卦、动爻、体用、旺衰、`jishen`（阶段 0 为 `PENDING`）、`steps[]`、`versions`。
+输出：本卦、互卦、变卦、动爻、体用、旺衰、`jishen`（`element` + `weak_positions[]`，L3；整体仍为 `PENDING`）、`steps[]`、`versions`。
 
 ## `yitool verify`
 

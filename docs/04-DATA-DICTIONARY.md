@@ -48,7 +48,7 @@ LOG_SCHEMA         = LOG-v0.1
 ```
 
 > 说明：SRS 附录 B、ARS 0.3 与代码已统一为 `RULE-v0.2`/`DATA-v0.2`；SRS 附录 B 已同步完整 `VersionSet`。
-> **版本记录：** CAL 文档已同步 `CAL-DATA-v0.2`；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；当前校核数据以本表为准。
+> **版本记录：** CAL 文档已同步 `CAL-DATA-v0.2`；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；当前校核数据以本表为准。
 
 ---
 
@@ -75,7 +75,7 @@ LOG_SCHEMA         = LOG-v0.1
 | `LUNAR-MONTH-INDEX` | 农历月序表 | CAL/ARS | 梅花月序起象 | `PENDING` | 阶段 0（CF-01） | CAL 4.1、ARS 1.4.1 |
 | `JIEQI-MONTH-BRANCH` | 节气月建表 | CAL/ARS | 旺衰、纳甲、择吉、黄历 | `PENDING` | 阶段 0（CF-02） | CAL 4.2、ARS 1.4.2 |
 | `W-01` | 四时旺衰表 | ARS/SRS | 五行逐月旺相休囚死 | `PENDING` | 阶段 0（F-02） | ARS 3.7 |
-| `G-01` | 先天八卦表 | ARS/SRS | 数字→八卦、五行、方位 | `VERIFIED` | 阶段 0 | ARS 1.5 |
+| `G-01` | 先天八卦表（`G-01-v0.2`） | ARS/SRS | 数字→八卦、五行、后天方位 | `VERIFIED` | 阶段 0 | ARS 1.5、3.8 |
 | `L-01` | 洛书九宫方位表 | SRS | 方位象意展示 | `VERIFIED` | 阶段 4 | SRS 附录 A、IR 7.2 |
 
 ### 4.2 卦象与纳甲

@@ -13,7 +13,7 @@ pub mod wuxing;
 pub use bazi::BaziMaterial;
 pub use error::{DomainError, Result};
 pub use ganzhi::{GanZhi, BRANCHES, STEMS};
-pub use hexagram::{Hexagram, Trigram};
+pub use hexagram::{trigram_key, Hexagram, Trigram};
 pub use step::{Engine, RuleLevel, Status, StepLog, StepLogBuilder};
 pub use version::VersionSet;
 pub use wuxing::{Relation, WuXing};

@@ -45,7 +45,9 @@ fn pending_rules_do_not_produce_formal_result() {
     .unwrap();
     assert_eq!(result.status, Status::Pending);
     assert!(!result.formal_allowed);
-    assert_eq!(result.jishen, "PENDING");
+    // 体乾金 → 忌神火；弱势卦位为同属火的离（南）。
+    assert_eq!(result.jishen.element, "火");
+    assert_eq!(result.jishen.weak_positions[0].direction, "南");
     assert!(result
         .steps
         .iter()
