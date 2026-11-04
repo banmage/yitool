@@ -166,6 +166,7 @@ cargo test -p yitool-app --test perf -- --nocapture
 - [x] 隐私扫描 0 命中；SQLite 明文可被扫描命中
 - [x] DB schema 含 `hmac_key_id`；备份/恢复与档案隔离通过
 - [x] 2025/2026 逐日基准对照通过（730 天）
+- [x] HKO 1901–2100 逐日交叉校核：农历 0 差异；节气 6 条午夜边界容差（`CAL-DATA-v0.2`）
 - [x] 文档版本/数据字典/决策登记同步
 
 ## 11. 验收记录
@@ -185,4 +186,19 @@ cargo test -p yitool-app --test perf -- --nocapture
 | CAL 锚点 | 2026-11-03 → 农历 09-25 / 丙午 戊戌 辛巳 甲午 / 甲戌旬空申酉 |
 | 梅花金标准 | TC-MEIHUA-001、TC-MEIHUA-002 通过 |
 
-**遗留**：CAL/HEX/NJ/W 资源仍为 `PENDING`，需权威历书与易学评审交叉校核；旧七色只读 UI 延期阶段 1；Q/B 材料定义与 HMAC Keychain 实现延期。
+**遗留**：HEX/NJ/W 等规则资源仍为 `PENDING`，需易学评审交叉校核；CAL 规则集仍待冻结；旧七色只读 UI 延期阶段 1；Q/B 材料定义与 HMAC Keychain 实现延期。
+
+### 11.1 CAL 数据交叉校核（2026-11-04）
+
+**数据**：`CAL-DATA-v0.2`（sxtwl 2.0.7 / VSOP87 + ELP2000）。
+**来源**：香港天文台《1901–2100 年公曆與農曆日期對照表》。
+**命令**：`python3 scripts/crosscheck_cal_hko.py --no-download`
+**报告**：`docs/reports/CAL-HKO-CROSSCHECK-v0.2.md`
+
+| 项目 | 样本 | 严格不一致 | 边界容差 | 结果 |
+|---|---:|---:|---:|---|
+| 农历年/月/闰月/日 | 73049 | 0 | 0 | PASS |
+| 节气日期（HKO → CAL） | 4800 | 0 | 6 | PASS |
+| 节气日期（CAL → HKO） | 4872 | 0 | 6 | PASS |
+
+**说明**：6 条差异均为交节时刻距午夜 ≤ 712 秒（最接近 4 秒），符合 HKO 页脚声明的算法边界情形；按 D-41 单列容差，不计严格失败。节气秒级时刻仍由 sxtwl 计算，尚无独立的秒级权威基准。

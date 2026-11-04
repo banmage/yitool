@@ -75,7 +75,7 @@ crates/
   store/              SQLite schema、档案/推演/步骤/快照
   app/                编排、隐私扫描、快照导出、日志白名单
   cli/                `yitool` 验收入口
-tools/gen-cal/        历法预计算表与基准生成器（mingli-astro）
+tools/gen-cal/        逐日回归基准生成器（读取已校核的 CAL 预计算表）
 resources/            只读规则/数据/历法/合规词表（带 manifest/checksum）
 scripts/              资源生成、manifest、质量门
 tests/golden/         跨 crate 金标准 JSON
@@ -83,12 +83,13 @@ tests/golden/         跨 crate 金标准 JSON
 
 ## 6. 当前状态与下一步
 
-- 五份规范：草案已齐，均未冻结；所有未校核资源显式标 `PENDING`。
+- 五份规范：草案已齐，均未冻结；未校核资源显式标 `PENDING`。
 - 代码：Rust workspace + `yitool` CLI 已落地；阶段 0 P1 内核（CAL/种子/溯源/隐私/梅花金标准）已通过测试。
+- 历法数据：`CAL-DATA-v0.2` 已按香港天文台 1901–2100 对照表逐日校核（农历 0 差异；节气 6 条午夜边界容差，见 `docs/reports/CAL-HKO-CROSSCHECK-v0.2.md`）。
 - 当前阶段：**阶段 0（进行中）**。
-- 已批准：D-01 九色、D-02 技术栈；D-03/D-04/D-12/D-13/D-20 已按建议值实现，待正式写入 ADR。
-- 阻塞点：CAL 权威历书交叉校核、HEX-01/NJ-01/W-01 校勘、Q/B 材料定义、忌神算法、旧七色只读 UI（阶段 1）。
-- 下一步：交叉校核 CAL 数据 → 关闭剩余决策 → 阶段 1 Tauri/React 接入。
+- 已批准：D-01 九色、D-02 技术栈、D-19 CAL 算法/库、D-41 午夜边界容差；D-03/D-04/D-12/D-13/D-20 已按建议值实现，待正式写入 ADR。
+- 阻塞点：HEX-01/NJ-01/W-01 校勘、Q/B 材料定义、忌神算法、CAL 规则冻结、旧七色只读 UI（阶段 1）。
+- 下一步：关闭剩余阶段 0 决策 → 校勘规则数据 → 阶段 1 Tauri/React 接入。
 
 ## 7. 代码与提交约定
 
@@ -117,7 +118,10 @@ cargo run -p yitool-cli -- verify --resources resources
 cargo run -p yitool-cli -- db init --path /tmp/yitool.db
 
 python3 scripts/gen_resources.py   # 从 ARS 生成 JSON 资源
-python3 scripts/gen_cal_data.py all # 生成 CAL 表与逐日基准
+.venv-cal/bin/python scripts/gen_cal_precise.py            # sxtwl 生成 CAL 表（PENDING）
+.venv-cal/bin/python scripts/gen_cal_precise.py --status VERIFIED  # 校核通过后
+cargo run -p gen-cal -- baseline resources/cal             # 从 CAL 表派生逐日基准
+python3 scripts/crosscheck_cal_hko.py                      # HKO 1901–2100 交叉校核
 python3 scripts/gen_manifest.py    # 重算 checksum
 
 specify check                      # 检查工具与集成

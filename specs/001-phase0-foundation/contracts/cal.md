@@ -61,4 +61,4 @@ pub trait CalendarService {
 
 - `lunar_months` 按 `start_jdn` 升序，覆盖 1900-01-31～2100-12-31。
 - `jieqi` 覆盖同一范围，24 条/年；`kind` 为 `节|气`。
-- 表版本 `CAL-DATA-v0.1`，状态 `PENDING`；正式冻结前须交叉校核。
+- 表版本 `CAL-DATA-v0.2`，状态 `VERIFIED`（HKO 1901–2100 日期级校核；6 条午夜边界按 D-41 容差）；CAL 规则集本身仍待冻结。

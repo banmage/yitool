@@ -1,7 +1,7 @@
 # 统一数据字典（Data Dictionary）
 
-**版本：** DD-v0.1
-**更新日期：** 2026-11-03
+**版本：** DD-v0.2
+**更新日期：** 2026-11-04
 **目的：** 合并 SRS 附录 A、ARS 附录 D、CAL 附录 B 与 IR/TDS 中的表清单，形成**唯一索引**，作为资源加载、manifest、金标准测试与文档修订的依据。
 
 **冲突处理：** 本文档以并集为准；同一 ID 在不同文档中状态/版本不一致时，以“待冻结”优先，并在 `docs/01-DOC-ANALYSIS.md` 的 A-05/A-13/A-14 跟踪。
@@ -36,7 +36,7 @@ TDS_VERSION        = TDS-v0.1
 RULE_SET_VERSION   = RULE-v0.2       # 统一为 ARS 基线
 DATA_VERSION       = DATA-v0.2       # 统一为 ARS 基线
 CAL_RULE_SET       = CAL-RULE-v0.1
-CAL_DATA_VERSION   = CAL-DATA-v0.1
+CAL_DATA_VERSION   = CAL-DATA-v0.2
 IR_RULE_SET        = IR-RULE-v0.1
 IR_TEMPLATE_SET    = IR-TPL-v0.1
 SEED_ALGO          = SEED-v2
@@ -48,6 +48,7 @@ LOG_SCHEMA         = LOG-v0.1
 ```
 
 > 说明：SRS 附录 B 当前示例写 `RULE-v0.4`/`DATA-v0.4`，与 ARS 0.3 冲突；D-05 批准后统一，并同步 SRS 附录 B 与 TDS 示例。
+> **版本冲突记录：** `docs/历法服务规范 CAL v0.1 .txt` 的示例与基准章节仍写 `CAL-DATA-v0.1`；当前已校核数据版本以本表 `CAL-DATA-v0.2` 为准，待 CAL 文档下一版同步（不反向修改规范条款）。
 
 ---
 
@@ -116,10 +117,10 @@ LOG_SCHEMA         = LOG-v0.1
 
 | ID | 名称 | 归属 | 用途 | 状态 | 冻结阶段 | 来源 |
 |---|---|---|---|---|---|---|
-| `CAL-LUNAR-TABLE` | 公农历转换表 | CAL | 若采用预计算 | `PENDING` | 阶段 0（CF-01） | CAL 2.2 |
-| `CAL-JIEQI-TABLE` | 节气时刻表 | CAL | 若采用预计算 | `PENDING` | 阶段 0（CF-02） | CAL 3.2 |
-| `CAL-BASE-2025` | 2025 逐日基准（含闰六月） | CAL | 闰月/基准验收 | `PENDING` | 阶段 0（CF-08） | CAL 8.1 + A-07 |
-| `CAL-BASE-2026` | 2026 逐日基准 | CAL | 基准验收 | `PENDING` | 阶段 0（CF-08） | CAL 8.1 |
+| `CAL-LUNAR-TABLE` | 公农历转换表 | CAL | 预计算月表 | `VERIFIED` | 阶段 0（CF-01） | CAL 2.2；HKO 1901–2100 逐日校核 |
+| `CAL-JIEQI-TABLE` | 节气时刻表 | CAL | 预计算节气表 | `VERIFIED` | 阶段 0（CF-02） | CAL 3.2；HKO 日期级校核 + 午夜边界容差 |
+| `CAL-BASE-2025` | 2025 逐日基准（含闰六月） | CAL | 闰月/基准验收 | `PENDING` | 阶段 0（CF-08） | CAL 8.1 + A-07；由 CAL-DATA-v0.2 派生 |
+| `CAL-BASE-2026` | 2026 逐日基准 | CAL | 基准验收 | `PENDING` | 阶段 0（CF-08） | CAL 8.1；由 CAL-DATA-v0.2 派生 |
 | `CAL-TZDATA` | IANA tzdata | CAL | 时区/夏令时 | `PENDING` | 阶段 0（CF-09） | CAL 6.5 |
 
 > **A-07：** 2026 年无闰月；基准必须扩展 2025（闰六月）或 2028（闰五月），否则“闰月整月覆盖”无法满足。

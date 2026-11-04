@@ -173,8 +173,8 @@ Run * ─── 1 VersionSet
   "cal": "CAL-v0.1",
   "rule_set": "RULE-v0.2",
   "data": "DATA-v0.2",
-  "cal_data": "CAL-DATA-v0.1",
-  "tzdata": "2026a",
+  "cal_data": "CAL-DATA-v0.2",
+  "tzdata": "2025b",
   "seed_algo": "SEED-v2",
   "rng": "RNG-v1",
   "app": "APP-v0.1",
@@ -207,8 +207,8 @@ Run * ─── 1 VersionSet
   "ganzhi": {"year": "丙午", "month": "戊戌", "day": "辛巳", "hour": "甲午"},
   "xun": {"xun_head": "甲戌", "kong_branches": ["申", "酉"]},
   "dst": {"ambiguous": false, "gap": false},
-  "versions": {"cal": "CAL-v0.1", "cal_data": "CAL-DATA-v0.1", "tzdata": "..."},
-  "status": "PENDING"
+  "versions": {"cal": "CAL-v0.1", "cal_data": "CAL-DATA-v0.2", "tzdata": "..."},
+  "status": "VERIFIED"
 }
 ```
 

@@ -100,7 +100,9 @@ resources/
 └── manifests/
     └── data.manifest.json
 scripts/
-├── gen_cal_data.py           # 用 sxtwl 生成预计算表（一次性/可复现）
+├── gen_cal_data.py           # 统一入口：sxtwl 预计算表 + 基准派生
+├── gen_cal_precise.py        # sxtwl 生成 CAL 预计算表（可复现）
+├── crosscheck_cal_hko.py     # HKO 1901–2100 逐日交叉校核
 ├── gen_resources.py          # 从 ARS 附录生成 hex64/bagua 等 JSON
 ├── gen_manifest.py           # 计算 checksum 并写 manifest
 └── privacy_scan.sh           # 扫描日志/DB/导出（CI 辅助）
@@ -108,7 +110,7 @@ tests/
 └── golden/                   # 跨 crate 金标准 JSON
 ```
 
-**Structure Decision**: 采用 Rust workspace 单仓库；核心逻辑与 UI 解耦，阶段 0 用 `cli` 验收，阶段 1 再加 `src-tauri` 与 `ui/`。CAL 采用“预计算表 + 纯 Rust 查询”实现，避免天文算法在阶段 0 阻塞；表来源标记 `PENDING`，待权威历书交叉校核后升 `FROZEN`。
+**Structure Decision**: 采用 Rust workspace 单仓库；核心逻辑与 UI 解耦，阶段 0 用 `cli` 验收，阶段 1 再加 `src-tauri` 与 `ui/`。CAL 采用“预计算表 + 纯 Rust 查询”实现，避免天文算法在阶段 0 阻塞；`CAL-DATA-v0.2` 已用 HKO 1901–2100 对照表逐日校核。
 
 ## Complexity Tracking
 
@@ -122,7 +124,7 @@ tests/
 
 详见 [research.md](./research.md)。关键结论：
 
-1. CAL 采用预计算表（农历月表 + 节气时刻表），来源 `sxtwl`，状态 `PENDING`；用 1900-01-31 甲辰、2000-01-01 戊午、2026-11-03 辛巳等独立锚点交叉校验。
+1. CAL 采用预计算表（农历月表 + 节气时刻表），来源 `sxtwl` 2.0.7，状态 `VERIFIED`；用 1900-01-31 甲辰、2000-01-01 戊午、2026-11-03 辛巳等独立锚点交叉校验，并以 HKO 1901–2100 逐日校核。
 2. 日历范围 1900-01-31～2100-12-31；表约 2400 个月 + 4800 个节气，JSON 可控。
 3. 时区用 `chrono-tz`；DST 重复取较早偏移，缺失向后平移 1 小时并标记。
 4. 种子用 SHA-256/HMAC-SHA256；随机用 `getrandom` + 拒绝采样；固定模式不调用 OS 熵。
