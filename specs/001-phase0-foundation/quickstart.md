@@ -186,7 +186,7 @@ cargo test -p yitool-app --test perf -- --nocapture
 | CAL 锚点 | 2026-11-03 → 农历 09-25 / 丙午 戊戌 辛巳 甲午 / 甲戌旬空申酉 |
 | 梅花金标准 | TC-MEIHUA-001、TC-MEIHUA-002 通过 |
 
-**遗留**：HEX/NJ/W 等规则资源仍为 `PENDING`，需易学评审交叉校核；CAL 规则集仍待冻结；旧七色只读 UI 延期阶段 1；Q/B 材料定义与 HMAC Keychain 实现延期。
+**遗留**：HEX/NJ/W 等规则资源仍为 `PENDING`，需易学评审交叉校核；CAL 规则集仍待冻结；Q/B 材料定义与 HMAC Keychain 实现延期。
 
 ### 11.1 CAL 数据交叉校核（2026-11-04）
 

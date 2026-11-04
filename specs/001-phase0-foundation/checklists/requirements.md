@@ -28,7 +28,7 @@
 - [x] All acceptance scenarios are defined
   - 说明：6 个用户故事均含 Given/When/Then 场景。
 - [x] Edge cases are identified
-  - 说明：闰月、日界、DST、越界、资源损坏、PENDING、旧七色、密钥、删除、动画中断、随机源失败。
+  - 说明：闰月、日界、DST、越界、资源损坏、PENDING、颜色越界、密钥、删除、动画中断、随机源失败。
 - [x] Scope is clearly bounded
   - 说明：Assumptions 明确阶段 0 不做焦氏 4096、纳甲装卦、择吉权重、古籍全文与完整 UI。
 - [x] Dependencies and assumptions identified

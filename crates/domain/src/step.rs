@@ -37,7 +37,6 @@ pub enum Status {
     Verified,
     Frozen,
     Deprecated,
-    Readonly,
 }
 
 impl Status {
@@ -53,7 +52,6 @@ impl Status {
             Self::Verified => "VERIFIED",
             Self::Frozen => "FROZEN",
             Self::Deprecated => "DEPRECATED",
-            Self::Readonly => "READONLY",
         }
     }
 }

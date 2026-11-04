@@ -59,7 +59,6 @@ LOG_SCHEMA         = LOG-v0.1
 | `FROZEN` | 已冻结，可用于正式结果 | 正常显示版本 |
 | `VERIFIED` | 已校核，但规则集可能未整体冻结 | 显示版本 + 已校核 |
 | `PENDING` | 待校核/待校勘 | 显示“待校核/待校勘”，不得作正式结论 |
-| `READONLY` | 只读兼容（旧版本） | 显示原版本，不进入新推演 |
 | `DEPRECATED` | 已废弃 | 不加载；历史按原版本渲染 |
 | `MISSING` | 条目缺失 | 显示“数据不可用/待补”，不编造 |
 
@@ -71,8 +70,7 @@ LOG_SCHEMA         = LOG-v0.1
 
 | ID | 名称 | 归属 | 用途 | 状态 | 冻结阶段 | 来源 |
 |---|---|---|---|---|---|---|
-| `COLOR-NUM-01` | 旧七色象数表 | ARS/SRS | v0.1–v0.3 历史只读 | `READONLY` | 已冻结 | SRS 3.1.1、ARS 1.2 |
-| `COLOR-NUM-02` | 九色象数表 | ARS/SRS | v0.4 新推演标准（L3） | `PENDING` | 阶段 0（D-01） | ARS 1.1 |
+| `COLOR-NUM-02` | 九色象数表（唯一标准） | ARS/SRS | 唯一颜色输入标准（L3） | `VERIFIED` | 已冻结（D-01/ADR-002） | ARS 1.1 |
 | `Z-01` | 十二生肖表 | ARS/SRS | 生肖象数/地支五行 | `VERIFIED` | 阶段 1 | ARS 1.3 |
 | `LUNAR-MONTH-INDEX` | 农历月序表 | CAL/ARS | 梅花月序起象 | `PENDING` | 阶段 0（CF-01） | CAL 4.1、ARS 1.4.1 |
 | `JIEQI-MONTH-BRANCH` | 节气月建表 | CAL/ARS | 旺衰、纳甲、择吉、黄历 | `PENDING` | 阶段 0（CF-02） | CAL 4.2、ARS 1.4.2 |
@@ -147,7 +145,7 @@ resources/
 ├── data/
 │   ├── hex64.json              # HEX-01
 │   ├── najia.json              # NJ-01（阶段 0 仅占位，未用于装卦）
-│   ├── color_num.json          # COLOR-NUM-01/02（七色只读 + 九色）
+│   ├── color_num.json          # COLOR-NUM-02（九色唯一标准）
 │   ├── zodiac.json             # Z-01
 │   ├── bagua.json              # G-01
 │   ├── xun.json                # XK-01
@@ -187,7 +185,7 @@ resources/
 3. `data_ref` → `MANIFEST-data`：每张表必须在清单中登记版本、checksum、状态。
 4. `IR-01` → `MEIHUA-INTERPRET-01` / `LIUYAO-YONGSHEN-01` / `ZEJI-*`：IR 只消费结构化结果，不直接查数据表。
 5. `HEX-01` → `NJ-01` / `JL-01`：纳甲与焦氏都以 64 卦 ID 为键；卦 ID 必须稳定。
-6. `COLOR-NUM-01` 与 `COLOR-NUM-02` 并存：旧记录只读，不重算。
+6. 颜色输入只有 `COLOR-NUM-02` 一张表；映射变更须升版，历史记录不重算。
 7. `W-02` 与 `ZEJI-RULE-01`：待 A-13 澄清后确定主外键。
 
 ---

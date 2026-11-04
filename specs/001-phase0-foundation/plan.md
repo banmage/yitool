@@ -40,7 +40,7 @@
 | IV 隐私 | 生辰不落盘；问事默认不持久化 | `BaziMaterial` 不实现 `Serialize`；`privacy_scan` 测试 | PASS |
 | V 不合成总分 | 三引擎平行 | 阶段 0 只做梅花；无总分代码 | PASS |
 | VI 合规 | 禁用词 + 免责声明 | `ir` 最小合规模块 + 词表扫描 | PASS |
-| VII 版本化 | 历史只读；资源 checksum | `VersionSet` + manifest + 旧七色只读 | PASS |
+| VII 版本化 | 历史只读；资源 checksum | `VersionSet` + manifest + 九色唯一资源 | PASS |
 | VIII 金标准 | 规则未冻结不发布 | `PENDING` 状态 + golden fixtures | PASS |
 | IX 离线轻量 | 核心不联网 | 无网络依赖；无遥测 | PASS |
 
@@ -83,7 +83,7 @@ crates/
 └── cli/                      # `yitool` 验收入口
 resources/
 ├── data/
-│   ├── color_num.json        # COLOR-NUM-01/02
+│   ├── color_num.json        # COLOR-NUM-02（九色唯一标准）
 │   ├── zodiac.json           # Z-01
 │   ├── bagua.json            # G-01
 │   ├── hex64.json            # HEX-01
@@ -128,7 +128,7 @@ tests/
 2. 日历范围 1900-01-31～2100-12-31；表约 2400 个月 + 4800 个节气，JSON 可控。
 3. 时区用 `chrono-tz`；DST 重复取较早偏移，缺失向后平移 1 小时并标记。
 4. 种子用 SHA-256/HMAC-SHA256；随机用 `getrandom` + 拒绝采样；固定模式不调用 OS 熵。
-5. 九色按 ADR-002；旧七色只读。
+5. 九色按 ADR-002，为唯一颜色输入标准。
 6. 资源加载用 manifest + SHA-256 checksum；缺失/损坏拒绝加载。
 7. 隐私：`BaziMaterial` 不实现 `Serialize`，`Debug` 脱敏；日志/DB/导出扫描。
 

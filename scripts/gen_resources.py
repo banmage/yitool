@@ -44,27 +44,16 @@ def gen_color_num() -> None:
         (8, "黑色", "水", 8),
         (9, "白色", "金", 9),
     ]
-    seven = nine[:7]
     write_json(
         "data/color_num.json",
         {
             "version": "COLOR-NUM-02",
-            "status": "PENDING",
+            "status": "VERIFIED",
             "source": "ARS v0.2 1.1 / ADR-002",
-            "description": "九色为系统自定义扩展象数体系，非传统梅花原典标准；旧七色只读兼容。",
+            "description": "九色为系统自定义扩展象数体系，非传统梅花原典标准；九色为唯一标准输入。",
             "nine_color": [
                 {"color_id": i, "name": n, "element": e, "xiangshu": x}
                 for i, n, e, x in nine
-            ],
-            "seven_color_readonly": [
-                {
-                    "color_id": i,
-                    "name": n,
-                    "element": e,
-                    "xiangshu": x,
-                    "status": "READONLY",
-                }
-                for i, n, e, x in seven
             ],
         },
     )

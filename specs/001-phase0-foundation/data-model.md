@@ -158,7 +158,7 @@ Run * ─── 1 VersionSet
 | `entries[].id` | TEXT | 表 ID |
 | `entries[].path` | TEXT | 相对路径 |
 | `entries[].version` | TEXT | 表版本 |
-| `entries[].status` | TEXT | FROZEN/VERIFIED/PENDING/READONLY |
+| `entries[].status` | TEXT | FROZEN/VERIFIED/PENDING/DEPRECATED |
 | `entries[].source` | TEXT | 来源 |
 | `entries[].sha256` | TEXT | 校验和 |
 | `entries[].updated_at` | TEXT | 日期 |
@@ -245,7 +245,6 @@ COMPLETED → DELETED（应用内删除）
 ```text
 PENDING → VERIFIED → FROZEN
     └──────────────→ DEPRECATED
-READONLY（旧七色，永不参与新推演）
 ```
 
 ### 3.3 版本兼容

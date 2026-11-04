@@ -222,7 +222,7 @@ tests/golden/
 ## Phase 9: Polish（跨故事收尾）
 
 - [x] T074 [P] 性能基准：种子 P95<50ms、单引擎 P95<200ms、一年历法遍历 P95<500ms（记录设备/OS/样本）
-- [ ] T075 [P] 旧七色记录只读兼容：原版本渲染、不出现在新推演选择器（SC-010）
+- [x] T075 [P] 九色唯一输入：清理旧色制数据/规则/兼容入口，选择器仅提供九色（SC-010）
 - [x] T076 [P] 文档同步：更新 `README.md`、`AGENTS.md`、`docs/00-PROJECT-ROADMAP.md` 当前状态
 - [x] T077 [P] 更新 `docs/02-DECISION-REGISTER.md`：D-03/D-04/D-12/D-13/D-20 落地结果
 - [x] T078 运行 `scripts/check.sh` 全绿并提交（按 `feat:`/`test:` 拆分提交）

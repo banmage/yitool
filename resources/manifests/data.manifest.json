@@ -48,9 +48,9 @@
       "id": "COLOR-NUM-02",
       "path": "data/color_num.json",
       "version": "COLOR-NUM-02",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "source": "ARS v0.2 1.1 / ADR-002",
-      "sha256": "b535e13e66acf28333747b30021e1951f5ce939bc7464a7d7cb4f5233b81e042"
+      "sha256": "45bf7c129bc243305cddfeddf10cb1ef8d9fcf3a2aea2f4cc9fca3b3e99f86aa"
     },
     {
       "id": "HEX-01",
