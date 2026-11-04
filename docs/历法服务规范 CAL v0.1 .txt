@@ -59,7 +59,7 @@ TDS v0.1  → 定义历法库选型、存储、缓存、异常实现
 ```text
 CAL_VERSION = "CAL-v0.1"
 CAL_RULE_SET = "CAL-RULE-v0.1"
-CAL_DATA_VERSION = "CAL-DATA-v0.1"
+CAL_DATA_VERSION = "CAL-DATA-v0.2"
 CAL_EPHEMERIS = "待冻结（天文算法/预计算表）"
 ```
 
@@ -147,7 +147,7 @@ get_huangli_basis(datetime, timezone, day_bound) -> HuangliBasis
   },
   "versions": {
     "cal": "CAL-v0.1",
-    "cal_data": "CAL-DATA-v0.1"
+    "cal_data": "CAL-DATA-v0.2"
   }
 }
 ```
@@ -547,7 +547,7 @@ CAL 冻结前必须提供至少**一整年逐日基准数据**，建议覆盖 20
 1. 基准数据须注明来源：权威历书、天文台数据、经校核的农历库。
 2. 不得以本系统自身输出作为基准。
 3. 基准数据须由至少两个独立来源交叉校验；冲突条目标 `PENDING` 并记录差异。
-4. 基准数据版本 `CAL-DATA-v0.1`，校验和随文档发布。
+4. 基准数据版本 `CAL-DATA-v0.2`，校验和随文档发布。
 
 ### 8.3 验收测试 `CAL-TEST-001`
 
@@ -638,14 +638,17 @@ CAL 冻结前必须提供至少**一整年逐日基准数据**，建议覆盖 20
 
 ## 附录 B：数据表清单
 
+> **唯一索引：** 完整表清单、版本、状态与归属以 `docs/04-DATA-DICTIONARY.md` 为准（ADR-003）。本附录只保留 CAL 直接引用的摘要。
+
 | 表 ID | 名称 | 状态 |
 |---|---|---|
-| `CAL-LUNAR-TABLE` | 公农历转换表（如采用预计算） | 待冻结 |
-| `CAL-JIEQI-TABLE` | 节气时刻表（如采用预计算） | 待冻结 |
-| `JIEQI-MONTH-BRANCH` | 节气月建表 | 待冻结 |
-| `LUNAR-MONTH-INDEX` | 农历月序表 | 待冻结 |
-| `CAL-BASE-2026` | 2026 逐日基准数据 | 待冻结 |
-| `CAL-TZDATA` | IANA tzdata 版本 | 待冻结 |
+| `CAL-LUNAR-TABLE` | 公农历转换表（预计算） | `VERIFIED`（HKO 1901–2100 日期级校核） |
+| `CAL-JIEQI-TABLE` | 节气时刻表（预计算） | `VERIFIED`（HKO 日期级校核 + 午夜边界容差） |
+| `JIEQI-MONTH-BRANCH` | 节气月建表 | `PENDING` |
+| `LUNAR-MONTH-INDEX` | 农历月序表 | `PENDING` |
+| `CAL-BASE-2025` | 2025 逐日基准（含闰六月） | `PENDING` |
+| `CAL-BASE-2026` | 2026 逐日基准数据 | `PENDING` |
+| `CAL-TZDATA` | IANA tzdata 版本 | `PENDING` |
 
 ## 附录 C：与 ARS/IR/SRS 的接口约定
 

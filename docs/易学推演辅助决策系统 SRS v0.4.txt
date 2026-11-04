@@ -764,26 +764,28 @@ result_type, weight, priority, source_ref, rule_level
 
 ## 附录 A：数据字典表清单
 
+> **唯一索引：** 完整表清单、版本、状态与归属以 `docs/04-DATA-DICTIONARY.md` 为准（ADR-003）。本附录只保留 SRS 直接引用的摘要，不单独维护另一套状态。
+
 | 表 ID | 名称 | 版本/状态 | 说明 |
 |---|---|---|---|
-| COLOR-NUM-02 | 九色象数表（唯一标准） | 已批准（ADR-002） | 九色唯一输入，L3 |
-| Z-01 | 十二生肖表 | v0.4 | 地支五行 L1/L2；象数 L3 |
-| LUNAR-MONTH-INDEX | 农历月序表 | 待冻结 | 供自定义月序起象 |
-| JIEQI-MONTH-BRANCH | 节气月建表 | 待冻结 | 供旺衰、纳甲、择吉 |
-| W-01 | 四时旺衰表 | 待冻结 | 五行逐月旺相休囚死 |
-| G-01 | 先天八卦数表 | 待冻结 | 数字到八卦 |
-| L-01 | 洛书九宫方位表 | v0.4 | 方位映射 |
-| HEX-01 | 六十四卦表 | 待冻结 | 卦名、卦象、宫位、世应 |
-| NJ-01 | 纳甲干支表 | 待冻结 | 八卦六爻干支展开 |
-| JL-01 | 焦氏易林辞表 | 待校勘 | 64×64 索引 |
-| LIUYAO-YONGSHEN-01 | 纳甲用神映射 | 待冻结 | 事项类型→六亲用神 |
-| ZEJI-EVENT-01 | 择吉事项规则 | 待冻结 | 事项类型→规则集 |
-| W-02 | 择吉权重表 | 待冻结 | 统一规则抽象 |
-| HL-01 | 黄历宜忌表 | 待冻结 | 附出处 |
-| MEIHUA-INTERPRET-01 | 梅花解释映射 | 待冻结 | 供 IR 引用 |
-| IR-01 | 推演解释规则表 | 待冻结 | IR v0.1 |
-| COPY-01 | 治愈文案与生活提醒池 | v0.4 | 安全审核 |
-| SRC-01 | 典籍溯源表 | v0.4 | rule_id / data_ref / source_ref 关联 |
+| COLOR-NUM-02 | 九色象数表（唯一标准） | `VERIFIED`（ADR-002） | 九色唯一输入，L3 |
+| Z-01 | 十二生肖表 | `VERIFIED` | 地支五行 L1/L2；象数 L3 |
+| LUNAR-MONTH-INDEX | 农历月序表 | `PENDING` | 供自定义月序起象 |
+| JIEQI-MONTH-BRANCH | 节气月建表 | `PENDING` | 供旺衰、纳甲、择吉 |
+| W-01 | 四时旺衰表 | `PENDING` | 五行逐月旺相休囚死 |
+| G-01 | 先天八卦数表 | `VERIFIED` | 数字到八卦 |
+| L-01 | 洛书九宫方位表 | `VERIFIED` | 方位映射 |
+| HEX-01 | 六十四卦表 | `PENDING` | 卦名、卦象、宫位、世应 |
+| NJ-01 | 纳甲干支表 | `PENDING` | 八卦六爻干支展开 |
+| JL-01 | 焦氏易林辞表 | `PENDING` | 64×64 索引 |
+| LIUYAO-YONGSHEN-01 | 纳甲用神映射 | `PENDING` | 事项类型→六亲用神 |
+| ZEJI-EVENT-01 | 择吉事项规则 | `PENDING` | 事项类型→规则集 |
+| W-02 | 择吉权重表 | `PENDING` | 统一规则抽象 |
+| HL-01 | 黄历宜忌表 | `PENDING` | 附出处 |
+| MEIHUA-INTERPRET-01 | 梅花解释映射 | `PENDING` | 供 IR 引用 |
+| IR-01 | 推演解释规则表 | `PENDING` | IR v0.1 |
+| COPY-01 | 治愈文案与生活提醒池 | `VERIFIED` | 安全审核 |
+| SRC-01 | 典籍溯源表 | `VERIFIED` | rule_id / data_ref / source_ref 关联 |
 
 ## 附录 B：日志 JSON Schema 摘要
 
@@ -798,10 +800,14 @@ result_type, weight, priority, source_ref, rule_level
     "ars": "ARS-v0.2",
     "ir": "IR-v0.1",
     "cal": "CAL-v0.1",
-    "rule_set": "RULE-v0.4",
-    "data": "DATA-v0.4",
+    "rule_set": "RULE-v0.2",
+    "data": "DATA-v0.2",
+    "cal_data": "CAL-DATA-v0.2",
+    "tzdata": "2025b",
     "seed_algo": "SEED-v2",
-    "rng": "RNG-v1"
+    "rng": "RNG-v1",
+    "app": "APP-v0.1",
+    "db_schema": "DB-v0.1"
   },
   "engines": ["MEIHUA", "JIAOLIN", "LIUYAO"],
   "input_summary": {

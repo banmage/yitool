@@ -25,7 +25,7 @@
 
 ---
 
-## 2. 版本基线（待 D-05 批准）
+## 2. 版本基线（D-05/ADR-003 已统一）
 
 ```text
 SRS_VERSION        = SRS-v0.4        # 待升 v0.5 同步文档状态
@@ -47,8 +47,8 @@ CONFIG_SCHEMA      = CFG-v0.1
 LOG_SCHEMA         = LOG-v0.1
 ```
 
-> 说明：SRS 附录 B 当前示例写 `RULE-v0.4`/`DATA-v0.4`，与 ARS 0.3 冲突；D-05 批准后统一，并同步 SRS 附录 B 与 TDS 示例。
-> **版本冲突记录：** `docs/历法服务规范 CAL v0.1 .txt` 的示例与基准章节仍写 `CAL-DATA-v0.1`；当前已校核数据版本以本表 `CAL-DATA-v0.2` 为准，待 CAL 文档下一版同步（不反向修改规范条款）。
+> 说明：SRS 附录 B、ARS 0.3 与代码已统一为 `RULE-v0.2`/`DATA-v0.2`；SRS 附录 B 已同步完整 `VersionSet`。
+> **版本记录：** CAL 文档已同步 `CAL-DATA-v0.2`；当前校核数据以本表为准。
 
 ---
 

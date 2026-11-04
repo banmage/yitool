@@ -348,11 +348,11 @@ sub_seed(engine, step) = HMAC-SHA256(run_seed, engine + "|" + step + "|" + purpo
 ab_base_seed = SHA256(canonical_json({algo, mode, profile_id, run_time, rule_set, data_version, cal_version}))
 ab_draw_seed = HMAC(ab_base_seed, "AB_DRAW")
 shared_random_snapshot = generate_snapshot(ab_draw_seed)
-A_run_seed = HMAC(ab_base_seed, "AB_A|" + shared_random_snapshot_digest + "|" + A_question_hmac)
-B_run_seed = HMAC(ab_base_seed, "AB_B|" + shared_random_snapshot_digest + "|" + B_question_hmac)
+common_snapshot_digest = digest(input_snapshot 去掉 question_hmac/bazi 后)
+A_run_seed = B_run_seed = HMAC(ab_base_seed, "AB|" + common_snapshot_digest)
 ```
 
-A/B 共用抽卡与摇卦随机条件；问事文本只影响各自解释上下文，不改变共同随机快照。独立推演模式则各自使用普通种子链。
+A/B 共用抽卡与摇卦随机条件；问事 HMAC、生辰材料与 `A/B` 标签不得进入 `run_seed` 的随机派生。问事文本只影响各自解释上下文与历史关联，不改变共同随机快照。独立推演模式则各自使用普通种子链。该语义由 ADR-004 冻结。
 
 ### 2.6 固定模式与摇卦模式 `SEED-FIXED-001` / `SEED-CAST-001`
 
@@ -962,23 +962,26 @@ L3 规则的 `book` 必须为“本系统自定义”，不得冒充典籍。
 
 ## 附录 D：数据表清单
 
+> **唯一索引：** 完整表清单、版本、状态与归属以 `docs/04-DATA-DICTIONARY.md` 为准（ADR-003）。本附录只保留 ARS 直接引用的摘要。
+
 | 表 ID | 名称 | 状态 |
 |---|---|---|
-| `COLOR-NUM-02` | 九色表（唯一标准） | 已批准（ADR-002） |
-| `Z-01` | 十二生肖表 | v0.2 |
-| `LUNAR-MONTH-INDEX` | 农历月序表 | 待冻结 |
-| `JIEQI-MONTH-BRANCH` | 节气月建表 | 由 CAL 冻结 |
-| `W-01` | 逐月五行旺衰表 | 待冻结 |
-| `G-01` | 先天八卦表 | v0.2 |
-| `HEX-01` | 六十四卦八宫表 | 待交叉校核 |
-| `NJ-01` | 纳甲干支表 | 待校核 |
-| `XK-01` | 旬空表 | v0.2 |
-| `JL-01` | 焦氏易林表 | 待校勘 |
-| `LIUYAO-YONGSHEN-01` | 纳甲用神映射 | 待冻结 |
-| `ZEJI-EVENT-01` | 择吉事项规则 | 待冻结 |
-| `ZEJI-RULE-01` | 择吉统一规则表 | 待冻结 |
-| `HL-01` | 黄历宜忌表 | 待冻结 |
-| `SRC-01` | 典籍溯源表 | v0.2 |
+| `COLOR-NUM-02` | 九色表（唯一标准） | `VERIFIED`（ADR-002） |
+| `Z-01` | 十二生肖表 | `VERIFIED` |
+| `LUNAR-MONTH-INDEX` | 农历月序表 | `PENDING` |
+| `JIEQI-MONTH-BRANCH` | 节气月建表 | `PENDING`（由 CAL 冻结） |
+| `W-01` | 逐月五行旺衰表 | `PENDING` |
+| `G-01` | 先天八卦表 | `VERIFIED` |
+| `HEX-01` | 六十四卦八宫表 | `PENDING` |
+| `NJ-01` | 纳甲干支表 | `PENDING` |
+| `XK-01` | 旬空表 | `VERIFIED` |
+| `JC-01` | 建除十二神表 | `VERIFIED` |
+| `JL-01` | 焦氏易林表 | `PENDING` |
+| `LIUYAO-YONGSHEN-01` | 纳甲用神映射 | `PENDING` |
+| `ZEJI-EVENT-01` | 择吉事项规则 | `PENDING` |
+| `ZEJI-RULE-01` | 择吉统一规则表 | `PENDING` |
+| `HL-01` | 黄历宜忌表 | `PENDING` |
+| `SRC-01` | 典籍溯源表 | `VERIFIED` |
 
 ## 附录 E：与 SRS/CAL/IR 的关系
 
