@@ -178,7 +178,7 @@ Run * ─── 1 VersionSet
   "seed_algo": "SEED-v2",
   "rng": "RNG-v1",
   "app": "APP-v0.1",
-  "db_schema": "DB-v0.1"
+  "db_schema": "DB-v0.2"
 }
 ```
 

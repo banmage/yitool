@@ -250,9 +250,7 @@ fn run(cli: &Cli, resources: &PathBuf) -> Result<(serde_json::Value, String), (S
                 bazi_present: *bazi_present,
                 base_seed,
             };
-            let chain = ctx
-                .seed(&input)
-                .map_err(|e| ("INTERNAL".into(), e.to_string()))?;
+            let chain = ctx.seed(&input).map_err(|e| app_code(&e))?;
             let value = json!({
                 "base_seed": chain.base_seed_hex(),
                 "draw_seed": chain.draw_seed_hex(),
@@ -303,9 +301,7 @@ fn run(cli: &Cli, resources: &PathBuf) -> Result<(serde_json::Value, String), (S
                     b_mod: *b_mod,
                 },
             };
-            let result = ctx
-                .meihua(input, &query)
-                .map_err(|e| ("INTERNAL".into(), e.to_string()))?;
+            let result = ctx.meihua(input, &query).map_err(|e| app_code(&e))?;
             let text = format!(
                 "{} 之 {}，动{}爻；互 {}；体 {} 用 {}；状态 {}",
                 result.original.name,
@@ -428,7 +424,25 @@ fn app_code(err: &app::AppError) -> (String, String) {
         app::AppError::Registry(_) | app::AppError::Compliance(_) => {
             ("DATA".into(), err.to_string())
         }
-        app::AppError::Meihua(_) | app::AppError::Seed(_) => ("INTERNAL".into(), err.to_string()),
+        app::AppError::Meihua(e) => (
+            match e {
+                meihua::MeihuaError::InvalidColor(_)
+                | meihua::MeihuaError::InvalidAux(_)
+                | meihua::MeihuaError::InvalidTraditional
+                | meihua::MeihuaError::InvalidPerturbation(_, _) => "ARGUMENT".into(),
+                meihua::MeihuaError::Step(_) => "INTERNAL".into(),
+            },
+            e.to_string(),
+        ),
+        app::AppError::Seed(e) => (
+            match e {
+                seed::SeedError::MissingInput(_) | seed::SeedError::InvalidInput(_) => {
+                    "ARGUMENT".into()
+                }
+                seed::SeedError::EntropyUnavailable(_) => "INTERNAL".into(),
+            },
+            e.to_string(),
+        ),
         app::AppError::Store(_) | app::AppError::Io(_) => ("INTERNAL".into(), err.to_string()),
     }
 }

@@ -14,6 +14,8 @@ pub enum MeihuaError {
     InvalidAux(u8),
     #[error("传统数字必须为正整数")]
     InvalidTraditional,
+    #[error("Q/B 扰动越界: Q={0}, B={1}（应为 0..=63）")]
+    InvalidPerturbation(u32, u32),
     #[error("步骤日志构建失败: {0}")]
     Step(String),
 }
@@ -81,7 +83,18 @@ pub struct MeihuaResult {
 
 pub const DISCLAIMER: &str = "本工具仅供个人学习与娱乐，不构成任何决策建议；卦象解释存在流派差异。";
 
+/// Q/B 扰动合法上限（ARS 3.2：`mod 64`）。
+pub const QB_MOD_MAX: u32 = 63;
+
 pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, MeihuaError> {
+    let (q_mod, b_mod) = match input {
+        MeihuaInput::NineColor { q_mod, b_mod, .. }
+        | MeihuaInput::Traditional { q_mod, b_mod, .. } => (q_mod, b_mod),
+    };
+    if q_mod > QB_MOD_MAX || b_mod > QB_MOD_MAX {
+        return Err(MeihuaError::InvalidPerturbation(q_mod, b_mod));
+    }
+
     let (upper, lower, moving, scheme, rule_id, level, formula) = match input {
         MeihuaInput::NineColor {
             color,
@@ -128,7 +141,7 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
                 "TRADITIONAL_NUMBER",
                 "MEIHUA-QIGUA-002",
                 RuleLevel::L2,
-                format!("U=U0 mod 8, D=D0 mod 8, M=(U0+D0) mod 6；本例 U0={u0}, D0={d0}"),
+                format!("U=(U0+Q) mod 8, D=(D0+B) mod 8, M=(U0+D0+Q+B) mod 6；本例 U0={u0}, D0={d0}, Q={q_mod}, B={b_mod}"),
             )
         }
     };
@@ -375,5 +388,43 @@ mod tests {
         )
         .unwrap();
         assert_ne!(a.moving_line, b.moving_line);
+    }
+
+    #[test]
+    fn q_b_perturbation_is_bounded() {
+        let err = cast(
+            MeihuaInput::NineColor {
+                color: 1,
+                aux: 3,
+                q_mod: 64,
+                b_mod: 0,
+            },
+            10,
+        )
+        .unwrap_err();
+        assert_eq!(err, MeihuaError::InvalidPerturbation(64, 0));
+
+        let err = cast(
+            MeihuaInput::Traditional {
+                u0: 9,
+                d0: 16,
+                q_mod: 0,
+                b_mod: 64,
+            },
+            10,
+        )
+        .unwrap_err();
+        assert_eq!(err, MeihuaError::InvalidPerturbation(0, 64));
+
+        assert!(cast(
+            MeihuaInput::NineColor {
+                color: 1,
+                aux: 3,
+                q_mod: QB_MOD_MAX,
+                b_mod: QB_MOD_MAX,
+            },
+            10,
+        )
+        .is_ok());
     }
 }

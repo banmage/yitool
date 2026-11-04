@@ -31,7 +31,7 @@ impl Default for VersionSet {
             seed_algo: "SEED-v2".into(),
             rng: "RNG-v1".into(),
             app: "APP-v0.1".into(),
-            db_schema: "DB-v0.1".into(),
+            db_schema: "DB-v0.2".into(),
         }
     }
 }

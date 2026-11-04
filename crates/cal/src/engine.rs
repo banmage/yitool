@@ -1,6 +1,6 @@
 use chrono::{
-    DateTime, Datelike, Duration, FixedOffset, LocalResult, NaiveDate, NaiveDateTime, TimeZone,
-    Timelike, Utc,
+    DateTime, Datelike, Duration, FixedOffset, LocalResult, NaiveDate, NaiveDateTime, Offset,
+    TimeZone, Timelike, Utc,
 };
 use chrono_tz::Tz;
 use domain::{GanZhi, Status, VersionSet, WuXing};
@@ -92,6 +92,8 @@ pub struct XunOut {
 pub struct DstOut {
     pub ambiguous: bool,
     pub gap: bool,
+    /// 解析后实际采用的本地偏移（如 `-04:00`）。
+    pub selected_offset: String,
     pub policy: String,
 }
 
@@ -236,6 +238,7 @@ pub fn query(data: &CalData, query: &CalQuery) -> Result<CalResult, CalError> {
         dst: DstOut {
             ambiguous,
             gap,
+            selected_offset: local_dt.offset().fix().to_string(),
             policy: "AMBIGUOUS_EARLIER_OFFSET; GAP_SHIFT_FORWARD_1H".into(),
         },
         versions,

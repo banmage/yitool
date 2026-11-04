@@ -9,7 +9,7 @@ use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-pub const SCHEMA_VERSION: &str = "DB-v0.1";
+pub const SCHEMA_VERSION: &str = "DB-v0.2";
 
 #[derive(Debug, Error)]
 pub enum StoreError {
@@ -410,7 +410,8 @@ CREATE TABLE IF NOT EXISTS runs (
     rng_version TEXT NOT NULL,
     disclaimer_present INTEGER NOT NULL DEFAULT 1 CHECK(disclaimer_present IN (0,1)),
     CHECK(mode <> 'CAST' OR random_snapshot_digest IS NOT NULL),
-    CHECK(question_saved = 0 OR (question_hmac IS NOT NULL AND hmac_key_id IS NOT NULL))
+    CHECK(question_hmac IS NULL OR hmac_key_id IS NOT NULL),
+    CHECK(question_saved = 0 OR question_hmac IS NOT NULL)
 );
 CREATE INDEX IF NOT EXISTS runs_by_profile_time ON runs(profile_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS runs_by_mode_time ON runs(mode, created_at);

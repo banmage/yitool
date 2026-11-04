@@ -1,4 +1,3 @@
-use domain::BaziMaterial;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -192,14 +191,6 @@ pub fn generate(input: &SeedInput) -> Result<SeedChain, SeedError> {
         snapshot_digest,
         run_seed,
     })
-}
-
-/// 便捷入口：由生辰材料生成 Q/B 扰动的 B 分量（不持久化摘要）。
-pub fn bazi_b_mod(material: &BaziMaterial) -> u64 {
-    let digest = material.digest();
-    let mut v = u64::from_be_bytes(digest[..8].try_into().expect("8 字节"));
-    v %= 64;
-    v
 }
 
 fn validate(input: &SeedInput) -> Result<(), SeedError> {

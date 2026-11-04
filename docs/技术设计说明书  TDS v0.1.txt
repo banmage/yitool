@@ -52,7 +52,7 @@ TDS v0.1  → 定义架构、模块、接口、存储、技术选型、异常实
 ```text
 TDS_VERSION = "TDS-v0.1"
 APP_VERSION = "APP-v0.1"
-DB_SCHEMA_VERSION = "DB-v0.1"
+DB_SCHEMA_VERSION = "DB-v0.2"
 CONFIG_SCHEMA_VERSION = "CFG-v0.1"
 LOG_SCHEMA_VERSION = "LOG-v0.1"
 ```

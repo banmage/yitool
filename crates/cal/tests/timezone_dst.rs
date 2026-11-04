@@ -37,6 +37,8 @@ fn dst_gap_is_shifted_and_flagged() {
     let r = query(CalTime::Local(gap), "America/New_York").unwrap();
     assert!(r.dst.gap);
     assert!(!r.dst.ambiguous);
+    assert_eq!(r.solar, "2026-03-08T03:30:00-04:00");
+    assert_eq!(r.dst.selected_offset, "-04:00");
 }
 
 #[test]
@@ -48,6 +50,8 @@ fn dst_ambiguous_is_flagged() {
     let r = query(CalTime::Local(ambiguous), "America/New_York").unwrap();
     assert!(r.dst.ambiguous);
     assert!(!r.dst.gap);
+    assert_eq!(r.solar, "2026-11-01T01:30:00-04:00");
+    assert_eq!(r.dst.selected_offset, "-04:00");
 }
 
 #[test]

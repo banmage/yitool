@@ -165,6 +165,8 @@ cargo test -p yitool-app --test perf -- --nocapture
 - [x] 资源 checksum 校验通过
 - [x] 隐私扫描 0 命中；SQLite 明文可被扫描命中
 - [x] DB schema 含 `hmac_key_id`；备份/恢复与档案隔离通过
+- [x] 夏令时重复/缺失按 ADR-006 解析并输出 `selected_offset`
+- [x] Q/B 扰动按 ADR-005 显式启用、范围校验、非法材料报错
 - [x] 2025/2026 逐日基准对照通过（730 天）
 - [x] HKO 1901–2100 逐日交叉校核：农历 0 差异；节气 6 条午夜边界容差（`CAL-DATA-v0.2`）
 - [x] 文档版本/数据字典/决策登记同步
@@ -181,12 +183,12 @@ cargo test -p yitool-app --test perf -- --nocapture
 | `cargo clippy -D warnings` | 通过 |
 | `cargo test --workspace` | 全部通过（含 730 天基准、金标准、隐私、分布、性能） |
 | `yitool verify` | 13 个资源 checksum 全部通过 |
-| `yitool db init` | schema `DB-v0.1`，WAL，外键开启 |
+| `yitool db init` | schema `DB-v0.2`，WAL，外键开启 |
 | `yitool privacy-scan` | 0 命中 |
 | CAL 锚点 | 2026-11-03 → 农历 09-25 / 丙午 戊戌 辛巳 甲午 / 甲戌旬空申酉 |
 | 梅花金标准 | TC-MEIHUA-001、TC-MEIHUA-002 通过 |
 
-**遗留**：HEX/NJ/W 等规则资源仍为 `PENDING`，需易学评审交叉校核；CAL 规则集仍待冻结；Q/B 材料定义与 HMAC Keychain 实现延期。
+**遗留**：HEX/NJ/W 等规则资源仍为 `PENDING`，需易学评审交叉校核；CAL 规则集仍待冻结；Q/B 材料与 HMAC 密钥语义已由 ADR-005/007 冻结，系统 Keychain 接入延期至阶段 1。
 
 ### 11.1 CAL 数据交叉校核（2026-11-04）
 

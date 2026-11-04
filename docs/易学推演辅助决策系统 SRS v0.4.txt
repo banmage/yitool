@@ -807,7 +807,7 @@ result_type, weight, priority, source_ref, rule_level
     "seed_algo": "SEED-v2",
     "rng": "RNG-v1",
     "app": "APP-v0.1",
-    "db_schema": "DB-v0.1"
+    "db_schema": "DB-v0.2"
   },
   "engines": ["MEIHUA", "JIAOLIN", "LIUYAO"],
   "input_summary": {

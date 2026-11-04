@@ -42,13 +42,13 @@ IR_TEMPLATE_SET    = IR-TPL-v0.1
 SEED_ALGO          = SEED-v2
 RNG_VERSION        = RNG-v1
 APP_VERSION        = APP-v0.1
-DB_SCHEMA_VERSION  = DB-v0.1
+DB_SCHEMA_VERSION  = DB-v0.2
 CONFIG_SCHEMA      = CFG-v0.1
 LOG_SCHEMA         = LOG-v0.1
 ```
 
 > 说明：SRS 附录 B、ARS 0.3 与代码已统一为 `RULE-v0.2`/`DATA-v0.2`；SRS 附录 B 已同步完整 `VersionSet`。
-> **版本记录：** CAL 文档已同步 `CAL-DATA-v0.2`；当前校核数据以本表为准。
+> **版本记录：** CAL 文档已同步 `CAL-DATA-v0.2`；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；当前校核数据以本表为准。
 
 ---
 
