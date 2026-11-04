@@ -154,7 +154,7 @@ cargo run -p yitool-cli -- db check --path /tmp/yitool-test.db
 cargo test -p yitool-app --test perf -- --nocapture
 ```
 
-预期：种子 P95 < 50ms、单引擎 P95 < 200ms、一年逐日遍历 P95 < 500ms（本机基线；输出含 OS/架构）。
+预期：种子 P95 < 50ms、单引擎 P95 < 200ms、一年逐日遍历 P95 < 500ms、1000 条历史列表 P95 < 100ms、单条历史可见性 P95 < 10ms（本机 debug 基线，见 ADR-010；输出含 OS/架构与数据规模）。
 
 ## 10. 阶段 0 验收清单
 
@@ -174,7 +174,7 @@ cargo test -p yitool-app --test perf -- --nocapture
 ## 11. 验收记录
 
 **执行日期**：2026-11-03
-**环境**：Linux x86_64；Rust 1.99.1；SQLite bundled；`chrono-tz` tzdata 2025b。
+**环境**：Linux x86_64；Intel Core i5-5200U / 4GB RAM；Rust 1.99.1；SQLite bundled；`chrono-tz` tzdata 2025b。
 **命令**：`./scripts/check.sh`
 
 | 项目 | 结果 |
@@ -186,6 +186,7 @@ cargo test -p yitool-app --test perf -- --nocapture
 | `yitool db init` | schema `DB-v0.2`，WAL，外键开启 |
 | `yitool privacy-scan` | 0 命中 |
 | CAL 锚点 | 2026-11-03 → 农历 09-25 / 丙午 戊戌 辛巳 甲午 / 甲戌旬空申酉 |
+| 性能基线 | 种子 0.46ms、梅花 0.19ms、CAL 一年 0.39ms、1000 历史列表 2.23ms、单条查询 0.06ms（P95，debug） |
 | 梅花金标准 | TC-MEIHUA-001、TC-MEIHUA-002 通过 |
 
 **遗留**：HEX/NJ/W 等规则资源仍为 `PENDING`，需易学评审交叉校核；CAL 规则集仍待冻结；Q/B 材料与 HMAC 密钥语义已由 ADR-005/007 冻结，系统 Keychain 接入延期至阶段 1。

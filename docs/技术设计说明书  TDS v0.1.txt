@@ -81,7 +81,7 @@ LOG_SCHEMA_VERSION = "LOG-v0.1"
 | 本地数据库 | SQLite（WAL 模式） | DuckDB、文件 JSON | 单文件、事务、查询、备份简单 |
 | 古籍文本 | SQLite 表 + 静态资源 | Markdown 文件 | 结构化检索与版本管理 |
 | 日志 | JSON Lines + SQLite 索引 | — | 便于追溯与查询 |
-| 加密 | OS Keychain/Secret Service + AES-GCM | age、SQLCipher | 本地密钥与数据库加密 |
+| 加密 | 目标 SQLCipher；阶段 0 应用内脱敏 | age、字段级 AES-GCM 单用 | 本地密钥与数据库加密（ADR-009） |
 | 打包 | Tauri bundler | — | 各平台安装包 |
 
 > **待冻结：** 最终技术栈须在阶段 0 完成原型验证后冻结。若团队更熟悉 Python，可将引擎层改为 Python + PyO3，但接口契约不变。
@@ -489,7 +489,7 @@ resources/
 4. HMAC 密钥存于 OS Keychain/Secret Service；不写数据库、不写日志。
 5. 密钥轮换策略：新记录用新密钥；旧记录保留 `key_id` 以验证；轮换不重算旧 HMAC。
 
-### 5.3 数据库加密 `TDS-PRIV-003`（待冻结）
+### 5.3 数据库加密 `TDS-PRIV-003`（已批准：ADR-009）
 
 | 方案 | 说明 | 状态 |
 |---|---|---|

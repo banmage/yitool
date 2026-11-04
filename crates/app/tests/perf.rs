@@ -103,3 +103,56 @@ fn meihua_p95() {
     }
     report("meihua", p95(samples), 200);
 }
+
+#[test]
+fn history_1000_runs_p95() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = store::Store::init(dir.path().join("app.db")).unwrap();
+    store
+        .create_profile(&store::Profile {
+            profile_id: "family-a".into(),
+            display_name: "家庭".into(),
+            created_at: "2026-11-03T12:00:00+08:00".into(),
+            is_default: true,
+        })
+        .unwrap();
+
+    for i in 0..1000u32 {
+        store
+            .insert_run(&store::RunRecord {
+                run_id: format!("run-{i:04}"),
+                profile_id: "family-a".into(),
+                created_at: format!("2026-11-03T12:{:02}:{:02}+08:00", i / 60 % 60, i % 60),
+                mode: "FIXED".into(),
+                engine_scope: "MEIHUA".into(),
+                question_hmac: None,
+                question_saved: false,
+                bazi_present: false,
+                hmac_key_id: None,
+                random_snapshot_digest: None,
+                versions: domain::VersionSet::default(),
+                disclaimer_present: true,
+            })
+            .unwrap();
+    }
+
+    eprintln!("perf data: history runs=1000 profile=family-a, no cache");
+    let mut samples = Vec::new();
+    for _ in 0..100 {
+        let t = Instant::now();
+        let runs = store.list_runs("family-a").unwrap();
+        assert_eq!(runs.len(), 1000);
+        samples.push(t.elapsed());
+    }
+    report("history-list-1000", p95(samples), 100);
+
+    let mut samples = Vec::new();
+    for i in 0..1000u32 {
+        let t = Instant::now();
+        assert!(store
+            .run_visible("family-a", &format!("run-{i:04}"))
+            .unwrap());
+        samples.push(t.elapsed());
+    }
+    report("history-lookup-1000", p95(samples), 10);
+}
