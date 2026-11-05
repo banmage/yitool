@@ -6,6 +6,8 @@
 - **决策人：** 项目所有者
 - **生效版本：** RULE-v0.2 / DATA-v0.2 / CAL-DATA-v0.2 / DD-v0.2
 
+> **后续版本：** CAL 规则集已由 ADR-016 于 2026-11-05 升为 `CAL-v0.2` / `CAL-RULE-v0.2`；本 ADR 中 `CAL-RULE-v0.1（规则集仍待冻结）` 为当时状态。
+
 ## 背景
 
 SRS 附录 B 的日志示例写 `RULE-v0.4`/`DATA-v0.4`，而 ARS 0.3、Rust 内核与资源 manifest 已统一使用 `RULE-v0.2`/`DATA-v0.2`。CAL 文档的示例仍写 `CAL-DATA-v0.1`，但当前校核数据为 `CAL-DATA-v0.2`。同时 SRS 附录 A、ARS 附录 D 与 `docs/04-DATA-DICTIONARY.md` 的表清单、状态和版本不一致，存在实现与文档双轨风险。

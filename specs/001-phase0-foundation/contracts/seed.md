@@ -15,7 +15,7 @@ pub struct SeedInput {
     pub day_bound: DayBound,
     pub rule_set: String,      // RULE-v0.2
     pub data_version: String,  // DATA-v0.2
-    pub cal_version: String,   // CAL-v0.1
+    pub cal_version: String,   // CAL-v0.2
 }
 
 pub struct InputSnapshot {

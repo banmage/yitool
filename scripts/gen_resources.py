@@ -251,7 +251,7 @@ def gen_wuxing_wangshuai() -> None:
         {
             "version": "W-01",
             "status": "PENDING",
-            "source": "ARS v0.2 3.7（待 CAL/ARS 校核冻结）",
+            "source": "ARS v0.2 3.7（待 ARS 校核冻结；CAL v0.2 已冻结）",
             "relation_rule": "同我旺、生我相、我生休、我克囚、克我死",
             "branches": [
                 {"branch": b, "branch_id": i, "element": e} for b, i, e in branches
@@ -269,7 +269,7 @@ def gen_rules() -> None:
         ("SRC-MEIHUA-004", "梅花易数", "传世本", "体用", "动爻定体用", "系统按 ARS v0.2 重述", "L2", "PENDING", "公有领域"),
         ("SRC-MEIHUA-005", "梅花易数", "传世本", "旺衰", "月建五行生克", "W-01 待冻结", "L2", "PENDING", "公有领域"),
         ("SRC-MEIHUA-006", "本系统自定义", "v0.2", "忌神与弱势卦位", "E_ji=克体之行；弱势卦位=同忌神五行卦位", "ADR-011；L3 自定义，W-01 未校核前整体仍待校核", "L3", "PENDING", "系统自定义"),
-        ("SRC-CAL-001", "历法服务规范 CAL v0.1", "v0.1", "历法", "公农历/节气/四柱/日界/旬空", "CAL 数据待权威历书校核", "L1", "PENDING", "系统文档"),
+        ("SRC-CAL-001", "历法服务规范 CAL v0.2", "v0.2", "历法", "公农历/节气/四柱/日界/旬空", "CAL v0.2 已冻结（ADR-016）；数据按 HKO 1901–2100 校核", "L1", "VERIFIED", "系统文档"),
         ("SRC-SEED-001", "技术设计说明书 TDS v0.1", "v0.1", "种子链", "SHA-256 派生与 HMAC", "阶段 0 实现", "L2", "PENDING", "系统文档"),
         ("SRC-IR-001", "推演解释规则规范 IR v0.1", "v0.1", "合规", "免责声明与禁用绝对断语", "阶段 0 最小实现", "L1", "PENDING", "系统文档"),
         ("SRC-LOG-001", "推演解释规则规范 IR v0.1", "v0.1", "日志", "步骤日志字段", "阶段 0 最小实现", "L1", "PENDING", "系统文档"),

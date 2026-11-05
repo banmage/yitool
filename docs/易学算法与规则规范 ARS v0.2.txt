@@ -22,7 +22,7 @@
 6. **隐私与复现边界：** 问事文本默认不持久化；关联历史使用本地密钥 HMAC；生辰不落盘、不入快照、不参与可长期复现推演种子。
 7. **A/B 统一条件对照：** 定义共同基础种子、共同抽卡子种子、共同随机快照，不因问事文本不同而派生不同随机条件。
 8. **纳甲完整化：** 补齐纳甲干支表、六十四卦八宫表、旬空算法、变卦流程、六亲/六神/世应规则、多卦金标准要求。
-9. **历法拆分引用 CAL：** `LUNAR_MONTH_INDEX` 与 `JIEQI_MONTH_BRANCH` 分离；详细历法由 CAL v0.1 冻结，ARS 只定义接口。
+9. **历法拆分引用 CAL：** `LUNAR_MONTH_INDEX` 与 `JIEQI_MONTH_BRANCH` 分离；详细历法由 CAL v0.2 冻结，ARS 只定义接口。
 10. **择吉规则统一抽象：** 建除、神煞、过滤、评分统一为规则记录；不输出单一总分；冲突保留并解释。
 11. **版本/ID 统一：** 统一 `step_id`、`rule_id`、`data_ref`、`source_ref`；统一枚举 `COIN_CAST`、`MANUAL_YAO`、`FIXED_DERIVED`。
 12. **金标准重做：** 九色模式、传统数字模式、纳甲多卦、种子链、随机分布、隐私扫描分别建立样例。
@@ -43,7 +43,7 @@
 ARS_VERSION = "ARS-v0.2"
 RULE_SET_VERSION = "RULE-v0.2"
 DATA_VERSION = "DATA-v0.2"
-CAL_VERSION = "CAL-v0.1"
+CAL_VERSION = "CAL-v0.2"
 SEED_ALGO = "SEED-v2"
 RNG_VERSION = "RNG-v1"
 IR_VERSION = "IR-v0.1"
@@ -148,7 +148,7 @@ source_ref = 典籍出处编号，如 SRC-MEIHUA-001
 | 11 | 十一月 | 11 | 同上 |
 | 12 | 十二月 | 12 | 同上 |
 
-#### 1.4.2 节气月建表 `JIEQI-MONTH-BRANCH`（L1/L2，由 CAL v0.1 冻结）
+#### 1.4.2 节气月建表 `JIEQI-MONTH-BRANCH`（L1/L2，由 CAL v0.2 冻结）
 
 供旺衰、纳甲、择吉、黄历使用。月建按节气换月，不以农历初一为界。
 
@@ -293,7 +293,7 @@ question_hmac = HMAC-SHA256(local_hmac_key, normalize_text(question))
   "day_bound": "ZICHU|ZIZHENG",
   "rule_set": "RULE-v0.2",
   "data_version": "DATA-v0.2",
-  "cal_version": "CAL-v0.1"
+  "cal_version": "CAL-v0.2"
 }
 ```
 
@@ -484,10 +484,10 @@ BIAN = hexagram_from_binary(lines)
 
 ### 3.7 旺衰 `MEIHUA-WANGSHUAI-001`
 
-1. 由 CAL v0.1 取节气月建 `month_branch` 与五行。
+1. 由 CAL v0.2 取节气月建 `month_branch` 与五行。
 2. 体卦/用卦五行与月建五行比较：同我旺、生我相、我生休、我克囚、克我死。
 3. 旺衰只作为 IR 解释权重，不改变卦象数字。
-4. 完整逐月五行旺衰表 `W-01` 待 CAL/ARS 校核冻结。
+4. 完整逐月五行旺衰表 `W-01` 待 ARS 校核冻结（CAL v0.2 已冻结）。
 
 ### 3.8 忌神与弱势卦位 `MEIHUA-JISHEN-001`（L3）
 
@@ -708,7 +708,7 @@ kong_2 = (xun_head_branch + 11) mod 12
 
 ### 6.1 三层模型
 
-1. **基础历法层：** 干支、节气月建、日支、生肖冲合、时区、日界，由 CAL v0.1 提供。
+1. **基础历法层：** 干支、节气月建、日支、生肖冲合、时区、日界，由 CAL v0.2 提供。
 2. **规则判定层：** 建除、二十八宿、吉神凶神、月破、岁破、四废、大耗等，统一为 `ZEJI-RULE-01` 记录。
 3. **事项适配层：** `ZEJI-EVENT-01` 按事项类型选择规则集与权重。
 
@@ -743,9 +743,9 @@ for each rule in matched_rules:
 
 ---
 
-## 7. 历法接口（引用 CAL v0.1）
+## 7. 历法接口（引用 CAL v0.2）
 
-ARS 不重复定义完整历法算法。CAL v0.1 须提供以下接口：
+ARS 不重复定义完整历法算法。CAL v0.2 须提供以下接口：
 
 ```text
 get_lunar_month_index(datetime, timezone, day_bound) -> {lunar_index, leap}
@@ -760,7 +760,7 @@ get_day_bound(datetime, day_bound) -> effective_date
 2. 月柱以十二节气切换。
 3. 日柱纪日基准与日界由 CAL 冻结；默认子初换日，可配置子正。
 4. 时区使用 IANA；夏令时不存在/重复时刻由 CAL 定义。
-5. CAL v0.1 冻结前，纳甲、旺衰、择吉、黄历不得宣称计算正确。
+5. CAL v0.2 已冻结；纳甲、旺衰、择吉、黄历可使用历法结果，但其自身规则未校核时不得宣称整体计算正确。
 
 ---
 
@@ -778,7 +778,7 @@ get_day_bound(datetime, day_bound) -> effective_date
     "ars": "ARS-v0.2",
     "srs": "SRS-v0.4",
     "ir": "IR-v0.1",
-    "cal": "CAL-v0.1",
+    "cal": "CAL-v0.2",
     "rule_set": "RULE-v0.2",
     "data": "DATA-v0.2",
     "seed_algo": "SEED-v2",
@@ -890,7 +890,7 @@ L3 规则的 `book` 必须为“本系统自定义”，不得冒充典籍。
 | F-06 | 用神映射 `LIUYAO-YONGSHEN-01` | LIUYAO | 阶段 3 |
 | F-07 | 择吉事项规则 `ZEJI-EVENT-01`、权重 | ZEJI | 阶段 4 |
 | F-08 | 月破/岁破/四废/大耗精确定义 | ZEJI | 阶段 4 |
-| F-09 | CAL v0.1 历法基准、日界、时区、夏令时 | CAL、LIUYAO、ZEJI | 阶段 0 |
+| F-09 | CAL v0.2 历法基准、日界、时区、夏令时 | CAL、LIUYAO、ZEJI | 阶段 0 |
 | F-10 | 黄历数据 `HL-01`、二十八宿 | ZEJI、黄历 | 阶段 4 |
 | F-11 | 变卦伏神等扩展 | LIUYAO | 阶段 3 后 |
 | F-12 | 本地 HMAC 密钥管理 | 隐私、TDS | 阶段 0 |
@@ -1023,7 +1023,7 @@ L3 规则的 `book` 必须为“本系统自定义”，不得冒充典籍。
 ```text
 SRS v0.4  → 定义行为、输入输出、验收
 ARS v0.2  → 定义计算、映射、索引、金标准
-CAL v0.1  → 定义历法、节气、日界、时区
+CAL v0.2  → 定义历法、节气、日界、时区
 IR v0.1   → 定义计算结果到文字解释、措辞等级、冲突解释
 TDS v0.1  → 定义架构、接口、存储、异常实现
 ```
@@ -1032,4 +1032,4 @@ ARS 不输出最终文字解释；解释由 IR 完成。ARS 不重复定义完�
 
 ---
 
-**ARS v0.2 结论：** 本版已修正 v0.1 的梅花输入与金标准矛盾，建立九色/传统数字双模式，消除固定模式种子循环依赖，明确隐私复现边界，补齐纳甲八宫/干支/旬空/变卦与多卦测试要求，拆分历法并统一择吉规则抽象。`COLOR-NUM-02`、`W-01`、`HEX-01`、`NJ-01`、`JL-01`、`LIUYAO-YONGSHEN-01`、`ZEJI-EVENT-01`、`CAL v0.1` 等仍须按第 10 章冻结后，对应引擎方可发布正式结果；冻结前输出必须标记“规则待校核”。
+**ARS v0.2 结论：** 本版已修正 v0.1 的梅花输入与金标准矛盾，建立九色/传统数字双模式，消除固定模式种子循环依赖，明确隐私复现边界，补齐纳甲八宫/干支/旬空/变卦与多卦测试要求，拆分历法并统一择吉规则抽象。`COLOR-NUM-02`、`W-01`、`HEX-01`、`NJ-01`、`JL-01`、`LIUYAO-YONGSHEN-01`、`ZEJI-EVENT-01` 等仍须按第 10 章冻结后，对应引擎方可发布正式结果；冻结前输出必须标记“规则待校核”。

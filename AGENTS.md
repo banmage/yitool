@@ -14,7 +14,7 @@
 2. `docs/易学推演辅助决策系统 SRS v0.4.txt` — 行为、边界、验收
 3. `docs/易学算法与规则规范 ARS v0.2.txt` — 算法、映射、金标准
 4. `docs/推演解释规则规范 IR v0.1.txt` — 解释模板、措辞、合规
-5. `docs/历法服务规范 CAL v0.1 .txt` — 历法、日界、时区
+5. `docs/历法服务规范 CAL v0.2.txt` — 历法、日界、时区（已冻结）
 6. `docs/技术设计说明书  TDS v0.1.txt` — 架构、接口、存储
 7. `docs/00-PROJECT-ROADMAP.md` — 阶段、里程碑、风险
 8. `docs/01-DOC-ANALYSIS.md` — 文档冲突与缺口（A-01～A-22）
@@ -83,13 +83,13 @@ tests/golden/         跨 crate 金标准 JSON
 
 ## 6. 当前状态与下一步
 
-- 五份规范：草案已齐，均未冻结；未校核资源显式标 `PENDING`。
+- 五份规范：SRS/ARS/IR/TDS 草案已齐且未冻结；CAL v0.2 已冻结（`CAL-RULE-v0.2`，ADR-016）；未校核资源显式标 `PENDING`。
 - 代码：Rust workspace + `yitool` CLI 已落地；阶段 0 P1 内核（CAL/种子/溯源/隐私/梅花金标准）已通过测试。
 - 历法数据：`CAL-DATA-v0.2` 已按香港天文台 1901–2100 对照表逐日校核（农历 0 差异；节气 6 条午夜边界容差，见 `docs/reports/CAL-HKO-CROSSCHECK-v0.2.md`）。
 - 当前阶段：**阶段 0（进行中）**。
-- 已批准：D-01 九色、D-02 技术栈、D-05 版本基线、D-06 A/B 随机语义、D-07 Q/B 扰动、D-08 HMAC 密钥、D-10 数据字典、D-11 忌神算法、D-14 DST 策略、D-15 数据库加密、D-16 资源 manifest、D-17 schema 迁移、D-18 性能基准、D-19 CAL 算法/库、D-41 午夜边界容差、D-42 tzdata 版本；D-03/D-04/D-12/D-13 见 ADR-013，D-19/D-20/D-41 见 ADR-014，D-42 见 ADR-015。
+- 已批准：D-01 九色、D-02 技术栈、D-05 版本基线、D-06 A/B 随机语义、D-07 Q/B 扰动、D-08 HMAC 密钥、D-10 数据字典、D-11 忌神算法、D-14 DST 策略、D-15 数据库加密、D-16 资源 manifest、D-17 schema 迁移、D-18 性能基准、D-19 CAL 算法/库、D-41 午夜边界容差、D-42 tzdata 版本；D-03/D-04/D-12/D-13 见 ADR-013，D-19/D-20/D-41 见 ADR-014，D-42 见 ADR-015，CAL 规则集冻结见 ADR-016。
 - 阻塞点：HEX-01/NJ-01/W-01 校勘、D-09 变卦六亲（阶段 3 前）。
-- 下一步：CAL 文档升版冻结 → 校勘规则数据 → 阶段 1 Tauri/React 接入。
+- 下一步：校勘规则数据 → 阶段 1 Tauri/React 接入。
 
 ## 7. 代码与提交约定
 

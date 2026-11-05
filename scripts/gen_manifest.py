@@ -51,7 +51,7 @@ def main() -> None:
         "manifest_id": "MANIFEST-data",
         "version": "DATA-v0.2",
         "generated_by": "scripts/gen_manifest.py",
-        "not_frozen_notice": "所有 PENDING 条目在 CAL/ARS 冻结前不得作为正式结论。",
+        "not_frozen_notice": "所有 PENDING 条目在对应规则集冻结前不得作为正式结论；CAL v0.2 已冻结，ARS/IR 等仍待冻结。",
         "entries": entries,
     }
     MANIFEST.parent.mkdir(parents=True, exist_ok=True)

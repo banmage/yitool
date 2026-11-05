@@ -189,7 +189,7 @@ cargo test -p yitool-app --test perf -- --nocapture
 | 性能基线 | 种子 0.46ms、梅花 0.19ms、CAL 一年 0.39ms、1000 历史列表 2.23ms、单条查询 0.06ms（P95，debug） |
 | 梅花金标准 | TC-MEIHUA-001、TC-MEIHUA-002 通过 |
 
-**遗留**：HEX/NJ/W 等规则资源仍为 `PENDING`，需易学评审交叉校核；CAL 规则集仍待冻结；Q/B 材料与 HMAC 密钥语义已由 ADR-005/007 冻结，系统 Keychain 接入延期至阶段 1。
+**遗留**：HEX/NJ/W 等规则资源仍为 `PENDING`，需易学评审交叉校核；CAL 规则集已于 2026-11-05 冻结为 `CAL-v0.2` / `CAL-RULE-v0.2`（ADR-016）；Q/B 材料与 HMAC 密钥语义已由 ADR-005/007 冻结，系统 Keychain 接入延期至阶段 1。
 
 ### 11.1 CAL 数据交叉校核（2026-11-04）
 
@@ -228,4 +228,18 @@ cargo test -p yitool-app --test perf -- --nocapture
 | ADR-014 | CAL 数据源、双年基准、午夜边界容差 | sxtwl 2.0.7 预计算表 + Rust 纯查询；HKO 双源校核；2025/2026 回归快照；边界容差 900 秒 |
 | ADR-015 | tzdata 版本与升级 | chrono-tz 0.10.4 内置 tzdata `2025b`；离线、历史保留原版本、升级需回归 |
 
-**说明**：`CAL-BASE-2025/2026` 是由 `CAL-DATA-v0.2` 派生的回归快照，文件内仍标 `PENDING`，不得作为独立权威基准；CF-08 的权威证据是 HKO 交叉校核报告。CAL 文档升版冻结与发布构建 tzdata 复核仍为后续动作。
+**说明**：`CAL-BASE-2025/2026` 是由 `CAL-DATA-v0.2` 派生的回归快照，文件内仍标 `PENDING`，不得作为独立权威基准；CF-08 的权威证据是 HKO 交叉校核报告。CAL 文档升版冻结已完成（见 11.4）；发布构建 tzdata 复核仍为后续动作。
+
+### 11.4 CAL 规则集冻结（ADR-016，2026-11-05）
+
+| 项目 | 结果 |
+|---|---|
+| 文档版本 | `docs/历法服务规范 CAL v0.2.txt`，`CAL v0.2（规则冻结版）` |
+| 规则集 | `CAL-RULE-v0.2` |
+| 数据版本 | `CAL-DATA-v0.2`（不变） |
+| 代码版本 | `VersionSet.cal = "CAL-v0.2"` |
+| 冻结项 | CF-01～CF-09 关闭；CF-10 延期阶段 4 |
+| 数据表 | `LUNAR-MONTH-INDEX`、`JIEQI-MONTH-BRANCH`、`CAL-TZDATA` → `VERIFIED`；`CAL-BASE-2025/2026` 仍为 `PENDING`（回归快照） |
+| 历史兼容 | 旧记录按原 `CAL-v0.1` 渲染，不静默重算 |
+
+**说明**：CAL 冻结只覆盖历法基础规则；`W-01`、`NJ-01`、`HEX-01`、`JL-01` 等未校核时，对应引擎仍须标“待校核”。

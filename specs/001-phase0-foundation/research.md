@@ -16,9 +16,9 @@
 ## R-02 CAL 实现方式
 
 - **Decision**: 预计算表 + 纯 Rust 查询。`resources/cal/lunar_months.json` 存农历月首（JDN、农历年/月、是否闰月、天数）；`resources/cal/jieqi.json` 存 24 节气精确时刻（UTC）。
-- **Rationale**: CAL v0.1 允许“预计算表”或“天文算法”，二者都须通过逐日基准；阶段 0 优先可验证性与确定性，天文算法留作后续升级（`CAL_EPHEMERIS`）。
+- **Rationale**: CAL v0.2 已冻结为“预计算表 + Rust 纯查询”（ADR-014）；阶段 0 优先可验证性与确定性，天文算法留作后续升级（`CAL_EPHEMERIS`）。
 - **Alternatives considered**:
-  - 现成 Rust 农历 crate：依赖行为与版本不可控，难以满足 `CAL-v0.1` 的版本/校验要求。
+  - 现成 Rust 农历 crate：依赖行为与版本不可控，难以满足 `CAL-v0.2` 的版本/校验要求。
   - 自研天文算法：精度与边界（历史时区、节气秒级）成本高，阶段 0 不合适。
 - **Data source**: `sxtwl` 2.0.7（Python，VSOP87/ELP2000）生成 `CAL-DATA-v0.2`；已用香港天文台 1901–2100 对照表逐日交叉校核，状态 `VERIFIED`（节气秒级时刻仍属计算值，6 条午夜边界按 D-41 处理）。
 

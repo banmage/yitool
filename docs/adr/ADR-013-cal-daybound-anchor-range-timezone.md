@@ -4,7 +4,7 @@
 - **日期：** 2026-11-05
 - **关联：** D-03、D-04、D-12、D-13、CF-03/CF-04/CF-05/CF-07、CAL 2.1/5.3/6.1/6.2/6.3/8.4
 - **决策人：** 项目所有者
-- **生效版本：** `CAL-RULE-v0.1`（规则决策已关闭，随 CAL 文档冻结升版）
+- **生效版本：** `CAL-RULE-v0.2` / `CAL-v0.2`（ADR-016 冻结）
 
 ## 背景
 
@@ -33,7 +33,7 @@ CAL 2.1 已给出默认支持范围，CAL 5.3 列出三个“待校核”的日�
 ## 影响
 
 - **文档：** CAL 5.3 由“待校核候选”改为已选基准；CAL 6.1/6.3 补充“显式传参、历史保留”；决策登记册 D-03/D-04/D-12/D-13 关闭。
-- **代码：** `crates/cal/src/engine.rs` 的 `MIN_DATE`/`MAX_DATE`、`DayBound`、`effective_jdn` 与 `(effective_jdn + 49) % 60` 保持现状；`crates/domain/src/version.rs` 默认 `CAL-v0.1` 暂不变，待 CAL 文档冻结升版时统一。
+- **代码：** `crates/cal/src/engine.rs` 的 `MIN_DATE`/`MAX_DATE`、`DayBound`、`effective_jdn` 与 `(effective_jdn + 49) % 60` 保持现状；`crates/domain/src/version.rs` 默认 `CAL-v0.2` 由 ADR-016 同步。
 - **数据/金标准：** `anchors.rs` 固定 1900-01-31 甲辰、2000-01-01 戊午；`day_bound.rs` 固定 22:59/23:00/23:59 的 `ZICHU` 切换；`baseline_2025_2026.rs` 覆盖两年逐日结果。
 - **隐私/合规：** 无新增持久化字段；时区与日界属于非敏感配置，但必须随历史记录保存以支持复现。
 

@@ -2,7 +2,7 @@
   "manifest_id": "MANIFEST-data",
   "version": "DATA-v0.2",
   "generated_by": "scripts/gen_manifest.py",
-  "not_frozen_notice": "所有 PENDING 条目在 CAL/ARS 冻结前不得作为正式结论。",
+  "not_frozen_notice": "所有 PENDING 条目在对应规则集冻结前不得作为正式结论；CAL v0.2 已冻结，ARS/IR 等仍待冻结。",
   "entries": [
     {
       "id": "CAL-BASELINE-2025",
@@ -74,15 +74,15 @@
       "version": "RULE-v0.2",
       "status": "PENDING",
       "source": "ARS v0.2 附录 C/D + SRS v0.4",
-      "sha256": "ec9b6493047fc06aad008b914918b0246d42ed993069444785f8ba755ee42fb5"
+      "sha256": "d08c8cd32140e83728bb7431f23c97bfdfeed09db95c4c1bc1d000b71f37e7bd"
     },
     {
       "id": "W-01",
       "path": "data/wuxing_wangshuai.json",
       "version": "W-01",
       "status": "PENDING",
-      "source": "ARS v0.2 3.7（待 CAL/ARS 校核冻结）",
-      "sha256": "78eda6f9566aef6dc9362ccf3602ebf03ab45069978b76bdb544cc35f5c931c5"
+      "source": "ARS v0.2 3.7（待 ARS 校核冻结；CAL v0.2 已冻结）",
+      "sha256": "d9cdfa9d67a59641fc96fb79203d54d03e52316f92a6600ec1e9a46c9a991869"
     },
     {
       "id": "XK-01",

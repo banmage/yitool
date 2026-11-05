@@ -170,7 +170,7 @@ Run * ─── 1 VersionSet
   "srs": "SRS-v0.4",
   "ars": "ARS-v0.2",
   "ir": "IR-v0.1",
-  "cal": "CAL-v0.1",
+  "cal": "CAL-v0.2",
   "rule_set": "RULE-v0.2",
   "data": "DATA-v0.2",
   "cal_data": "CAL-DATA-v0.2",
@@ -207,7 +207,7 @@ Run * ─── 1 VersionSet
   "ganzhi": {"year": "丙午", "month": "戊戌", "day": "辛巳", "hour": "甲午"},
   "xun": {"xun_head": "甲戌", "kong_branches": ["申", "酉"]},
   "dst": {"ambiguous": false, "gap": false},
-  "versions": {"cal": "CAL-v0.1", "cal_data": "CAL-DATA-v0.2", "tzdata": "..."},
+  "versions": {"cal": "CAL-v0.2", "cal_data": "CAL-DATA-v0.2", "tzdata": "..."},
   "status": "VERIFIED"
 }
 ```

@@ -363,13 +363,13 @@
     },
     {
       "source_ref": "SRC-CAL-001",
-      "book": "历法服务规范 CAL v0.1",
-      "edition": "v0.1",
+      "book": "历法服务规范 CAL v0.2",
+      "edition": "v0.2",
       "chapter": "历法",
       "original_excerpt": "公农历/节气/四柱/日界/旬空",
-      "modern_note": "CAL 数据待权威历书校核",
+      "modern_note": "CAL v0.2 已冻结（ADR-016）；数据按 HKO 1901–2100 校核",
       "rule_level": "L1",
-      "collation_status": "PENDING",
+      "collation_status": "VERIFIED",
       "copyright_status": "系统文档"
     },
     {
