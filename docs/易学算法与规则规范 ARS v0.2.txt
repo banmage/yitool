@@ -129,7 +129,7 @@ source_ref = 典籍出处编号，如 SRC-MEIHUA-001
 
 ### 1.4 月令拆分：`LUNAR-MONTH-INDEX` 与 `JIEQI-MONTH-BRANCH`
 
-#### 1.4.1 农历月序表 `LUNAR-MONTH-INDEX`（L2/L3，待冻结）
+#### 1.4.1 农历月序表 `LUNAR-MONTH-INDEX`（L2/L3，CAL v0.2 已冻结）
 
 供梅花自定义月序起象使用。
 
@@ -1003,8 +1003,8 @@ L3 规则的 `book` 必须为“本系统自定义”，不得冒充典籍。
 |---|---|---|
 | `COLOR-NUM-02` | 九色表（唯一标准） | `VERIFIED`（ADR-002） |
 | `Z-01` | 十二生肖表 | `VERIFIED` |
-| `LUNAR-MONTH-INDEX` | 农历月序表 | `PENDING` |
-| `JIEQI-MONTH-BRANCH` | 节气月建表 | `PENDING`（由 CAL 冻结） |
+| `LUNAR-MONTH-INDEX` | 农历月序表 | `VERIFIED`（ADR-016） |
+| `JIEQI-MONTH-BRANCH` | 节气月建表 | `VERIFIED`（ADR-016） |
 | `W-01` | 逐月五行旺衰表 | `PENDING` |
 | `G-01` | 先天八卦表 | `VERIFIED` |
 | `HEX-01` | 六十四卦八宫表 | `PENDING` |

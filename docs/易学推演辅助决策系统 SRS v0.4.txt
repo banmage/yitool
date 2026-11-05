@@ -770,8 +770,8 @@ result_type, weight, priority, source_ref, rule_level
 |---|---|---|---|
 | COLOR-NUM-02 | 九色象数表（唯一标准） | `VERIFIED`（ADR-002） | 九色唯一输入，L3 |
 | Z-01 | 十二生肖表 | `VERIFIED` | 地支五行 L1/L2；象数 L3 |
-| LUNAR-MONTH-INDEX | 农历月序表 | `PENDING` | 供自定义月序起象 |
-| JIEQI-MONTH-BRANCH | 节气月建表 | `PENDING` | 供旺衰、纳甲、择吉 |
+| LUNAR-MONTH-INDEX | 农历月序表 | `VERIFIED`（ADR-016） | 供自定义月序起象 |
+| JIEQI-MONTH-BRANCH | 节气月建表 | `VERIFIED`（ADR-016） | 供旺衰、纳甲、择吉 |
 | W-01 | 四时旺衰表 | `PENDING` | 五行逐月旺相休囚死 |
 | G-01 | 先天八卦数表 | `VERIFIED` | 数字到八卦 |
 | L-01 | 洛书九宫方位表 | `VERIFIED` | 方位映射 |
