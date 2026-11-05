@@ -242,7 +242,7 @@ cargo test -p yitool-app --test perf -- --nocapture
 | 数据表 | `LUNAR-MONTH-INDEX`、`JIEQI-MONTH-BRANCH`、`CAL-TZDATA` → `VERIFIED`；`CAL-BASE-2025/2026` 仍为 `PENDING`（回归快照） |
 | 历史兼容 | 旧记录按原 `CAL-v0.1` 渲染，不静默重算 |
 
-**说明**：CAL 冻结只覆盖历法基础规则；`NJ-01`、`HEX-01`、`JL-01` 等未校核时，对应引擎仍须标“待校核”。
+**说明**：CAL 冻结只覆盖历法基础规则；`NJ-01`、`JL-01` 等未校核时，对应引擎仍须标“待校核”。
 
 ### 11.5 W-01 四时旺衰表校核（ADR-017，2026-11-05）
 
@@ -254,6 +254,20 @@ cargo test -p yitool-app --test perf -- --nocapture
 | 金标准 | `tests/golden/w01_wangshuai.json` |
 | 对账 | `crates/rules/tests/wangshuai_crosscheck.rs`：金标准 ↔ 资源 ↔ `domain::WuXing::relation_to` |
 | 规则状态 | `MEIHUA-WANGSHUAI-001`、`MEIHUA-JISHEN-001` → `VERIFIED` |
-| 整体结果 | 仍为 `PENDING`、`formal_allowed=false`（`HEX-01` 等未校核） |
+| 整体结果 | 仍为 `PENDING`、`formal_allowed=false`（规则集整体未冻结） |
 
 **说明**：`W-01-v0.2` 只校核旺衰表本身，不改变起卦、互卦、变卦、体用算法，也不解除其他未校核规则对正式结果的阻断。
+
+### 11.6 HEX-01 六十四卦八宫表校核（ADR-018，2026-11-05）
+
+| 项目 | 结果 |
+|---|---|
+| 资源版本 | `HEX-01-v0.2`，状态 `VERIFIED` |
+| 覆盖范围 | 8 宫 × 8 卦，共 64 条；含宫序号、宫五行、宫内序、类型、世应 |
+| 来源 | ARS 1.6/附录 A；《京氏易传》八宫卦序；通行八宫卦象次序歌与世应规则 |
+| 金标准 | `tests/golden/hex01_bagong.json` |
+| 对账 | `crates/rules/tests/hex_bagong_crosscheck.rs`：金标准 ↔ 资源 ↔ `domain` 卦名 ↔ 八宫逐爻生成 |
+| 字段补齐 | `palace_index`（乾1…坤8）、`palace_element`（乾/兑金、离火、震/巽木、坎水、艮/坤土） |
+| 整体结果 | 纳甲/焦氏仍受 `NJ-01`、`JL-01`、`IR-01` 等未校核规则约束 |
+
+**说明**：`HEX-01-v0.2` 只校核八宫结构与世应，不改变起卦、互卦、变卦、体用算法，也不解除纳甲/焦氏/解释引擎的“待校核”状态。

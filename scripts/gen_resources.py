@@ -133,6 +133,16 @@ def parse_hex64() -> list[dict]:
     text = read_ars()
     start = text.index("## 附录 A：六十四卦八宫表")
     end = text.index("## 附录 B：纳甲干支表")
+    palace_meta = {
+        "乾": (1, "金"),
+        "兑": (2, "金"),
+        "离": (3, "火"),
+        "震": (4, "木"),
+        "巽": (5, "木"),
+        "坎": (6, "水"),
+        "艮": (7, "土"),
+        "坤": (8, "土"),
+    }
     rows = []
     pattern = re.compile(
         r"^\|\s*(乾|兑|离|震|巽|坎|艮|坤)\s*\|\s*(\d)\s*\|\s*([^|]+?)\s*\|\s*"
@@ -143,9 +153,12 @@ def parse_hex64() -> list[dict]:
         match = pattern.match(line.strip())
         if match:
             palace, seq, name, upper, lower, kind, shi, ying = match.groups()
+            palace_index, palace_element = palace_meta[palace]
             rows.append(
                 {
                     "palace": palace,
+                    "palace_index": palace_index,
+                    "palace_element": palace_element,
                     "palace_seq": int(seq),
                     "name": name,
                     "upper": upper,
@@ -165,9 +178,10 @@ def gen_hex64() -> None:
     write_json(
         "data/hex64.json",
         {
-            "version": "HEX-01",
-            "status": "PENDING",
-            "source": "ARS v0.2 附录 A（待交叉校核）",
+            "id": "HEX-01",
+            "version": "HEX-01-v0.2",
+            "status": "VERIFIED",
+            "source": "ARS v0.2 附录 A；《京氏易传》八宫卦序；通行八宫卦象次序歌与世应规则",
             "hexagrams": rows,
         },
     )

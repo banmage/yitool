@@ -55,10 +55,10 @@
     {
       "id": "HEX-01",
       "path": "data/hex64.json",
-      "version": "HEX-01",
-      "status": "PENDING",
-      "source": "ARS v0.2 附录 A（待交叉校核）",
-      "sha256": "674b500dcafc33f2f9f7ad18818cb98a9d57defc862ff0899c8b7303f1e45fbc"
+      "version": "HEX-01-v0.2",
+      "status": "VERIFIED",
+      "source": "ARS v0.2 附录 A；《京氏易传》八宫卦序；通行八宫卦象次序歌与世应规则",
+      "sha256": "f43793d8301d6c66f0f7830d5a5d2a3f1af78b76d2fd78f9427b9b851f5ea32a"
     },
     {
       "id": "NJ-01",

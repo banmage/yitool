@@ -186,7 +186,7 @@ tests/golden/
 ### Implementation
 
 - [x] T061 [US5] `crates/meihua`：九色/传统数字起卦、互卦、变卦、体用、旺衰
-- [x] T062 [US5] `crates/meihua`：`jishen` 按 ADR-011 输出忌神五行/弱势卦位（L3）；`W-01-v0.2` 已校核（ADR-017），整体仍因 `HEX-01` 等未校核而标 `PENDING`（FR-012）
+- [x] T062 [US5] `crates/meihua`：`jishen` 按 ADR-011 输出忌神五行/弱势卦位（L3）；`W-01-v0.2`、`HEX-01-v0.2` 已校核（ADR-017/018），整体仍因规则集未整体冻结而标 `PENDING`（FR-012）
 - [x] T063 [US5] `crates/meihua`：逐步 `StepLog`（起卦/互/变/体用/旺衰）
 - [x] T064 [US5] `crates/cli meihua`：两模式输入校验与 JSON 输出
 - [x] T065 [US5] `crates/seed`：`getrandom` + 拒绝采样（unbiased 1..n），固定模式不调用 OS 熵
