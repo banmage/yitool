@@ -12,6 +12,8 @@ use thiserror::Error;
 pub enum AppError {
     #[error("资源目录不可用: {0}")]
     Resources(String),
+    #[error("资源完整性校验失败: {0}")]
+    ResourcesIntegrity(String),
     #[error("历法错误: {0}")]
     Cal(#[from] cal::CalError),
     #[error("规则/资源错误: {0}")]
@@ -55,6 +57,20 @@ pub struct AppContext {
 impl AppContext {
     pub fn load(resources: impl AsRef<Path>) -> Result<Self, AppError> {
         let resources = resources.as_ref().to_path_buf();
+        // ADR-012：启动时先校验资源 manifest/checksum，损坏资源拒绝加载。
+        let (_, reports) = rules::verify_manifest(&resources)?;
+        let failed: Vec<_> = reports.iter().filter(|r| !r.checksum_ok).collect();
+        if !failed.is_empty() {
+            let ids = failed
+                .iter()
+                .map(|r| r.id.as_str())
+                .collect::<Vec<_>>()
+                .join(", ");
+            return Err(AppError::ResourcesIntegrity(format!(
+                "{} 个资源校验失败: {ids}",
+                failed.len()
+            )));
+        }
         let cal =
             CalData::load(resources.join("cal")).map_err(|e| AppError::Resources(e.to_string()))?;
         let rules = RuleRegistry::load(resources.join("data/rules.json"))

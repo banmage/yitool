@@ -420,7 +420,9 @@ fn cal_code(err: &cal::CalError) -> String {
 fn app_code(err: &app::AppError) -> (String, String) {
     match err {
         app::AppError::Cal(e) => (cal_code(e), e.to_string()),
-        app::AppError::Resources(_) | app::AppError::Rules(_) => ("DATA".into(), err.to_string()),
+        app::AppError::Resources(_)
+        | app::AppError::ResourcesIntegrity(_)
+        | app::AppError::Rules(_) => ("DATA".into(), err.to_string()),
         app::AppError::Registry(_) | app::AppError::Compliance(_) => {
             ("DATA".into(), err.to_string())
         }
