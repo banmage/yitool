@@ -63,10 +63,10 @@
     {
       "id": "NJ-01",
       "path": "data/najia.json",
-      "version": "NJ-01",
-      "status": "PENDING",
-      "source": "ARS v0.2 附录 B（待校核）",
-      "sha256": "c7924aa5d189d541f683b3f2b56d0923ad4bd909926aaac1dfc513b60ef88d27"
+      "version": "NJ-01-v0.2",
+      "status": "VERIFIED",
+      "source": "ARS v0.2 附录 B；《京氏易传》纳甲；乾纳甲壬、坤纳乙癸、震庚、巽辛、坎戊、离己、艮丙、兑丁",
+      "sha256": "8be669a2ff78b107f6d5f932c40efb6cbd26c3bab7ecc255294b8b262b9e85f3"
     },
     {
       "id": "RULE-SET-01",

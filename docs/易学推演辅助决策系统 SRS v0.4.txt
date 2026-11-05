@@ -776,7 +776,7 @@ result_type, weight, priority, source_ref, rule_level
 | G-01 | 先天八卦数表 | `VERIFIED` | 数字到八卦 |
 | L-01 | 洛书九宫方位表 | `VERIFIED` | 方位映射 |
 | HEX-01 | 六十四卦表 | `VERIFIED`（ADR-018） | 卦名、卦象、宫位、世应 |
-| NJ-01 | 纳甲干支表 | `PENDING` | 八卦六爻干支展开 |
+| NJ-01 | 纳甲干支表 | `VERIFIED`（ADR-019） | 八卦六爻干支展开 |
 | JL-01 | 焦氏易林辞表 | `PENDING` | 64×64 索引 |
 | LIUYAO-YONGSHEN-01 | 纳甲用神映射 | `PENDING` | 事项类型→六亲用神 |
 | ZEJI-EVENT-01 | 择吉事项规则 | `PENDING` | 事项类型→规则集 |

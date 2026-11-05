@@ -242,7 +242,7 @@ cargo test -p yitool-app --test perf -- --nocapture
 | 数据表 | `LUNAR-MONTH-INDEX`、`JIEQI-MONTH-BRANCH`、`CAL-TZDATA` → `VERIFIED`；`CAL-BASE-2025/2026` 仍为 `PENDING`（回归快照） |
 | 历史兼容 | 旧记录按原 `CAL-v0.1` 渲染，不静默重算 |
 
-**说明**：CAL 冻结只覆盖历法基础规则；`NJ-01`、`JL-01` 等未校核时，对应引擎仍须标“待校核”。
+**说明**：CAL 冻结只覆盖历法基础规则；`JL-01` 等未校核时，对应引擎仍须标“待校核”。
 
 ### 11.5 W-01 四时旺衰表校核（ADR-017，2026-11-05）
 
@@ -268,6 +268,19 @@ cargo test -p yitool-app --test perf -- --nocapture
 | 金标准 | `tests/golden/hex01_bagong.json` |
 | 对账 | `crates/rules/tests/hex_bagong_crosscheck.rs`：金标准 ↔ 资源 ↔ `domain` 卦名 ↔ 八宫逐爻生成 |
 | 字段补齐 | `palace_index`（乾1…坤8）、`palace_element`（乾/兑金、离火、震/巽木、坎水、艮/坤土） |
-| 整体结果 | 纳甲/焦氏仍受 `NJ-01`、`JL-01`、`IR-01` 等未校核规则约束 |
+| 整体结果 | 纳甲/焦氏仍受 `JL-01`、`IR-01` 等未校核规则约束 |
 
 **说明**：`HEX-01-v0.2` 只校核八宫结构与世应，不改变起卦、互卦、变卦、体用算法，也不解除纳甲/焦氏/解释引擎的“待校核”状态。
+
+### 11.7 NJ-01 纳甲干支表校核（ADR-019，2026-11-05）
+
+| 项目 | 结果 |
+|---|---|
+| 资源版本 | `NJ-01-v0.2`，状态 `VERIFIED` |
+| 覆盖范围 | 8 经卦 × 6 爻，共 48 个干支条目（初爻至上爻） |
+| 来源 | ARS 1.7/附录 B；《京氏易传》纳甲；乾纳甲壬、坤纳乙癸、震庚、巽辛、坎戊、离己、艮丙、兑丁 |
+| 金标准 | `tests/golden/nj01_najia.json` |
+| 对账 | `crates/rules/tests/najia_crosscheck.rs`：金标准 ↔ 资源 ↔ 内外天干规则 ↔ 阴阳卦顺逆地支规则 |
+| 状态 | `NJ-01` 数据表不再为 `PENDING`；纳甲引擎、用神映射与变卦六亲仍未实现 |
+
+**说明**：`NJ-01-v0.2` 只校核纳甲干支表本身，不改变装卦、六亲、变卦算法，也不解除 `LIUYAO-YONGSHEN-01`、D-09 与 `JL-01` 对正式结果的阻断。

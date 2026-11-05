@@ -212,9 +212,10 @@ def gen_najia() -> None:
     write_json(
         "data/najia.json",
         {
-            "version": "NJ-01",
-            "status": "PENDING",
-            "source": "ARS v0.2 附录 B（待校核）",
+            "id": "NJ-01",
+            "version": "NJ-01-v0.2",
+            "status": "VERIFIED",
+            "source": "ARS v0.2 附录 B；《京氏易传》纳甲；乾纳甲壬、坤纳乙癸、震庚、巽辛、坎戊、离己、艮丙、兑丁",
             "trigrams": parse_najia(),
         },
     )

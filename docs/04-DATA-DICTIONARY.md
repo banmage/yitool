@@ -48,7 +48,7 @@ LOG_SCHEMA         = LOG-v0.1
 ```
 
 > 说明：SRS 附录 B、ARS 0.3 与代码已统一为 `RULE-v0.2`/`DATA-v0.2`；SRS 附录 B 已同步完整 `VersionSet`。
-> **版本记录：** CAL 文档已升为 `CAL-v0.2` 并冻结（`CAL-RULE-v0.2`，ADR-016）；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；`W-01-v0.2` 由 ADR-017 补齐 12 月建 × 5 行旺衰表并升为 `VERIFIED`；`HEX-01-v0.2` 由 ADR-018 补齐宫五行/宫序号并完成八宫表交叉校核；CAL 日界/日柱/范围/时区由 ADR-013 冻结，CAL 数据源/基准/边界容差由 ADR-014 冻结，tzdata 版本由 ADR-015 冻结；当前校核数据以本表为准。
+> **版本记录：** CAL 文档已升为 `CAL-v0.2` 并冻结（`CAL-RULE-v0.2`，ADR-016）；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；`W-01-v0.2` 由 ADR-017 补齐 12 月建 × 5 行旺衰表并升为 `VERIFIED`；`HEX-01-v0.2` 由 ADR-018 补齐宫五行/宫序号并完成八宫表交叉校核；`NJ-01-v0.2` 由 ADR-019 完成纳甲干支表校核；CAL 日界/日柱/范围/时区由 ADR-013 冻结，CAL 数据源/基准/边界容差由 ADR-014 冻结，tzdata 版本由 ADR-015 冻结；当前校核数据以本表为准。
 
 ---
 
@@ -83,7 +83,7 @@ LOG_SCHEMA         = LOG-v0.1
 | ID | 名称 | 归属 | 用途 | 状态 | 冻结阶段 | 来源 |
 |---|---|---|---|---|---|---|
 | `HEX-01` | 六十四卦八宫表（`HEX-01-v0.2`） | ARS/SRS | 卦名、上下卦、宫位/宫五行、世应、类型 | `VERIFIED` | 阶段 0/3（F-03，ADR-018） | ARS 1.6、附录 A；《京氏易传》八宫卦序 |
-| `NJ-01` | 纳甲干支表 | ARS/SRS | 八卦六爻干支 | `PENDING` | 阶段 3（F-04） | ARS 1.7、附录 B |
+| `NJ-01` | 纳甲干支表（`NJ-01-v0.2`） | ARS/SRS | 八卦六爻干支 | `VERIFIED` | 阶段 3（F-04，ADR-019） | ARS 1.7、附录 B；《京氏易传》纳甲 |
 | `XK-01` | 旬空表 | ARS | 六旬空亡 | `VERIFIED` | 阶段 0 | ARS 1.8 |
 | `JL-01` | 焦氏易林辞表 | ARS/SRS | 64×64 索引、原文、校勘 | `PENDING` | 阶段 2（F-05） | ARS 1.10、4.3 |
 | `LIUYAO-YONGSHEN-01` | 纳甲用神映射 | ARS/SRS | 事项类型→六亲用神 | `PENDING` | 阶段 3（F-06） | ARS 5.7 |
@@ -144,7 +144,7 @@ resources/
 │       └── forbidden_phrases.json   # IR-COMPLIANCE-01
 ├── data/
 │   ├── hex64.json              # HEX-01
-│   ├── najia.json              # NJ-01（阶段 0 仅占位，未用于装卦）
+│   ├── najia.json              # NJ-01（已校核；阶段 0 尚未用于装卦）
 │   ├── color_num.json          # COLOR-NUM-02（九色唯一标准）
 │   ├── zodiac.json             # Z-01
 │   ├── bagua.json              # G-01
@@ -204,7 +204,7 @@ resources/
 | 8 | `SRC-01` | 溯源 |
 | 9 | `IR-01`（仅禁用词/免责声明子集） | 合规扫描 |
 
-**不在阶段 0 就绪：** `NJ-01`、`JL-01`、`LIUYAO-YONGSHEN-01`、`ZEJI-*`、`HL-01`、`COPY-01`、`L-01`。
+**不在阶段 0 就绪：** `JL-01`、`LIUYAO-YONGSHEN-01`、`ZEJI-*`、`HL-01`、`COPY-01`、`L-01`。`NJ-01` 数据表已校核为 `NJ-01-v0.2`，但纳甲装卦引擎仍属阶段 3。
 
 ---
 
