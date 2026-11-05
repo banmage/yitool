@@ -27,7 +27,7 @@ TDS 4.3 要求资源文件携带 `version`、`checksum`、`status`、`source`，
    清单整体含 `manifest_id`、`version`、`generated_by`、`not_frozen_notice`、`entries[]`。
 3. **校验算法：** 对资源文件**原始字节**计算 SHA-256，小写十六进制编码；不得先解析 JSON 再规范化序列化，否则格式变化会被误判。
 4. **路径安全：** `path` 必须是相对资源根目录的路径；拒绝绝对路径、`..`、根路径与 Windows 前缀，防止清单被篡改后读取任意文件。
-5. **启动即校验：** `AppContext::load` 读取清单并校验全部条目；任一条目 checksum 失败或文件缺失即拒绝加载，错误信息列出失败 `id`。不允许“先加载、后提示”。
+5. **启动即校验：** `AppContext::load` 读取清单并校验全部条目；任一条目 checksum 失败、文件缺失，或清单 `version` 与当前 `VersionSet.data` 不兼容，即拒绝加载，错误信息列出失败 `id` 或版本。不允许“先加载、后提示”。
 6. **显式校验：** `yitool verify --resources <dir>` 返回每个条目的 `checksum_ok`、`actual_sha256` 与 `error`；任一失败退出码为 3。它用于 CI、发布前检查与故障定位。
 7. **缺失与多余：** 清单条目对应文件缺失记为校验失败；未被清单收录的文件不自动信任，也不参与加载。
 8. **`PENDING` 语义：** checksum 通过只证明文件未被篡改，不证明规则已校核。`status = PENDING` 的资源仍可加载，但相关结果必须标“待校核”；`status = VERIFIED` 仅表示数据校核状态，不等于规则集整体冻结。

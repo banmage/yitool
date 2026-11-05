@@ -214,6 +214,7 @@ cargo test -p yitool-app --test perf -- --nocapture
 |---|---|
 | `verify` | 13 个资源 checksum 全部通过，退出码 0 |
 | 篡改资源启动加载 | 返回 `AppError::ResourcesIntegrity`，错误信息含失败 `id` 与数量 |
+| 清单版本不兼容 | 清单 `version != DATA-v0.2` 时拒绝加载，信息含期望/实际版本 |
 | 路径穿越 (`../`) | `ManifestError::UnsafePath`，拒绝加载 |
 | 资源缺失 | 报告 `checksum_ok=false` 且 `error` 非空 |
 

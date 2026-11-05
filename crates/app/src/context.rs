@@ -58,7 +58,14 @@ impl AppContext {
     pub fn load(resources: impl AsRef<Path>) -> Result<Self, AppError> {
         let resources = resources.as_ref().to_path_buf();
         // ADR-012：启动时先校验资源 manifest/checksum，损坏资源拒绝加载。
-        let (_, reports) = rules::verify_manifest(&resources)?;
+        let (manifest, reports) = rules::verify_manifest(&resources)?;
+        let expected_data = VersionSet::default().data;
+        if manifest.version != expected_data {
+            return Err(AppError::ResourcesIntegrity(format!(
+                "资源清单版本不兼容: 期望 {expected_data}，实际 {}",
+                manifest.version
+            )));
+        }
         let failed: Vec<_> = reports.iter().filter(|r| !r.checksum_ok).collect();
         if !failed.is_empty() {
             let ids = failed
