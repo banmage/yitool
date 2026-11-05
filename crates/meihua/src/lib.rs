@@ -180,7 +180,7 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
     let yong_relation = yong.element().relation_to(month_element);
 
     // ADR-011 / MEIHUA-JISHEN-001：克体五行为忌神，同五行卦位为弱势方位。
-    // 本系统自定义 L3；W-01 未校核前整体结果仍为 PENDING。
+    // 本系统自定义 L3；W-01-v0.2 已校核，整体结果仍受 HEX-01 等未校核规则约束。
     let jishen_element = ti.element().controlled_by();
     let jishen = JishenOut {
         element: jishen_element.name().into(),
@@ -277,19 +277,19 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
             .source("SRC-MEIHUA-005")
             .level(RuleLevel::L2)
             .formula("同我旺、生我相、我生休、我克囚、克我死")
-            .status(Status::Pending)
+            .status(Status::Verified)
             .output(serde_json::json!({
                 "month_branch": month_branch,
                 "month_element": month_element.name(),
                 "ti": ti_relation.name(),
                 "yong": yong_relation.name(),
-                "note": "W-01 待校核"
+                "note": "W-01-v0.2 已校核（ADR-017）"
             }))
             .build()
             .map_err(|e| MeihuaError::Step(e.to_string()))?,
     );
 
-    // ADR-011：算法已定义，但 W-01 未校核，步骤仍标记 PENDING。
+    // ADR-011：算法已批准；W-01-v0.2 已校核。整体结果仍受其他未校核规则约束。
     steps.push(
         StepLogBuilder::new(5, "MEIHUA-JISHEN", Engine::Meihua)
             .rule_id("MEIHUA-JISHEN-001")
@@ -297,12 +297,12 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
             .source("SRC-MEIHUA-006")
             .level(RuleLevel::L3)
             .formula("E_ji=克体之行；weak_positions={卦 | 卦五行=E_ji}")
-            .status(Status::Pending)
+            .status(Status::Verified)
             .output(serde_json::json!({
                 "jishen_element": &jishen.element,
                 "weak_positions": &jishen.weak_positions,
                 "rule_level": &jishen.rule_level,
-                "note": "算法已按 ADR-011 冻结；W-01 未校核，整体仍待校核"
+                "note": "ADR-011 L3 自定义；W-01-v0.2 已校核，整体仍受其他未校核规则约束"
             }))
             .build()
             .map_err(|e| MeihuaError::Step(e.to_string()))?,

@@ -1,0 +1,102 @@
+{
+  "id": "W-01",
+  "version": "W-01-v0.2",
+  "status": "VERIFIED",
+  "source": "ARS v0.2 3.7；《梅花易数》传世本「月建五行生克」；五行旺衰通行规则「当令者旺、令生者相、生令者休、克令者囚、令克者死」",
+  "relation_rule": "同我旺、生我相、我生休、我克囚、克我死",
+  "elements": [
+    "木",
+    "火",
+    "土",
+    "金",
+    "水"
+  ],
+  "branches": [
+    { "branch": "子", "branch_id": 0, "element": "水", "season": "冬" },
+    { "branch": "丑", "branch_id": 1, "element": "土", "season": "四季" },
+    { "branch": "寅", "branch_id": 2, "element": "木", "season": "春" },
+    { "branch": "卯", "branch_id": 3, "element": "木", "season": "春" },
+    { "branch": "辰", "branch_id": 4, "element": "土", "season": "四季" },
+    { "branch": "巳", "branch_id": 5, "element": "火", "season": "夏" },
+    { "branch": "午", "branch_id": 6, "element": "火", "season": "夏" },
+    { "branch": "未", "branch_id": 7, "element": "土", "season": "四季" },
+    { "branch": "申", "branch_id": 8, "element": "金", "season": "秋" },
+    { "branch": "酉", "branch_id": 9, "element": "金", "season": "秋" },
+    { "branch": "戌", "branch_id": 10, "element": "土", "season": "四季" },
+    { "branch": "亥", "branch_id": 11, "element": "水", "season": "冬" }
+  ],
+  "table": [
+    {
+      "month_branch": "子",
+      "branch_id": 0,
+      "month_element": "水",
+      "states": { "木": "相", "火": "死", "土": "囚", "金": "休", "水": "旺" }
+    },
+    {
+      "month_branch": "丑",
+      "branch_id": 1,
+      "month_element": "土",
+      "states": { "木": "囚", "火": "休", "土": "旺", "金": "相", "水": "死" }
+    },
+    {
+      "month_branch": "寅",
+      "branch_id": 2,
+      "month_element": "木",
+      "states": { "木": "旺", "火": "相", "土": "死", "金": "囚", "水": "休" }
+    },
+    {
+      "month_branch": "卯",
+      "branch_id": 3,
+      "month_element": "木",
+      "states": { "木": "旺", "火": "相", "土": "死", "金": "囚", "水": "休" }
+    },
+    {
+      "month_branch": "辰",
+      "branch_id": 4,
+      "month_element": "土",
+      "states": { "木": "囚", "火": "休", "土": "旺", "金": "相", "水": "死" }
+    },
+    {
+      "month_branch": "巳",
+      "branch_id": 5,
+      "month_element": "火",
+      "states": { "木": "休", "火": "旺", "土": "相", "金": "死", "水": "囚" }
+    },
+    {
+      "month_branch": "午",
+      "branch_id": 6,
+      "month_element": "火",
+      "states": { "木": "休", "火": "旺", "土": "相", "金": "死", "水": "囚" }
+    },
+    {
+      "month_branch": "未",
+      "branch_id": 7,
+      "month_element": "土",
+      "states": { "木": "囚", "火": "休", "土": "旺", "金": "相", "水": "死" }
+    },
+    {
+      "month_branch": "申",
+      "branch_id": 8,
+      "month_element": "金",
+      "states": { "木": "死", "火": "囚", "土": "休", "金": "旺", "水": "相" }
+    },
+    {
+      "month_branch": "酉",
+      "branch_id": 9,
+      "month_element": "金",
+      "states": { "木": "死", "火": "囚", "土": "休", "金": "旺", "水": "相" }
+    },
+    {
+      "month_branch": "戌",
+      "branch_id": 10,
+      "month_element": "土",
+      "states": { "木": "囚", "火": "休", "土": "旺", "金": "相", "水": "死" }
+    },
+    {
+      "month_branch": "亥",
+      "branch_id": 11,
+      "month_element": "水",
+      "states": { "木": "相", "火": "死", "土": "囚", "金": "休", "水": "旺" }
+    }
+  ]
+}

@@ -240,7 +240,7 @@
       "priority": null,
       "source_ref": "SRC-MEIHUA-005",
       "version": "RULE-v0.2",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "test_refs": [
         "TC-MEIHUA-003"
       ]
@@ -256,7 +256,7 @@
       "priority": null,
       "source_ref": "SRC-MEIHUA-006",
       "version": "RULE-v0.2",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "test_refs": [
         "TC-MEIHUA-004"
       ]
@@ -345,9 +345,9 @@
       "edition": "传世本",
       "chapter": "旺衰",
       "original_excerpt": "月建五行生克",
-      "modern_note": "W-01 待冻结",
+      "modern_note": "W-01-v0.2 已校核（ADR-017）",
       "rule_level": "L2",
-      "collation_status": "PENDING",
+      "collation_status": "VERIFIED",
       "copyright_status": "公有领域"
     },
     {
@@ -356,9 +356,9 @@
       "edition": "v0.2",
       "chapter": "忌神与弱势卦位",
       "original_excerpt": "E_ji=克体之行；弱势卦位=同忌神五行卦位",
-      "modern_note": "ADR-011；L3 自定义，W-01 未校核前整体仍待校核",
+      "modern_note": "ADR-011；L3 自定义；W-01-v0.2 已校核",
       "rule_level": "L3",
-      "collation_status": "PENDING",
+      "collation_status": "VERIFIED",
       "copyright_status": "系统自定义"
     },
     {

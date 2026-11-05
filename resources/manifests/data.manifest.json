@@ -74,15 +74,15 @@
       "version": "RULE-v0.2",
       "status": "PENDING",
       "source": "ARS v0.2 附录 C/D + SRS v0.4",
-      "sha256": "d08c8cd32140e83728bb7431f23c97bfdfeed09db95c4c1bc1d000b71f37e7bd"
+      "sha256": "e4b0b3e1340a725acdaaaaf358eacbfc26295339b8fc7d10663752da1b117d48"
     },
     {
       "id": "W-01",
       "path": "data/wuxing_wangshuai.json",
-      "version": "W-01",
-      "status": "PENDING",
-      "source": "ARS v0.2 3.7（待 ARS 校核冻结；CAL v0.2 已冻结）",
-      "sha256": "d9cdfa9d67a59641fc96fb79203d54d03e52316f92a6600ec1e9a46c9a991869"
+      "version": "W-01-v0.2",
+      "status": "VERIFIED",
+      "source": "ARS v0.2 3.7；《梅花易数》传世本「月建五行生克」；五行旺衰通行规则「当令者旺、令生者相、生令者休、克令者囚、令克者死」",
+      "sha256": "adf760d8d1b9770deb89c0f1f168c852e654e5b3c4877a7cf5abbf07a3d506b2"
     },
     {
       "id": "XK-01",

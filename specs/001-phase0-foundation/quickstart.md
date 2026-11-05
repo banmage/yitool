@@ -242,4 +242,18 @@ cargo test -p yitool-app --test perf -- --nocapture
 | 数据表 | `LUNAR-MONTH-INDEX`、`JIEQI-MONTH-BRANCH`、`CAL-TZDATA` → `VERIFIED`；`CAL-BASE-2025/2026` 仍为 `PENDING`（回归快照） |
 | 历史兼容 | 旧记录按原 `CAL-v0.1` 渲染，不静默重算 |
 
-**说明**：CAL 冻结只覆盖历法基础规则；`W-01`、`NJ-01`、`HEX-01`、`JL-01` 等未校核时，对应引擎仍须标“待校核”。
+**说明**：CAL 冻结只覆盖历法基础规则；`NJ-01`、`HEX-01`、`JL-01` 等未校核时，对应引擎仍须标“待校核”。
+
+### 11.5 W-01 四时旺衰表校核（ADR-017，2026-11-05）
+
+| 项目 | 结果 |
+|---|---|
+| 资源版本 | `W-01-v0.2`，状态 `VERIFIED` |
+| 覆盖范围 | 12 月建 × 5 行，共 60 个旺相休囚死条目 |
+| 来源 | ARS 3.7；《梅花易数》传世本「月建五行生克」；当令者旺、令生者相、生令者休、克令者囚、令克者死 |
+| 金标准 | `tests/golden/w01_wangshuai.json` |
+| 对账 | `crates/rules/tests/wangshuai_crosscheck.rs`：金标准 ↔ 资源 ↔ `domain::WuXing::relation_to` |
+| 规则状态 | `MEIHUA-WANGSHUAI-001`、`MEIHUA-JISHEN-001` → `VERIFIED` |
+| 整体结果 | 仍为 `PENDING`、`formal_allowed=false`（`HEX-01` 等未校核） |
+
+**说明**：`W-01-v0.2` 只校核旺衰表本身，不改变起卦、互卦、变卦、体用算法，也不解除其他未校核规则对正式结果的阻断。

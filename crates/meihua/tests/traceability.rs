@@ -51,7 +51,12 @@ fn pending_rules_do_not_produce_formal_result() {
     assert!(result
         .steps
         .iter()
-        .any(|s| s.step_id == "MEIHUA-JISHEN" && s.status == Status::Pending));
+        .any(|s| s.step_id == "MEIHUA-WANGSHUAI" && s.status == Status::Verified));
+    // W-01 与 ADR-011 已校核，但 HEX-01/IR-01 等仍未校核，整体不得转为正式结果。
+    assert!(result
+        .steps
+        .iter()
+        .any(|s| s.step_id == "MEIHUA-JISHEN" && s.status == Status::Verified));
 }
 
 #[test]

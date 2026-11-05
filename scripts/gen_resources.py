@@ -232,31 +232,58 @@ def gen_xun() -> None:
 
 
 def gen_wuxing_wangshuai() -> None:
+    # W-01-v0.2：12 月建 × 5 行逐项人工转录（ADR-017）。
+    # 规则：当令者旺、令生者相、生令者休、克令者囚、令克者死。
     branches = [
-        ("子", 0, "水"),
-        ("丑", 1, "土"),
-        ("寅", 2, "木"),
-        ("卯", 3, "木"),
-        ("辰", 4, "土"),
-        ("巳", 5, "火"),
-        ("午", 6, "火"),
-        ("未", 7, "土"),
-        ("申", 8, "金"),
-        ("酉", 9, "金"),
-        ("戌", 10, "土"),
-        ("亥", 11, "水"),
+        ("子", 0, "水", "冬"),
+        ("丑", 1, "土", "四季"),
+        ("寅", 2, "木", "春"),
+        ("卯", 3, "木", "春"),
+        ("辰", 4, "土", "四季"),
+        ("巳", 5, "火", "夏"),
+        ("午", 6, "火", "夏"),
+        ("未", 7, "土", "四季"),
+        ("申", 8, "金", "秋"),
+        ("酉", 9, "金", "秋"),
+        ("戌", 10, "土", "四季"),
+        ("亥", 11, "水", "冬"),
+    ]
+    table = [
+        ("子", 0, "水", {"木": "相", "火": "死", "土": "囚", "金": "休", "水": "旺"}),
+        ("丑", 1, "土", {"木": "囚", "火": "休", "土": "旺", "金": "相", "水": "死"}),
+        ("寅", 2, "木", {"木": "旺", "火": "相", "土": "死", "金": "囚", "水": "休"}),
+        ("卯", 3, "木", {"木": "旺", "火": "相", "土": "死", "金": "囚", "水": "休"}),
+        ("辰", 4, "土", {"木": "囚", "火": "休", "土": "旺", "金": "相", "水": "死"}),
+        ("巳", 5, "火", {"木": "休", "火": "旺", "土": "相", "金": "死", "水": "囚"}),
+        ("午", 6, "火", {"木": "休", "火": "旺", "土": "相", "金": "死", "水": "囚"}),
+        ("未", 7, "土", {"木": "囚", "火": "休", "土": "旺", "金": "相", "水": "死"}),
+        ("申", 8, "金", {"木": "死", "火": "囚", "土": "休", "金": "旺", "水": "相"}),
+        ("酉", 9, "金", {"木": "死", "火": "囚", "土": "休", "金": "旺", "水": "相"}),
+        ("戌", 10, "土", {"木": "囚", "火": "休", "土": "旺", "金": "相", "水": "死"}),
+        ("亥", 11, "水", {"木": "相", "火": "死", "土": "囚", "金": "休", "水": "旺"}),
     ]
     write_json(
         "data/wuxing_wangshuai.json",
         {
-            "version": "W-01",
-            "status": "PENDING",
-            "source": "ARS v0.2 3.7（待 ARS 校核冻结；CAL v0.2 已冻结）",
+            "id": "W-01",
+            "version": "W-01-v0.2",
+            "status": "VERIFIED",
+            "source": "ARS v0.2 3.7；《梅花易数》传世本「月建五行生克」；五行旺衰通行规则「当令者旺、令生者相、生令者休、克令者囚、令克者死」",
             "relation_rule": "同我旺、生我相、我生休、我克囚、克我死",
+            "elements": FIVE_ELEMENTS,
             "branches": [
-                {"branch": b, "branch_id": i, "element": e} for b, i, e in branches
+                {"branch": b, "branch_id": i, "element": e, "season": s}
+                for b, i, e, s in branches
             ],
-            "relations": ["旺", "相", "休", "囚", "死"],
+            "table": [
+                {
+                    "month_branch": b,
+                    "branch_id": i,
+                    "month_element": e,
+                    "states": states,
+                }
+                for b, i, e, states in table
+            ],
         },
     )
 
@@ -267,8 +294,8 @@ def gen_rules() -> None:
         ("SRC-MEIHUA-002", "梅花易数", "传世本", "互卦", "取中间四爻", "系统按 ARS v0.2 重述", "L2", "PENDING", "公有领域"),
         ("SRC-MEIHUA-003", "梅花易数", "传世本", "变卦", "动爻阴阳互变", "系统按 ARS v0.2 重述", "L2", "PENDING", "公有领域"),
         ("SRC-MEIHUA-004", "梅花易数", "传世本", "体用", "动爻定体用", "系统按 ARS v0.2 重述", "L2", "PENDING", "公有领域"),
-        ("SRC-MEIHUA-005", "梅花易数", "传世本", "旺衰", "月建五行生克", "W-01 待冻结", "L2", "PENDING", "公有领域"),
-        ("SRC-MEIHUA-006", "本系统自定义", "v0.2", "忌神与弱势卦位", "E_ji=克体之行；弱势卦位=同忌神五行卦位", "ADR-011；L3 自定义，W-01 未校核前整体仍待校核", "L3", "PENDING", "系统自定义"),
+        ("SRC-MEIHUA-005", "梅花易数", "传世本", "旺衰", "月建五行生克", "W-01-v0.2 已校核（ADR-017）", "L2", "VERIFIED", "公有领域"),
+        ("SRC-MEIHUA-006", "本系统自定义", "v0.2", "忌神与弱势卦位", "E_ji=克体之行；弱势卦位=同忌神五行卦位", "ADR-011；L3 自定义；W-01-v0.2 已校核", "L3", "VERIFIED", "系统自定义"),
         ("SRC-CAL-001", "历法服务规范 CAL v0.2", "v0.2", "历法", "公农历/节气/四柱/日界/旬空", "CAL v0.2 已冻结（ADR-016）；数据按 HKO 1901–2100 校核", "L1", "VERIFIED", "系统文档"),
         ("SRC-SEED-001", "技术设计说明书 TDS v0.1", "v0.1", "种子链", "SHA-256 派生与 HMAC", "阶段 0 实现", "L2", "PENDING", "系统文档"),
         ("SRC-IR-001", "推演解释规则规范 IR v0.1", "v0.1", "合规", "免责声明与禁用绝对断语", "阶段 0 最小实现", "L1", "PENDING", "系统文档"),
@@ -306,8 +333,8 @@ def gen_rules() -> None:
         rule("MEIHUA-HUGUA-001", "MEIHUA", "hugua", "L2", "SRC-MEIHUA-002", "PENDING", ["TC-MEIHUA-001"]),
         rule("MEIHUA-BIANGUA-001", "MEIHUA", "biangua", "L2", "SRC-MEIHUA-003", "PENDING", ["TC-MEIHUA-001", "TC-MEIHUA-002"]),
         rule("MEIHUA-TIYONG-001", "MEIHUA", "tiyong", "L2", "SRC-MEIHUA-004", "PENDING", ["TC-MEIHUA-001"]),
-        rule("MEIHUA-WANGSHUAI-001", "MEIHUA", "wangshuai", "L2", "SRC-MEIHUA-005", "PENDING", ["TC-MEIHUA-003"]),
-        rule("MEIHUA-JISHEN-001", "MEIHUA", "jishen", "L3", "SRC-MEIHUA-006", "PENDING", ["TC-MEIHUA-004"]),
+        rule("MEIHUA-WANGSHUAI-001", "MEIHUA", "wangshuai", "L2", "SRC-MEIHUA-005", "VERIFIED", ["TC-MEIHUA-003"]),
+        rule("MEIHUA-JISHEN-001", "MEIHUA", "jishen", "L3", "SRC-MEIHUA-006", "VERIFIED", ["TC-MEIHUA-004"]),
         rule("LOG-SCHEMA-001", "LOG", "schema", "L1", "SRC-LOG-001", "PENDING", ["TC-LOG-001"]),
         rule("IR-COMPLIANCE-001", "IR", "compliance", "L1", "SRC-IR-001", "PENDING", ["TC-IR-001"], result_type="ABSOLUTE_FILTER"),
     ]

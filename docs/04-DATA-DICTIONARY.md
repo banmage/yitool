@@ -48,7 +48,7 @@ LOG_SCHEMA         = LOG-v0.1
 ```
 
 > 说明：SRS 附录 B、ARS 0.3 与代码已统一为 `RULE-v0.2`/`DATA-v0.2`；SRS 附录 B 已同步完整 `VersionSet`。
-> **版本记录：** CAL 文档已升为 `CAL-v0.2` 并冻结（`CAL-RULE-v0.2`，ADR-016）；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；CAL 日界/日柱/范围/时区由 ADR-013 冻结，CAL 数据源/基准/边界容差由 ADR-014 冻结，tzdata 版本由 ADR-015 冻结；当前校核数据以本表为准。
+> **版本记录：** CAL 文档已升为 `CAL-v0.2` 并冻结（`CAL-RULE-v0.2`，ADR-016）；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；`W-01-v0.2` 由 ADR-017 补齐 12 月建 × 5 行旺衰表并升为 `VERIFIED`；CAL 日界/日柱/范围/时区由 ADR-013 冻结，CAL 数据源/基准/边界容差由 ADR-014 冻结，tzdata 版本由 ADR-015 冻结；当前校核数据以本表为准。
 
 ---
 
@@ -74,7 +74,7 @@ LOG_SCHEMA         = LOG-v0.1
 | `Z-01` | 十二生肖表 | ARS/SRS | 生肖象数/地支五行 | `VERIFIED` | 阶段 1 | ARS 1.3 |
 | `LUNAR-MONTH-INDEX` | 农历月序表 | CAL/ARS | 梅花月序起象 | `VERIFIED` | 阶段 0（CF-01） | CAL 4.1、ARS 1.4.1；ADR-016 |
 | `JIEQI-MONTH-BRANCH` | 节气月建表 | CAL/ARS | 旺衰、纳甲、择吉、黄历 | `VERIFIED` | 阶段 0（CF-02） | CAL 4.2、ARS 1.4.2；ADR-016 |
-| `W-01` | 四时旺衰表 | ARS/SRS | 五行逐月旺相休囚死 | `PENDING` | 阶段 0（F-02） | ARS 3.7 |
+| `W-01` | 四时旺衰表（`W-01-v0.2`） | ARS/SRS | 五行逐月旺相休囚死 | `VERIFIED` | 阶段 0（F-02，ADR-017） | ARS 3.7；《梅花易数》传世本「月建五行生克」 |
 | `G-01` | 先天八卦表（`G-01-v0.2`） | ARS/SRS | 数字→八卦、五行、后天方位 | `VERIFIED` | 阶段 0 | ARS 1.5、3.8 |
 | `L-01` | 洛书九宫方位表 | SRS | 方位象意展示 | `VERIFIED` | 阶段 4 | SRS 附录 A、IR 7.2 |
 

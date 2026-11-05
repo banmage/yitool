@@ -745,7 +745,7 @@ result_type, weight, priority, source_ref, rule_level
 | O-01 | 九色最终色集与映射：已冻结为赤橙黄绿青蓝紫黑白；灰色是否二期 | 输入、种子、金标准 | 已关闭（D-01/ADR-002） |
 | O-03 | 问事文本 HMAC 本地密钥存储与轮换 | 隐私、TDS | 阶段 0 |
 | O-04 | 含生辰推演的复现提示措辞 | 隐私、IR | 阶段 1 |
-| O-05 | ARS M-01 月令象数与 W-01 旺衰表校核 | 梅花、纳甲、择吉 | 阶段 0 |
+| O-05 | ARS M-01 月令象数与 W-01 旺衰表校核 | 梅花、纳甲、择吉 | W-01 已校核（ADR-017）；M-01 月令象数条目待澄清 |
 | O-06 | 焦氏易林底本、校勘、版权 | 焦氏 | 阶段 2 |
 | O-07 | 纳甲用神映射 `LIUYAO-YONGSHEN-01` | 纳甲 | 阶段 3 |
 | O-08 | 择吉事项规则 `ZEJI-EVENT-01` 与 W-02 权重 | 择吉 | 阶段 4 |
@@ -772,7 +772,7 @@ result_type, weight, priority, source_ref, rule_level
 | Z-01 | 十二生肖表 | `VERIFIED` | 地支五行 L1/L2；象数 L3 |
 | LUNAR-MONTH-INDEX | 农历月序表 | `VERIFIED`（ADR-016） | 供自定义月序起象 |
 | JIEQI-MONTH-BRANCH | 节气月建表 | `VERIFIED`（ADR-016） | 供旺衰、纳甲、择吉 |
-| W-01 | 四时旺衰表 | `PENDING` | 五行逐月旺相休囚死 |
+| W-01 | 四时旺衰表 | `VERIFIED`（ADR-017） | 五行逐月旺相休囚死 |
 | G-01 | 先天八卦数表 | `VERIFIED` | 数字到八卦 |
 | L-01 | 洛书九宫方位表 | `VERIFIED` | 方位映射 |
 | HEX-01 | 六十四卦表 | `PENDING` | 卦名、卦象、宫位、世应 |
