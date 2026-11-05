@@ -129,8 +129,8 @@ LOG_SCHEMA         = LOG-v0.1
 |---|---|---|---|---|---|---|
 | `LOG-SCHEMA-001` | 推演日志结构 | ARS/TDS | 步骤日志 JSON Schema | `VERIFIED` | 阶段 0 | ARS 8.1、SRS 附录 B |
 | `DB-SCHEMA-v0.1` | 本地数据库 schema | TDS | profiles/runs/steps/snapshots 等 | `PENDING` | 阶段 0（TF-08） | TDS 4.2 |
-| `MANIFEST-rules` | 规则资源清单 | TDS | 版本/checksum/status/source | `PENDING` | 阶段 0（TF-04） | TDS 4.3 |
-| `MANIFEST-data` | 数据资源清单 | TDS | 同上 | `PENDING` | 阶段 0（TF-04） | TDS 4.3 |
+| `MANIFEST-rules` | 规则资源清单 | TDS | 版本/checksum/status/source | `MERGED` | 阶段 0（TF-04） | TDS 4.3；阶段 0 合并入 `MANIFEST-data`（ADR-012） |
+| `MANIFEST-data` | 数据资源清单 | TDS | 同上 | `VERIFIED` | 阶段 0（TF-04，ADR-012） | TDS 4.3 |
 | `MANIFEST-texts` | 古籍文本清单 | TDS | 同上 | `PENDING` | 阶段 5（TF-11） | TDS 4.3 |
 
 ---

@@ -447,16 +447,18 @@ resources/
 │   ├── jiaolin/
 │   └── tui bei tu/
 └── manifests/
-    ├── rules.manifest.json
-    └── data.manifest.json
+    └── data.manifest.json      # 阶段 0 单一清单，覆盖 data/、cal/、ir/
 ```
 
 要求：
 
-1. 每个资源文件带 `version`、`checksum`、`status`、`source`。
-2. 加载时校验 checksum；失败则拒绝加载并提示。
-3. `PENDING` 资源可加载但相关结果标“待校核”。
+1. 每个资源文件在清单中带 `id`、`version`、`status`、`source`、`sha256`。
+2. 加载时校验 checksum；失败或文件缺失则拒绝加载并提示。
+3. `PENDING` 资源可加载但相关结果标“待校核”；checksum 通过不等于规则已校核。
 4. 资源升级不修改用户历史记录；历史按原版本渲染。
+5. 清单由 `scripts/gen_manifest.py` 生成；资源变更须升版本并重新生成清单。
+6. 清单路径必须为相对路径；拒绝绝对路径与 `..`，防止路径穿越。
+7. 阶段 0 的 SHA-256 只保证完整性，不保证来源真实性；签名留待阶段 1 评估（ADR-012）。
 
 ### 4.4 缓存 `TDS-CACHE-001`
 
@@ -745,7 +747,7 @@ seed_algo, rng_version, ir_rule_set, ir_template_set
 | TF-01 | 最终技术栈（Tauri/Rust 或备选） | 全系统 | 阶段 0 |
 | TF-02 | 数据库加密方案（SQLCipher/字段级/不加密） | 隐私 | 阶段 0 |
 | TF-03 | 本地 HMAC 密钥存储与轮换细节 | 隐私 | 阶段 0 |
-| TF-04 | 资源 manifest 与 checksum 规范 | 规则加载 | 阶段 0 |
+| TF-04 | 资源 manifest 与 checksum 规范（已关闭：ADR-012） | 规则加载 | 阶段 0 |
 | TF-05 | CAL 库/算法选型与缓存策略 | 历法 | 阶段 0 |
 | TF-06 | 日志轮转与保留策略 | 运维 | 阶段 1 |
 | TF-07 | 备份保留期限与清理交互 | 数据管理 | 阶段 1 |

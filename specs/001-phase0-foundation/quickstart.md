@@ -205,3 +205,16 @@ cargo test -p yitool-app --test perf -- --nocapture
 | 节气日期（CAL → HKO） | 4872 | 0 | 6 | PASS |
 
 **说明**：6 条差异均为交节时刻距午夜 ≤ 712 秒（最接近 4 秒），符合 HKO 页脚声明的算法边界情形；按 D-41 单列容差，不计严格失败。节气秒级时刻仍由 sxtwl 计算，尚无独立的秒级权威基准。
+
+### 11.2 资源 manifest 启动校验（ADR-012，2026-11-05）
+
+**命令**：`cargo test -p yitool-app --test manifest_guard`、`cargo run -p yitool-cli -- verify --resources resources`
+
+| 项目 | 结果 |
+|---|---|
+| `verify` | 13 个资源 checksum 全部通过，退出码 0 |
+| 篡改资源启动加载 | 返回 `AppError::ResourcesIntegrity`，错误信息含失败 `id` 与数量 |
+| 路径穿越 (`../`) | `ManifestError::UnsafePath`，拒绝加载 |
+| 资源缺失 | 报告 `checksum_ok=false` 且 `error` 非空 |
+
+**说明**：启动即校验；checksum 通过仅表示未被篡改，`PENDING` 条目仍须标“待校核”。
