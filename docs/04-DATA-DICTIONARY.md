@@ -128,7 +128,7 @@ LOG_SCHEMA         = LOG-v0.1
 | ID | 名称 | 归属 | 用途 | 状态 | 冻结阶段 | 来源 |
 |---|---|---|---|---|---|---|
 | `LOG-SCHEMA-001` | 推演日志结构 | ARS/TDS | 步骤日志 JSON Schema | `VERIFIED` | 阶段 0 | ARS 8.1、SRS 附录 B |
-| `DB-SCHEMA-v0.1` | 本地数据库 schema | TDS | profiles/runs/steps/snapshots 等 | `PENDING` | 阶段 0（TF-08） | TDS 4.2 |
+| `DB-SCHEMA-v0.2` | 本地数据库 schema | TDS | profiles/runs/steps/snapshots 等 | `VERIFIED` | 阶段 0（TF-08，ADR-008） | TDS 4.2；含 `hmac_key_id`，`DB-v0.1`→`DB-v0.2` 迁移已测试 |
 | `MANIFEST-rules` | 规则资源清单 | TDS | 版本/checksum/status/source | `MERGED` | 阶段 0（TF-04） | TDS 4.3；阶段 0 合并入 `MANIFEST-data`（ADR-012） |
 | `MANIFEST-data` | 数据资源清单 | TDS | 同上 | `VERIFIED` | 阶段 0（TF-04，ADR-012） | TDS 4.3 |
 | `MANIFEST-texts` | 古籍文本清单 | TDS | 同上 | `PENDING` | 阶段 5（TF-11） | TDS 4.3 |
@@ -200,7 +200,7 @@ resources/
 | 4 | `W-01` | 旺衰 |
 | 5 | `XK-01` | 旬空 |
 | 6 | `CAL-BASE-2025/2026`、`CAL-TZDATA` | 历法验收 |
-| 7 | `MANIFEST-*`、`LOG-SCHEMA-001`、`DB-SCHEMA-v0.1` | 资源/日志/存储 |
+| 7 | `MANIFEST-*`、`LOG-SCHEMA-001`、`DB-SCHEMA-v0.2` | 资源/日志/存储 |
 | 8 | `SRC-01` | 溯源 |
 | 9 | `IR-01`（仅禁用词/免责声明子集） | 合规扫描 |
 
