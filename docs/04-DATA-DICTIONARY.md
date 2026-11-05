@@ -48,7 +48,7 @@ LOG_SCHEMA         = LOG-v0.1
 ```
 
 > 说明：SRS 附录 B、ARS 0.3 与代码已统一为 `RULE-v0.2`/`DATA-v0.2`；SRS 附录 B 已同步完整 `VersionSet`。
-> **版本记录：** CAL 文档已同步 `CAL-DATA-v0.2`；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；当前校核数据以本表为准。
+> **版本记录：** CAL 文档已同步 `CAL-DATA-v0.2`；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；CAL 日界/日柱/范围/时区由 ADR-013 冻结，CAL 数据源/基准/边界容差由 ADR-014 冻结，tzdata 版本由 ADR-015 冻结；当前校核数据以本表为准。
 
 ---
 
@@ -117,9 +117,9 @@ LOG_SCHEMA         = LOG-v0.1
 |---|---|---|---|---|---|---|
 | `CAL-LUNAR-TABLE` | 公农历转换表 | CAL | 预计算月表 | `VERIFIED` | 阶段 0（CF-01） | CAL 2.2；HKO 1901–2100 逐日校核 |
 | `CAL-JIEQI-TABLE` | 节气时刻表 | CAL | 预计算节气表 | `VERIFIED` | 阶段 0（CF-02） | CAL 3.2；HKO 日期级校核 + 午夜边界容差 |
-| `CAL-BASE-2025` | 2025 逐日基准（含闰六月） | CAL | 闰月/基准验收 | `PENDING` | 阶段 0（CF-08） | CAL 8.1 + A-07；由 CAL-DATA-v0.2 派生 |
-| `CAL-BASE-2026` | 2026 逐日基准 | CAL | 基准验收 | `PENDING` | 阶段 0（CF-08） | CAL 8.1；由 CAL-DATA-v0.2 派生 |
-| `CAL-TZDATA` | IANA tzdata | CAL | 时区/夏令时 | `PENDING` | 阶段 0（CF-09） | CAL 6.5 |
+| `CAL-BASE-2025` | 2025 逐日基准（含闰六月） | CAL | 闰月/基准验收 | `PENDING` | 阶段 0（CF-08） | CAL 8.1 + A-07；由 CAL-DATA-v0.2 派生的回归快照，非独立权威基准 |
+| `CAL-BASE-2026` | 2026 逐日基准 | CAL | 基准验收 | `PENDING` | 阶段 0（CF-08） | CAL 8.1；由 CAL-DATA-v0.2 派生的回归快照，非独立权威基准 |
+| `CAL-TZDATA` | IANA tzdata | CAL | 时区/夏令时 | `VERIFIED` | 阶段 0（CF-09） | CAL 6.5、ADR-015；chrono-tz 0.10.4 内置 tzdata 2025b |
 
 > **A-07：** 2026 年无闰月；基准必须扩展 2025（闰六月）或 2028（闰五月），否则“闰月整月覆盖”无法满足。
 

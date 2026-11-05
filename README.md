@@ -12,7 +12,7 @@
 |---|---|
 | Spec Kit | ✅ 已初始化（`specify-cli 1.2.5`，DSH 集成） |
 | 规范文档 | ✅ SRS v0.4、ARS v0.2、IR v0.1、CAL v0.1、TDS v0.1 草案已齐 |
-| 规范冻结 | ⏳ 未冻结；规则/数据未校核项以 `PENDING` 显式标注 |
+| 规范冻结 | ⏳ 未整体冻结；CAL 规则决策已由 ADR-013～015 关闭，规则/数据未校核项以 `PENDING` 显式标注 |
 | 历法数据 | ✅ `CAL-DATA-v0.2` 经 HKO 1901–2100 逐日校核（6 条午夜边界容差） |
 | 代码 | ✅ Rust workspace + `yitool` CLI（9 个 crate，阶段 0 内核） |
 | 自动测试 | ✅ 单元/金标准/CAL 逐日基准/隐私扫描/分布/性能（`cargo test --workspace`） |
@@ -66,7 +66,7 @@ specify init . --here --force --non-interactive --integration dsh
 | [项目章程](.specify/memory/constitution.md) | 最高治理文件：9 条核心原则、约束、质量门 |
 | [项目路线图](docs/00-PROJECT-ROADMAP.md) | 现状、阶段 0–5、里程碑、关键路径、风险、下一步 |
 | [文档分析](docs/01-DOC-ANALYSIS.md) | 五文档逐项分析、22 项一致性问题（A-01～A-22）、覆盖矩阵 |
-| [决策登记册](docs/02-DECISION-REGISTER.md) | D-01～D-41 决策、建议、截止阶段 |
+| [决策登记册](docs/02-DECISION-REGISTER.md) | D-01～D-42 决策、建议、截止阶段 |
 | [统一数据字典](docs/04-DATA-DICTIONARY.md) | 合并五文档表清单、版本基线、资源目录映射 |
 | [阶段 0 规格](specs/001-phase0-foundation/spec.md) | 6 个用户故事、23 条功能需求、10 条成功标准 |
 | [开发指引](AGENTS.md) | 代理/开发者运行时约定、目录、流程 |
@@ -106,8 +106,8 @@ SRS ── ARS ── 易学计算结果
 
 ## 下一步
 
-1. 关闭阶段 0 剩余决策（D-05/D-06/D-07/D-08/D-10/D-14 已关闭；其余按建议值落地并写入 ADR）。
-2. 冻结 CAL 规则集；`CAL-DATA-v0.2` 已完成 HKO 1901–2100 日期级交叉校核。
+1. 关闭阶段 0 剩余决策：CAL 规则决策已由 ADR-013～015 关闭；剩余 D-09（变卦六亲，阶段 3 前）。
+2. 冻结 CAL 规则集：数据已完成 HKO 1901–2100 日期级交叉校核，剩余 CAL 文档升版冻结与发布构建 tzdata `2025b` 复核。
 3. 校准 `HEX-01`、`NJ-01`、`W-01` 与九色象意文案；未冻结前保持 `PENDING`。
 4. 阶段 1：接入 Tauri 2 + React UI，复用现有 `app` 服务层；实现九色选择器与单一颜色资源校验（T075）。
 5. 补充 Q/B 扰动材料定义、HMAC OS Keychain 真实实现与密钥轮换流程。
