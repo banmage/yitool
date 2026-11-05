@@ -37,6 +37,8 @@ cargo run -p yitool-cli -- verify --resources resources
 # 3. 全量质量门（fmt + clippy + test + verify + privacy-scan）
 ./scripts/check.sh
 
+# CI: push/PR 由 .github/workflows/check.yml 运行同一脚本
+
 # 4. 重新生成资源（可选）
 python3 scripts/gen_resources.py
 .venv-cal/bin/python scripts/gen_cal_precise.py --status VERIFIED

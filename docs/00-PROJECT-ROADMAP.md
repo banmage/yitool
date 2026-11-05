@@ -38,7 +38,8 @@
 3. 六十四卦、纳甲干支、焦氏 4096、择吉权重、黄历数据均未校勘。
    - **2026-11-04 更新**：CAL 农历月表与节气日期已用香港天文台 1901–2100 对照表逐日校核（`docs/reports/CAL-HKO-CROSSCHECK-v0.2.md`）。
 4. 没有代码、测试、基准数据与 CI。
-   - **2026-11-03 更新**：Rust 内核、CLI、730 天 CAL 基准、金标准/隐私/分布/性能测试与 `scripts/check.sh` 已落地；CI 尚未接入。
+   - **2026-11-03 更新**：Rust 内核、CLI、730 天 CAL 基准、金标准/隐私/分布/性能测试与 `scripts/check.sh` 已落地。
+   - **2026-11-05 更新**：GitHub Actions 已接入，push/PR 运行 `scripts/check.sh`；质量门的隐私扫描已修正为真实扫描数据库并在命中时失败。
 5. 文档之间存在若干版本号、数据表、示例数据不一致（详见 `01-DOC-ANALYSIS.md`）。
 
 ---
@@ -131,7 +132,7 @@
 1. **关闭剩余阶段 0 决策**：D-05/D-06/D-07/D-08/D-10/D-11/D-14/D-15/D-16/D-17/D-18 已关闭（ADR-003～012）；剩余 D-09（变卦六亲）需易学评审（阶段 3 前）。
 2. **冻结 CAL 规则集**：数据已校核，仍需完成 CAL 10 待冻结项与基准来源双源记录。
 3. **校勘规则数据**：HEX-01、NJ-01、W-01、JL-01 分批入库，未完成前保持 `PENDING`。
-4. **接入 CI**：运行 `scripts/check.sh`、manifest checksum 与隐私扫描。
+4. ~~**接入 CI**~~：已接入 GitHub Actions（`.github/workflows/check.yml`），运行 `scripts/check.sh`、manifest checksum 与隐私扫描。
 5. **阶段 1**：Tauri 2 + React/TS 接入，完成梅花单引擎最小闭环与九色选择器。
 
 ---
