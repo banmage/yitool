@@ -305,10 +305,10 @@ def gen_wuxing_wangshuai() -> None:
 
 def gen_rules() -> None:
     sources = [
-        ("SRC-MEIHUA-001", "梅花易数", "传世本", "起卦", "九色/传统数字起卦公式", "系统按 ARS v0.2 重述", "L2", "PENDING", "公有领域"),
-        ("SRC-MEIHUA-002", "梅花易数", "传世本", "互卦", "取中间四爻", "系统按 ARS v0.2 重述", "L2", "PENDING", "公有领域"),
-        ("SRC-MEIHUA-003", "梅花易数", "传世本", "变卦", "动爻阴阳互变", "系统按 ARS v0.2 重述", "L2", "PENDING", "公有领域"),
-        ("SRC-MEIHUA-004", "梅花易数", "传世本", "体用", "动爻定体用", "系统按 ARS v0.2 重述", "L2", "PENDING", "公有领域"),
+        ("SRC-MEIHUA-001", "梅花易数", "传世本", "起卦", "九色/传统数字起卦公式", "MEIHUA-CORE-v0.2 已校核（ADR-021）", "L2", "VERIFIED", "公有领域"),
+        ("SRC-MEIHUA-002", "梅花易数", "传世本", "互卦", "取中间四爻", "MEIHUA-CORE-v0.2 已校核（ADR-021）", "L2", "VERIFIED", "公有领域"),
+        ("SRC-MEIHUA-003", "梅花易数", "传世本", "变卦", "动爻阴阳互变", "MEIHUA-CORE-v0.2 已校核（ADR-021）", "L2", "VERIFIED", "公有领域"),
+        ("SRC-MEIHUA-004", "梅花易数", "传世本", "体用", "动爻定体用", "MEIHUA-CORE-v0.2 已校核（ADR-021）", "L2", "VERIFIED", "公有领域"),
         ("SRC-MEIHUA-005", "梅花易数", "传世本", "旺衰", "月建五行生克", "W-01-v0.2 已校核（ADR-017）", "L2", "VERIFIED", "公有领域"),
         ("SRC-MEIHUA-006", "本系统自定义", "v0.2", "忌神与弱势卦位", "E_ji=克体之行；弱势卦位=同忌神五行卦位", "ADR-011；L3 自定义；W-01-v0.2 已校核", "L3", "VERIFIED", "系统自定义"),
         ("SRC-CAL-001", "历法服务规范 CAL v0.2", "v0.2", "历法", "公农历/节气/四柱/日界/旬空", "CAL v0.2 已冻结（ADR-016）；数据按 HKO 1901–2100 校核", "L1", "VERIFIED", "系统文档"),
@@ -333,6 +333,8 @@ def gen_rules() -> None:
             "test_refs": tests,
         }
 
+    meihua_core_tests = [f"TC-MEIHUA-{i:03d}" for i in range(1, 18)]
+
     rules = [
         rule("SEED-BASE-001", "SEED", "base", "L2", "SRC-SEED-001", "PENDING", ["TC-SEED-001"]),
         rule("SEED-DRAW-001", "SEED", "draw", "L2", "SRC-SEED-001", "PENDING", ["TC-SEED-001"]),
@@ -343,11 +345,11 @@ def gen_rules() -> None:
         rule("CAL-JIEQI-001", "CAL", "jieqi", "L1", "SRC-CAL-001", "PENDING", ["TC-CAL-003"]),
         rule("CAL-DAYBOUND-001", "CAL", "day_bound", "L1", "SRC-CAL-001", "PENDING", ["TC-CAL-004"]),
         rule("CAL-XUN-001", "CAL", "xun", "L1", "SRC-CAL-001", "PENDING", ["TC-CAL-005"]),
-        rule("MEIHUA-QIGUA-001", "MEIHUA", "qigua", "L3", "SRC-MEIHUA-001", "PENDING", ["TC-MEIHUA-001"]),
-        rule("MEIHUA-QIGUA-002", "MEIHUA", "qigua", "L2", "SRC-MEIHUA-001", "PENDING", ["TC-MEIHUA-002"]),
-        rule("MEIHUA-HUGUA-001", "MEIHUA", "hugua", "L2", "SRC-MEIHUA-002", "PENDING", ["TC-MEIHUA-001"]),
-        rule("MEIHUA-BIANGUA-001", "MEIHUA", "biangua", "L2", "SRC-MEIHUA-003", "PENDING", ["TC-MEIHUA-001", "TC-MEIHUA-002"]),
-        rule("MEIHUA-TIYONG-001", "MEIHUA", "tiyong", "L2", "SRC-MEIHUA-004", "PENDING", ["TC-MEIHUA-001"]),
+        rule("MEIHUA-QIGUA-001", "MEIHUA", "qigua", "L3", "SRC-MEIHUA-001", "VERIFIED", meihua_core_tests),
+        rule("MEIHUA-QIGUA-002", "MEIHUA", "qigua", "L2", "SRC-MEIHUA-001", "VERIFIED", meihua_core_tests),
+        rule("MEIHUA-HUGUA-001", "MEIHUA", "hugua", "L2", "SRC-MEIHUA-002", "VERIFIED", meihua_core_tests),
+        rule("MEIHUA-BIANGUA-001", "MEIHUA", "biangua", "L2", "SRC-MEIHUA-003", "VERIFIED", meihua_core_tests),
+        rule("MEIHUA-TIYONG-001", "MEIHUA", "tiyong", "L2", "SRC-MEIHUA-004", "VERIFIED", meihua_core_tests),
         rule("MEIHUA-WANGSHUAI-001", "MEIHUA", "wangshuai", "L2", "SRC-MEIHUA-005", "VERIFIED", ["TC-MEIHUA-003"]),
         rule("MEIHUA-JISHEN-001", "MEIHUA", "jishen", "L3", "SRC-MEIHUA-006", "VERIFIED", ["TC-MEIHUA-004"]),
         rule("LOG-SCHEMA-001", "LOG", "schema", "L1", "SRC-LOG-001", "PENDING", ["TC-LOG-001"]),

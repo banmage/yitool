@@ -191,7 +191,7 @@ cargo test -p yitool-app --test perf -- --nocapture
 | 性能基线 | 种子 0.46ms、梅花 0.19ms、CAL 一年 0.39ms、1000 历史列表 2.23ms、单条查询 0.06ms（P95，debug） |
 | 梅花金标准 | TC-MEIHUA-001、TC-MEIHUA-002 通过 |
 
-**遗留**：HEX/NJ/W 等规则资源仍为 `PENDING`，需易学评审交叉校核；CAL 规则集已于 2026-11-05 冻结为 `CAL-v0.2` / `CAL-RULE-v0.2`（ADR-016）；Q/B 材料与 HMAC 密钥语义已由 ADR-005/007 冻结，系统 Keychain 接入延期至阶段 1。
+**遗留（2026-11-03 时点）**：HEX/NJ/W 等规则资源当时仍为 `PENDING`，后续已由 ADR-017～021 完成校核；CAL 规则集已于 2026-11-05 冻结为 `CAL-v0.2` / `CAL-RULE-v0.2`（ADR-016）；Q/B 材料与 HMAC 密钥语义已由 ADR-005/007 冻结，系统 Keychain 接入延期至阶段 1。
 
 ### 11.1 CAL 数据交叉校核（2026-11-04）
 
@@ -342,3 +342,25 @@ cargo test -p yitool-app --test report
 | 保存 `.md` 后逐字读回一致 | PASS |
 
 **阶段 1 待接入**：独立窗口、复制到剪贴板、系统保存对话框、只读阅读器 UI、键盘焦点与滚动恢复。
+
+### 11.9 梅花核心规则校核（ADR-021，2026-11-06）
+
+| 项目 | 结果 |
+|---|---|
+| 金标准 | `tests/golden/meihua_core.json`（`MEIHUA-CORE-v0.2`，17 个案例） |
+| 覆盖 | 九色/传统数字双模式、初爻至上爻六种动爻、8/8 边界、同卦互卦、Q/B 扰动 |
+| 独立复算 | `crates/meihua/tests/core_crosscheck.rs`：八经卦三爻位 + `HEX-01-v0.2` 卦名推导，不复用 `cast` 中间结果 |
+| 全组合 | 8×8 上下卦 × 6 动爻 = 384 种组合逐项比对 |
+| 双模式等价 | Q/B=0 时传统数字与九色结果一致（8×8 组合） |
+| 规则状态 | `MEIHUA-QIGUA-001/002`、`MEIHUA-HUGUA-001`、`MEIHUA-BIANGUA-001`、`MEIHUA-TIYONG-001` → `VERIFIED` |
+| 出处状态 | `SRC-MEIHUA-001`～`004` → `VERIFIED` |
+| 整体结果 | 仍为 `PENDING`、`formal_allowed=false`（`IR-01`、`MEIHUA-INTERPRET-01`、`JL-01` 未完成，规则集未整体冻结） |
+
+**说明**：`VERIFIED` 只表示实现与 ARS v0.2 公式及金标准一致，不改变规则层级；九色参与起卦与 Q/B 扰动仍为 L3，不得冒充 L1 传统规则。
+
+自动验收：
+
+```bash
+cargo test -p yitool-meihua
+cargo run -p yitool-cli -- verify --resources resources
+```

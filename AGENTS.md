@@ -84,10 +84,10 @@ tests/golden/         跨 crate 金标准 JSON
 ## 6. 当前状态与下一步
 
 - 五份规范：SRS/ARS/IR/TDS 草案已齐且未冻结；CAL v0.2 已冻结（`CAL-RULE-v0.2`，ADR-016）；未校核资源显式标 `PENDING`。
-- 代码：Rust workspace + `yitool` CLI 已落地；阶段 0 P1 内核（CAL/种子/溯源/隐私/梅花金标准）已通过测试。
+- 代码：Rust workspace + `yitool` CLI 已落地；阶段 0 P1 内核（CAL/种子/溯源/隐私/梅花金标准）已通过测试；梅花起卦/互卦/变卦/体用核心规则已校核（`MEIHUA-CORE-v0.2`，ADR-021）。
 - 历法数据：`CAL-DATA-v0.2` 已按香港天文台 1901–2100 对照表逐日校核（农历 0 差异；节气 6 条午夜边界容差，见 `docs/reports/CAL-HKO-CROSSCHECK-v0.2.md`）。
 - 当前阶段：**阶段 0（进行中）**。
-- 已批准：D-01 九色、D-02 技术栈、D-05 版本基线、D-06 A/B 随机语义、D-07 Q/B 扰动、D-08 HMAC 密钥、D-10 数据字典、D-11 忌神算法、D-14 DST 策略、D-15 数据库加密、D-16 资源 manifest、D-17 schema 迁移、D-18 性能基准、D-19 CAL 算法/库、D-41 午夜边界容差、D-42 tzdata 版本、D-44 W-01 旺衰表、D-45 HEX-01 八宫表、D-46 NJ-01 纳甲表；D-03/D-04/D-12/D-13 见 ADR-013，D-19/D-20/D-41 见 ADR-014，D-42 见 ADR-015，CAL 规则集冻结见 ADR-016，W-01 校核见 ADR-017，HEX-01 校核见 ADR-018，NJ-01 校核见 ADR-019。
+- 已批准：D-01 九色、D-02 技术栈、D-05 版本基线、D-06 A/B 随机语义、D-07 Q/B 扰动、D-08 HMAC 密钥、D-10 数据字典、D-11 忌神算法、D-14 DST 策略、D-15 数据库加密、D-16 资源 manifest、D-17 schema 迁移、D-18 性能基准、D-19 CAL 算法/库、D-41 午夜边界容差、D-42 tzdata 版本、D-44 W-01 旺衰表、D-45 HEX-01 八宫表、D-46 NJ-01 纳甲表、D-48 梅花核心规则；D-03/D-04/D-12/D-13 见 ADR-013，D-19/D-20/D-41 见 ADR-014，D-42 见 ADR-015，CAL 规则集冻结见 ADR-016，W-01 校核见 ADR-017，HEX-01 校核见 ADR-018，NJ-01 校核见 ADR-019，梅花核心规则校核见 ADR-021。
 - 阻塞点：JL-01 校勘、D-09 变卦六亲（阶段 3 前）。
 - 下一步：校勘规则数据 → 阶段 1 Tauri/React 接入。
 

@@ -159,9 +159,25 @@
       "priority": null,
       "source_ref": "SRC-MEIHUA-001",
       "version": "RULE-v0.2",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "test_refs": [
-        "TC-MEIHUA-001"
+        "TC-MEIHUA-001",
+        "TC-MEIHUA-002",
+        "TC-MEIHUA-003",
+        "TC-MEIHUA-004",
+        "TC-MEIHUA-005",
+        "TC-MEIHUA-006",
+        "TC-MEIHUA-007",
+        "TC-MEIHUA-008",
+        "TC-MEIHUA-009",
+        "TC-MEIHUA-010",
+        "TC-MEIHUA-011",
+        "TC-MEIHUA-012",
+        "TC-MEIHUA-013",
+        "TC-MEIHUA-014",
+        "TC-MEIHUA-015",
+        "TC-MEIHUA-016",
+        "TC-MEIHUA-017"
       ]
     },
     {
@@ -175,9 +191,25 @@
       "priority": null,
       "source_ref": "SRC-MEIHUA-001",
       "version": "RULE-v0.2",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "test_refs": [
-        "TC-MEIHUA-002"
+        "TC-MEIHUA-001",
+        "TC-MEIHUA-002",
+        "TC-MEIHUA-003",
+        "TC-MEIHUA-004",
+        "TC-MEIHUA-005",
+        "TC-MEIHUA-006",
+        "TC-MEIHUA-007",
+        "TC-MEIHUA-008",
+        "TC-MEIHUA-009",
+        "TC-MEIHUA-010",
+        "TC-MEIHUA-011",
+        "TC-MEIHUA-012",
+        "TC-MEIHUA-013",
+        "TC-MEIHUA-014",
+        "TC-MEIHUA-015",
+        "TC-MEIHUA-016",
+        "TC-MEIHUA-017"
       ]
     },
     {
@@ -191,9 +223,25 @@
       "priority": null,
       "source_ref": "SRC-MEIHUA-002",
       "version": "RULE-v0.2",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "test_refs": [
-        "TC-MEIHUA-001"
+        "TC-MEIHUA-001",
+        "TC-MEIHUA-002",
+        "TC-MEIHUA-003",
+        "TC-MEIHUA-004",
+        "TC-MEIHUA-005",
+        "TC-MEIHUA-006",
+        "TC-MEIHUA-007",
+        "TC-MEIHUA-008",
+        "TC-MEIHUA-009",
+        "TC-MEIHUA-010",
+        "TC-MEIHUA-011",
+        "TC-MEIHUA-012",
+        "TC-MEIHUA-013",
+        "TC-MEIHUA-014",
+        "TC-MEIHUA-015",
+        "TC-MEIHUA-016",
+        "TC-MEIHUA-017"
       ]
     },
     {
@@ -207,10 +255,25 @@
       "priority": null,
       "source_ref": "SRC-MEIHUA-003",
       "version": "RULE-v0.2",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "test_refs": [
         "TC-MEIHUA-001",
-        "TC-MEIHUA-002"
+        "TC-MEIHUA-002",
+        "TC-MEIHUA-003",
+        "TC-MEIHUA-004",
+        "TC-MEIHUA-005",
+        "TC-MEIHUA-006",
+        "TC-MEIHUA-007",
+        "TC-MEIHUA-008",
+        "TC-MEIHUA-009",
+        "TC-MEIHUA-010",
+        "TC-MEIHUA-011",
+        "TC-MEIHUA-012",
+        "TC-MEIHUA-013",
+        "TC-MEIHUA-014",
+        "TC-MEIHUA-015",
+        "TC-MEIHUA-016",
+        "TC-MEIHUA-017"
       ]
     },
     {
@@ -224,9 +287,25 @@
       "priority": null,
       "source_ref": "SRC-MEIHUA-004",
       "version": "RULE-v0.2",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "test_refs": [
-        "TC-MEIHUA-001"
+        "TC-MEIHUA-001",
+        "TC-MEIHUA-002",
+        "TC-MEIHUA-003",
+        "TC-MEIHUA-004",
+        "TC-MEIHUA-005",
+        "TC-MEIHUA-006",
+        "TC-MEIHUA-007",
+        "TC-MEIHUA-008",
+        "TC-MEIHUA-009",
+        "TC-MEIHUA-010",
+        "TC-MEIHUA-011",
+        "TC-MEIHUA-012",
+        "TC-MEIHUA-013",
+        "TC-MEIHUA-014",
+        "TC-MEIHUA-015",
+        "TC-MEIHUA-016",
+        "TC-MEIHUA-017"
       ]
     },
     {
@@ -301,9 +380,9 @@
       "edition": "传世本",
       "chapter": "起卦",
       "original_excerpt": "九色/传统数字起卦公式",
-      "modern_note": "系统按 ARS v0.2 重述",
+      "modern_note": "MEIHUA-CORE-v0.2 已校核（ADR-021）",
       "rule_level": "L2",
-      "collation_status": "PENDING",
+      "collation_status": "VERIFIED",
       "copyright_status": "公有领域"
     },
     {
@@ -312,9 +391,9 @@
       "edition": "传世本",
       "chapter": "互卦",
       "original_excerpt": "取中间四爻",
-      "modern_note": "系统按 ARS v0.2 重述",
+      "modern_note": "MEIHUA-CORE-v0.2 已校核（ADR-021）",
       "rule_level": "L2",
-      "collation_status": "PENDING",
+      "collation_status": "VERIFIED",
       "copyright_status": "公有领域"
     },
     {
@@ -323,9 +402,9 @@
       "edition": "传世本",
       "chapter": "变卦",
       "original_excerpt": "动爻阴阳互变",
-      "modern_note": "系统按 ARS v0.2 重述",
+      "modern_note": "MEIHUA-CORE-v0.2 已校核（ADR-021）",
       "rule_level": "L2",
-      "collation_status": "PENDING",
+      "collation_status": "VERIFIED",
       "copyright_status": "公有领域"
     },
     {
@@ -334,9 +413,9 @@
       "edition": "传世本",
       "chapter": "体用",
       "original_excerpt": "动爻定体用",
-      "modern_note": "系统按 ARS v0.2 重述",
+      "modern_note": "MEIHUA-CORE-v0.2 已校核（ADR-021）",
       "rule_level": "L2",
-      "collation_status": "PENDING",
+      "collation_status": "VERIFIED",
       "copyright_status": "公有领域"
     },
     {

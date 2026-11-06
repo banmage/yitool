@@ -1,0 +1,229 @@
+{
+  "id": "MEIHUA-CORE-01",
+  "version": "MEIHUA-CORE-v0.2",
+  "status": "VERIFIED",
+  "source": "ARS v0.2 3.2-3.6；G-01/HEX-01 已校核表；按上下卦与六爻结构独立复算并人工核对（ADR-021）",
+  "cases": [
+    {
+      "case_id": "TC-MEIHUA-001",
+      "scheme": "NINE_COLOR",
+      "input": { "color": 1, "aux": 3, "q_mod": 0, "b_mod": 0 },
+      "expected": {
+        "original": "天火同人",
+        "moving_line": 4,
+        "changed": "风火家人",
+        "mutual": "天风姤",
+        "ti": "离",
+        "yong": "乾"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-002",
+      "scheme": "TRADITIONAL_NUMBER",
+      "input": { "u0": 9, "d0": 16, "q_mod": 0, "b_mod": 0 },
+      "expected": {
+        "original": "天地否",
+        "moving_line": 1,
+        "changed": "天雷无妄",
+        "mutual": "风山渐",
+        "ti": "乾",
+        "yong": "坤"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-003",
+      "scheme": "NINE_COLOR",
+      "input": { "color": 8, "aux": 8, "q_mod": 0, "b_mod": 0 },
+      "expected": {
+        "original": "坤为地",
+        "moving_line": 4,
+        "changed": "雷地豫",
+        "mutual": "坤为地",
+        "ti": "坤",
+        "yong": "坤"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-004",
+      "scheme": "NINE_COLOR",
+      "input": { "color": 9, "aux": 12, "q_mod": 0, "b_mod": 0 },
+      "expected": {
+        "original": "天雷无妄",
+        "moving_line": 3,
+        "changed": "天火同人",
+        "mutual": "风山渐",
+        "ti": "乾",
+        "yong": "震"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-005",
+      "scheme": "TRADITIONAL_NUMBER",
+      "input": { "u0": 8, "d0": 8, "q_mod": 0, "b_mod": 0 },
+      "expected": {
+        "original": "坤为地",
+        "moving_line": 4,
+        "changed": "雷地豫",
+        "mutual": "坤为地",
+        "ti": "坤",
+        "yong": "坤"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-006",
+      "scheme": "TRADITIONAL_NUMBER",
+      "input": { "u0": 1, "d0": 6, "q_mod": 0, "b_mod": 0 },
+      "expected": {
+        "original": "天水讼",
+        "moving_line": 1,
+        "changed": "天泽履",
+        "mutual": "风火家人",
+        "ti": "乾",
+        "yong": "坎"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-007",
+      "scheme": "TRADITIONAL_NUMBER",
+      "input": { "u0": 16, "d0": 9, "q_mod": 0, "b_mod": 0 },
+      "expected": {
+        "original": "地天泰",
+        "moving_line": 1,
+        "changed": "地风升",
+        "mutual": "雷泽归妹",
+        "ti": "坤",
+        "yong": "乾"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-008",
+      "scheme": "NINE_COLOR",
+      "input": { "color": 6, "aux": 3, "q_mod": 4, "b_mod": 0 },
+      "expected": {
+        "original": "水火既济",
+        "moving_line": 1,
+        "changed": "水山蹇",
+        "mutual": "火水未济",
+        "ti": "坎",
+        "yong": "离"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-009",
+      "scheme": "NINE_COLOR",
+      "input": { "color": 6, "aux": 3, "q_mod": 5, "b_mod": 0 },
+      "expected": {
+        "original": "水火既济",
+        "moving_line": 2,
+        "changed": "水天需",
+        "mutual": "火水未济",
+        "ti": "坎",
+        "yong": "离"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-010",
+      "scheme": "NINE_COLOR",
+      "input": { "color": 6, "aux": 3, "q_mod": 0, "b_mod": 0 },
+      "expected": {
+        "original": "水火既济",
+        "moving_line": 3,
+        "changed": "水雷屯",
+        "mutual": "火水未济",
+        "ti": "坎",
+        "yong": "离"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-011",
+      "scheme": "NINE_COLOR",
+      "input": { "color": 6, "aux": 3, "q_mod": 1, "b_mod": 0 },
+      "expected": {
+        "original": "水火既济",
+        "moving_line": 4,
+        "changed": "泽火革",
+        "mutual": "火水未济",
+        "ti": "离",
+        "yong": "坎"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-012",
+      "scheme": "NINE_COLOR",
+      "input": { "color": 6, "aux": 3, "q_mod": 2, "b_mod": 0 },
+      "expected": {
+        "original": "水火既济",
+        "moving_line": 5,
+        "changed": "地火明夷",
+        "mutual": "火水未济",
+        "ti": "离",
+        "yong": "坎"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-013",
+      "scheme": "NINE_COLOR",
+      "input": { "color": 6, "aux": 3, "q_mod": 3, "b_mod": 0 },
+      "expected": {
+        "original": "水火既济",
+        "moving_line": 6,
+        "changed": "风火家人",
+        "mutual": "火水未济",
+        "ti": "离",
+        "yong": "坎"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-014",
+      "scheme": "TRADITIONAL_NUMBER",
+      "input": { "u0": 9, "d0": 16, "q_mod": 1, "b_mod": 0 },
+      "expected": {
+        "original": "泽地萃",
+        "moving_line": 2,
+        "changed": "泽水困",
+        "mutual": "风山渐",
+        "ti": "兑",
+        "yong": "坤"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-015",
+      "scheme": "NINE_COLOR",
+      "input": { "color": 1, "aux": 3, "q_mod": 1, "b_mod": 0 },
+      "expected": {
+        "original": "天火同人",
+        "moving_line": 5,
+        "changed": "离为火",
+        "mutual": "天风姤",
+        "ti": "离",
+        "yong": "乾"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-016",
+      "scheme": "NINE_COLOR",
+      "input": { "color": 1, "aux": 3, "q_mod": 0, "b_mod": 2 },
+      "expected": {
+        "original": "天火同人",
+        "moving_line": 6,
+        "changed": "泽火革",
+        "mutual": "天风姤",
+        "ti": "离",
+        "yong": "乾"
+      }
+    },
+    {
+      "case_id": "TC-MEIHUA-017",
+      "scheme": "TRADITIONAL_NUMBER",
+      "input": { "u0": 9, "d0": 16, "q_mod": 0, "b_mod": 1 },
+      "expected": {
+        "original": "乾为天",
+        "moving_line": 2,
+        "changed": "天火同人",
+        "mutual": "乾为天",
+        "ti": "乾",
+        "yong": "乾"
+      }
+    }
+  ]
+}

@@ -180,7 +180,7 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
     let yong_relation = yong.element().relation_to(month_element);
 
     // ADR-011 / MEIHUA-JISHEN-001：克体五行为忌神，同五行卦位为弱势方位。
-    // 本系统自定义 L3；W-01-v0.2 已校核，整体结果仍受 HEX-01 等未校核规则约束。
+    // 本系统自定义 L3；W-01-v0.2 已校核，整体结果仍受解释规则等未完成项约束。
     let jishen_element = ti.element().controlled_by();
     let jishen = JishenOut {
         element: jishen_element.name().into(),
@@ -211,10 +211,12 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
             .source("SRC-MEIHUA-001")
             .level(level)
             .formula(formula)
+            .status(Status::Verified)
             .output(serde_json::json!({
                 "upper": original.upper.name(),
                 "lower": original.lower.name(),
                 "moving_line": moving,
+                "note": "MEIHUA-CORE-v0.2 已校核（ADR-021）"
             }))
             .build()
             .map_err(|e| MeihuaError::Step(e.to_string()))?,
@@ -227,10 +229,12 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
             .source("SRC-MEIHUA-002")
             .level(RuleLevel::L2)
             .formula("lower_hu=lines[1..4], upper_hu=lines[2..5]")
+            .status(Status::Verified)
             .output(serde_json::json!({
                 "name": mutual.name(),
                 "upper": mutual.upper.name(),
                 "lower": mutual.lower.name(),
+                "note": "MEIHUA-CORE-v0.2 已校核（ADR-021）"
             }))
             .build()
             .map_err(|e| MeihuaError::Step(e.to_string()))?,
@@ -243,11 +247,13 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
             .source("SRC-MEIHUA-003")
             .level(RuleLevel::L2)
             .formula(format!("翻转第 {moving} 爻"))
+            .status(Status::Verified)
             .output(serde_json::json!({
                 "name": changed.name(),
                 "upper": changed.upper.name(),
                 "lower": changed.lower.name(),
                 "moving_line": moving,
+                "note": "MEIHUA-CORE-v0.2 已校核（ADR-021）"
             }))
             .build()
             .map_err(|e| MeihuaError::Step(e.to_string()))?,
@@ -260,11 +266,13 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
             .source("SRC-MEIHUA-004")
             .level(RuleLevel::L2)
             .formula("动爻 1—3 下用上体；4—6 上用下体")
+            .status(Status::Verified)
             .output(serde_json::json!({
                 "ti": ti.name(),
                 "yong": yong.name(),
                 "ti_element": ti.element().name(),
                 "yong_element": yong.element().name(),
+                "note": "MEIHUA-CORE-v0.2 已校核（ADR-021）"
             }))
             .build()
             .map_err(|e| MeihuaError::Step(e.to_string()))?,
@@ -308,6 +316,8 @@ pub fn cast(input: MeihuaInput, month_branch: u8) -> Result<MeihuaResult, Meihua
             .map_err(|e| MeihuaError::Step(e.to_string()))?,
     );
 
+    // ADR-021：起卦/互卦/变卦/体用核心规则已校核，但解释规则与焦氏等未完成，
+    // 整体结果仍为 PENDING、formal_allowed=false，不得输出正式结论。
     Ok(MeihuaResult {
         scheme: scheme.into(),
         original: original.into(),

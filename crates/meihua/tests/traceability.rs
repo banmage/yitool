@@ -32,7 +32,7 @@ fn every_step_has_full_traceability() {
 }
 
 #[test]
-fn pending_rules_do_not_produce_formal_result() {
+fn verified_core_rules_do_not_release_formal_result() {
     let result = cast(
         MeihuaInput::Traditional {
             u0: 9,
@@ -48,15 +48,16 @@ fn pending_rules_do_not_produce_formal_result() {
     // 体乾金 → 忌神火；弱势卦位为同属火的离（南）。
     assert_eq!(result.jishen.element, "火");
     assert_eq!(result.jishen.weak_positions[0].direction, "南");
-    assert!(result
-        .steps
-        .iter()
-        .any(|s| s.step_id == "MEIHUA-WANGSHUAI" && s.status == Status::Verified));
-    // W-01 与 ADR-011 已校核，但 HEX-01/IR-01 等仍未校核，整体不得转为正式结果。
-    assert!(result
-        .steps
-        .iter()
-        .any(|s| s.step_id == "MEIHUA-JISHEN" && s.status == Status::Verified));
+    // ADR-021：六步的核心规则均已校核。
+    for step in &result.steps {
+        assert_eq!(
+            step.status,
+            Status::Verified,
+            "{} 应为 VERIFIED",
+            step.step_id
+        );
+    }
+    // 核心规则已校核，但解释规则与焦氏等仍未完成，整体不得转为正式结果。
 }
 
 #[test]

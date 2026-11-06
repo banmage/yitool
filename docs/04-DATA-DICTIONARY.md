@@ -50,7 +50,7 @@ LOG_SCHEMA         = LOG-v0.1
 ```
 
 > 说明：SRS 附录 B、ARS 0.3 与代码已统一为 `RULE-v0.2`/`DATA-v0.2`；SRS 附录 B 已同步完整 `VersionSet`。
-> **版本记录：** CAL 文档已升为 `CAL-v0.2` 并冻结（`CAL-RULE-v0.2`，ADR-016）；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；`W-01-v0.2` 由 ADR-017 补齐 12 月建 × 5 行旺衰表并升为 `VERIFIED`；`HEX-01-v0.2` 由 ADR-018 补齐宫五行/宫序号并完成八宫表交叉校核；`NJ-01-v0.2` 由 ADR-019 完成纳甲干支表校核；SRS 升 `SRS-v0.5`、TDS 升 `TDS-v0.2`，由 ADR-020 新增 `REPORT-v1`/`EVIDENCE-v1`；CAL 日界/日柱/范围/时区由 ADR-013 冻结，CAL 数据源/基准/边界容差由 ADR-014 冻结，tzdata 版本由 ADR-015 冻结；当前校核数据以本表为准。
+> **版本记录：** CAL 文档已升为 `CAL-v0.2` 并冻结（`CAL-RULE-v0.2`，ADR-016）；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；`W-01-v0.2` 由 ADR-017 补齐 12 月建 × 5 行旺衰表并升为 `VERIFIED`；`HEX-01-v0.2` 由 ADR-018 补齐宫五行/宫序号并完成八宫表交叉校核；`NJ-01-v0.2` 由 ADR-019 完成纳甲干支表校核；`MEIHUA-CORE-v0.2` 由 ADR-021 校核起卦/互卦/变卦/体用五条核心规则（17 个金标准案例、64 卦 × 6 动爻独立复算），规则与出处升 `VERIFIED`，但规则集仍未整体冻结；SRS 升 `SRS-v0.5`、TDS 升 `TDS-v0.2`，由 ADR-020 新增 `REPORT-v1`/`EVIDENCE-v1`；CAL 日界/日柱/范围/时区由 ADR-013 冻结，CAL 数据源/基准/边界容差由 ADR-014 冻结，tzdata 版本由 ADR-015 冻结；当前校核数据以本表为准。
 
 ---
 
@@ -209,6 +209,8 @@ resources/
 | 9 | `IR-01`（仅禁用词/免责声明子集） | 合规扫描 |
 
 **不在阶段 0 就绪：** `JL-01`、`LIUYAO-YONGSHEN-01`、`ZEJI-*`、`HL-01`、`COPY-01`、`L-01`。`NJ-01` 数据表已校核为 `NJ-01-v0.2`，但纳甲装卦引擎仍属阶段 3。
+
+**梅花核心规则：** `MEIHUA-CORE-v0.2` 已校核（ADR-021），起卦/互卦/变卦/体用步骤为 `VERIFIED`；`MEIHUA-INTERPRET-01`、`IR-01`、`JL-01` 等未完成前，梅花整体结果仍为 `PENDING`。
 
 ---
 
