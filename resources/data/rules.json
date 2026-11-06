@@ -1,7 +1,7 @@
 {
   "version": "RULE-v0.2",
   "status": "PENDING",
-  "source": "ARS v0.2 附录 C/D + SRS v0.4",
+  "source": "ARS v0.2 附录 C/D + SRS v0.5",
   "rules": [
     {
       "rule_id": "SEED-BASE-001",
@@ -374,8 +374,8 @@
     },
     {
       "source_ref": "SRC-SEED-001",
-      "book": "技术设计说明书 TDS v0.1",
-      "edition": "v0.1",
+      "book": "技术设计说明书 TDS v0.2",
+      "edition": "v0.2",
       "chapter": "种子链",
       "original_excerpt": "SHA-256 派生与 HMAC",
       "modern_note": "阶段 0 实现",

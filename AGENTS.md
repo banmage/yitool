@@ -11,14 +11,14 @@
 ## 2. 文档权威顺序
 
 1. `.specify/memory/constitution.md` — 项目章程（最高）
-2. `docs/易学推演辅助决策系统 SRS v0.4.txt` — 行为、边界、验收
+2. `docs/易学推演辅助决策系统 SRS v0.5.txt` — 行为、边界、验收
 3. `docs/易学算法与规则规范 ARS v0.2.txt` — 算法、映射、金标准
 4. `docs/推演解释规则规范 IR v0.1.txt` — 解释模板、措辞、合规
 5. `docs/历法服务规范 CAL v0.2.txt` — 历法、日界、时区（已冻结）
-6. `docs/技术设计说明书  TDS v0.1.txt` — 架构、接口、存储
+6. `docs/技术设计说明书  TDS v0.2.txt` — 架构、接口、存储、报告与依据链接
 7. `docs/00-PROJECT-ROADMAP.md` — 阶段、里程碑、风险
 8. `docs/01-DOC-ANALYSIS.md` — 文档冲突与缺口（A-01～A-22）
-9. `docs/02-DECISION-REGISTER.md` — 决策登记（D-01～D-40）
+9. `docs/02-DECISION-REGISTER.md` — 决策登记（D-01～D-47）
 10. `docs/04-DATA-DICTIONARY.md` — 统一数据字典与版本基线
 11. `specs/001-phase0-foundation/spec.md` — 当前特性规格
 

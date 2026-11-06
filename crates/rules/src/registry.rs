@@ -99,6 +99,16 @@ impl RuleRegistry {
         self.sources.get(source_ref)
     }
 
+    /// 全部规则；用于生成稳定的依据/附件索引。
+    pub fn all_rules(&self) -> Vec<&RuleRecord> {
+        self.rules.values().collect()
+    }
+
+    /// 全部典籍出处；用于生成稳定的依据/附件索引。
+    pub fn all_sources(&self) -> Vec<&SourceRecord> {
+        self.sources.values().collect()
+    }
+
     pub fn rules_for_engine(&self, engine: &str) -> Vec<&RuleRecord> {
         self.rules.values().filter(|r| r.engine == engine).collect()
     }

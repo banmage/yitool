@@ -4,9 +4,12 @@ use cal::{CalData, CalQuery, CalResult};
 use domain::VersionSet;
 use ir::Compliance;
 use meihua::{MeihuaInput, MeihuaResult};
+use rules::manifest::{Manifest, ResourceReport};
 use rules::RuleRegistry;
 use seed::{SeedChain, SeedInput};
 use thiserror::Error;
+
+use crate::evidence::{EvidenceError, EvidenceIndex};
 
 #[derive(Debug, Error)]
 pub enum AppError {
@@ -26,6 +29,10 @@ pub enum AppError {
     Meihua(#[from] meihua::MeihuaError),
     #[error("种子错误: {0}")]
     Seed(#[from] seed::SeedError),
+    #[error("依据链接错误: {0}")]
+    Evidence(#[from] EvidenceError),
+    #[error("报告生成错误: {0}")]
+    Report(#[from] crate::report::ReportError),
     #[error("存储错误: {0}")]
     Store(String),
     #[error("IO 错误: {0}")]
@@ -49,6 +56,8 @@ pub fn resources_dir() -> PathBuf {
 
 pub struct AppContext {
     pub resources: PathBuf,
+    pub manifest: Manifest,
+    pub resource_reports: Vec<ResourceReport>,
     pub cal: CalData,
     pub rules: RuleRegistry,
     pub compliance: Compliance,
@@ -86,6 +95,8 @@ impl AppContext {
             .map_err(|e| AppError::Compliance(e.to_string()))?;
         Ok(Self {
             resources,
+            manifest,
+            resource_reports: reports,
             cal,
             rules,
             compliance,
@@ -94,6 +105,34 @@ impl AppContext {
 
     pub fn versions(&self) -> VersionSet {
         VersionSet::default().with_cal_data(self.cal.version.clone())
+    }
+
+    /// 构建规则、典籍出处与附件资源的统一链接索引。
+    pub fn evidence_index(&self) -> Result<EvidenceIndex, AppError> {
+        Ok(EvidenceIndex::build(
+            &self.manifest,
+            &self.resource_reports,
+            &self.rules,
+        )?)
+    }
+
+    /// 渲染一次梅花结果的完整 Markdown 报告。
+    pub fn meihua_report(
+        &self,
+        result: &MeihuaResult,
+        run_id: &str,
+        created_at: &str,
+        mode: &str,
+    ) -> Result<String, AppError> {
+        let evidence = self.evidence_index()?;
+        Ok(crate::report::render_meihua_report(
+            result,
+            &self.versions(),
+            &evidence,
+            run_id,
+            created_at,
+            mode,
+        )?)
     }
 
     pub fn cal_query(&self, query: &CalQuery) -> Result<CalResult, AppError> {

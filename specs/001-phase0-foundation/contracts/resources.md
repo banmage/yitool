@@ -1,7 +1,7 @@
 # Resource Contract: 只读资源与 manifest
 
 **Version**: DATA-v0.2
-**Source**: TDS v0.1 4.3、ARS v0.2 附录 D、`docs/04-DATA-DICTIONARY.md`
+**Source**: TDS v0.2 4.3、ARS v0.2 附录 D、`docs/04-DATA-DICTIONARY.md`
 
 ## manifest
 

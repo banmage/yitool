@@ -20,7 +20,7 @@ pub struct VersionSet {
 impl Default for VersionSet {
     fn default() -> Self {
         Self {
-            srs: "SRS-v0.4".into(),
+            srs: "SRS-v0.5".into(),
             ars: "ARS-v0.2".into(),
             ir: "IR-v0.1".into(),
             cal: "CAL-v0.2".into(),

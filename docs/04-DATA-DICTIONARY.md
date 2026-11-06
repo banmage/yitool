@@ -1,7 +1,7 @@
 # 统一数据字典（Data Dictionary）
 
-**版本：** DD-v0.2
-**更新日期：** 2026-11-04
+**版本：** DD-v0.3
+**更新日期：** 2026-11-05
 **目的：** 合并 SRS 附录 A、ARS 附录 D、CAL 附录 B 与 IR/TDS 中的表清单，形成**唯一索引**，作为资源加载、manifest、金标准测试与文档修订的依据。
 
 **冲突处理：** 本文档以并集为准；同一 ID 在不同文档中状态/版本不一致时，以“待冻结”优先，并在 `docs/01-DOC-ANALYSIS.md` 的 A-05/A-13/A-14 跟踪。
@@ -28,11 +28,11 @@
 ## 2. 版本基线（D-05/ADR-003 已统一）
 
 ```text
-SRS_VERSION        = SRS-v0.4        # 待升 v0.5 同步文档状态
+SRS_VERSION        = SRS-v0.5        # 2026-11-05 新增 FR-13/FR-14
 ARS_VERSION        = ARS-v0.2
 IR_VERSION         = IR-v0.1
 CAL_VERSION        = CAL-v0.2
-TDS_VERSION        = TDS-v0.1
+TDS_VERSION        = TDS-v0.2        # 2026-11-05 新增报告/依据链接契约
 RULE_SET_VERSION   = RULE-v0.2       # 统一为 ARS 基线
 DATA_VERSION       = DATA-v0.2       # 统一为 ARS 基线
 CAL_RULE_SET       = CAL-RULE-v0.2   # ADR-016 冻结
@@ -42,13 +42,15 @@ IR_TEMPLATE_SET    = IR-TPL-v0.1
 SEED_ALGO          = SEED-v2
 RNG_VERSION        = RNG-v1
 APP_VERSION        = APP-v0.1
+REPORT_SCHEMA      = REPORT-v1       # ADR-020
+EVIDENCE_INDEX     = EVIDENCE-v1     # ADR-020
 DB_SCHEMA_VERSION  = DB-v0.2
 CONFIG_SCHEMA      = CFG-v0.1
 LOG_SCHEMA         = LOG-v0.1
 ```
 
 > 说明：SRS 附录 B、ARS 0.3 与代码已统一为 `RULE-v0.2`/`DATA-v0.2`；SRS 附录 B 已同步完整 `VersionSet`。
-> **版本记录：** CAL 文档已升为 `CAL-v0.2` 并冻结（`CAL-RULE-v0.2`，ADR-016）；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；`W-01-v0.2` 由 ADR-017 补齐 12 月建 × 5 行旺衰表并升为 `VERIFIED`；`HEX-01-v0.2` 由 ADR-018 补齐宫五行/宫序号并完成八宫表交叉校核；`NJ-01-v0.2` 由 ADR-019 完成纳甲干支表校核；CAL 日界/日柱/范围/时区由 ADR-013 冻结，CAL 数据源/基准/边界容差由 ADR-014 冻结，tzdata 版本由 ADR-015 冻结；当前校核数据以本表为准。
+> **版本记录：** CAL 文档已升为 `CAL-v0.2` 并冻结（`CAL-RULE-v0.2`，ADR-016）；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；`W-01-v0.2` 由 ADR-017 补齐 12 月建 × 5 行旺衰表并升为 `VERIFIED`；`HEX-01-v0.2` 由 ADR-018 补齐宫五行/宫序号并完成八宫表交叉校核；`NJ-01-v0.2` 由 ADR-019 完成纳甲干支表校核；SRS 升 `SRS-v0.5`、TDS 升 `TDS-v0.2`，由 ADR-020 新增 `REPORT-v1`/`EVIDENCE-v1`；CAL 日界/日柱/范围/时区由 ADR-013 冻结，CAL 数据源/基准/边界容差由 ADR-014 冻结，tzdata 版本由 ADR-015 冻结；当前校核数据以本表为准。
 
 ---
 
@@ -132,6 +134,8 @@ LOG_SCHEMA         = LOG-v0.1
 | `MANIFEST-rules` | 规则资源清单 | TDS | 版本/checksum/status/source | `MERGED` | 阶段 0（TF-04） | TDS 4.3；阶段 0 合并入 `MANIFEST-data`（ADR-012） |
 | `MANIFEST-data` | 数据资源清单 | TDS | 同上 | `VERIFIED` | 阶段 0（TF-04，ADR-012） | TDS 4.3 |
 | `MANIFEST-texts` | 古籍文本清单 | TDS | 同上 | `PENDING` | 阶段 5（TF-11） | TDS 4.3 |
+| `REPORT-SCHEMA-001` | 完整推演过程 Markdown 结构（`REPORT-v1`） | TDS/SRS | 窗口/复制/下载同源；含步骤、依据链接、版本、免责声明 | `VERIFIED` | 阶段 0/1（ADR-020） | SRS FR-13、TDS 3.10/11.4 |
+| `EVIDENCE-LINK-v1` | 依据/附件链接索引与解析（`EVIDENCE-v1`） | TDS/SRS | `yitool://rule\|source\|resource/<id>`；只读、白名单、断链显式 | `VERIFIED` | 阶段 0/1（ADR-020） | SRS FR-14、TDS 3.11 |
 
 ---
 

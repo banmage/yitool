@@ -11,12 +11,12 @@
 | 项目 | 状态 |
 |---|---|
 | Spec Kit | ✅ 已初始化（`specify-cli 1.2.5`，DSH 集成） |
-| 规范文档 | ✅ SRS v0.4、ARS v0.2、IR v0.1、TDS v0.1 草案已齐；CAL v0.2 已冻结 |
-| 规范冻结 | ⏳ 未整体冻结；**CAL v0.2 / CAL-RULE-v0.2 已冻结**（ADR-013～016），**W-01-v0.2、HEX-01-v0.2、NJ-01-v0.2 已校核**（ADR-017～019），其余规则/数据未校核项以 `PENDING` 显式标注 |
+| 规范文档 | ✅ SRS v0.5、ARS v0.2、IR v0.1、TDS v0.2 草案已齐；CAL v0.2 已冻结 |
+| 规范冻结 | ⏳ 未整体冻结；**CAL v0.2 / CAL-RULE-v0.2 已冻结**（ADR-013～016），**W-01-v0.2、HEX-01-v0.2、NJ-01-v0.2 已校核**（ADR-017～019），**REPORT-v1 / EVIDENCE-v1 已批准**（ADR-020），其余规则/数据未校核项以 `PENDING` 显式标注 |
 | 历法数据 | ✅ `CAL-DATA-v0.2` 经 HKO 1901–2100 逐日校核（6 条午夜边界容差） |
-| 代码 | ✅ Rust workspace + `yitool` CLI（9 个 crate，阶段 0 内核） |
-| 自动测试 | ✅ 单元/金标准/CAL 逐日基准/隐私扫描/分布/性能（`cargo test --workspace`） |
-| 当前阶段 | **阶段 0 — 可信基础与可复现内核（进行中，P1 内核已验收）** |
+| 代码 | ✅ Rust workspace + `yitool` CLI（9 个 crate，阶段 0 内核 + 报告/依据链接后端） |
+| 自动测试 | ✅ 单元/金标准/CAL 逐日基准/隐私扫描/分布/性能/报告与链接（`cargo test --workspace`） |
+| 当前阶段 | **阶段 0 — 可信基础与可复现内核（进行中，P1 内核与报告/链接后端已验收）** |
 | 当前规格 | [`specs/001-phase0-foundation/spec.md`](specs/001-phase0-foundation/spec.md) |
 
 ---
@@ -48,7 +48,7 @@ python3 scripts/gen_manifest.py
 
 CAL 交叉校核报告见 [`docs/reports/CAL-HKO-CROSSCHECK-v0.2.md`](docs/reports/CAL-HKO-CROSSCHECK-v0.2.md)。
 
-阶段 0 CLI 命令：`cal`、`seed`、`meihua`、`verify`、`privacy-scan`、`db init|check`。
+阶段 0 CLI 命令：`cal`、`seed`、`meihua`、`report`、`evidence`、`verify`、`privacy-scan`、`db init|check`。
 详细验收见 [`specs/001-phase0-foundation/quickstart.md`](specs/001-phase0-foundation/quickstart.md)。
 
 若在其他机器克隆后没有 `.dsh/skills/`，执行：
@@ -66,18 +66,18 @@ specify init . --here --force --non-interactive --integration dsh
 | [项目章程](.specify/memory/constitution.md) | 最高治理文件：9 条核心原则、约束、质量门 |
 | [项目路线图](docs/00-PROJECT-ROADMAP.md) | 现状、阶段 0–5、里程碑、关键路径、风险、下一步 |
 | [文档分析](docs/01-DOC-ANALYSIS.md) | 五文档逐项分析、22 项一致性问题（A-01～A-22）、覆盖矩阵 |
-| [决策登记册](docs/02-DECISION-REGISTER.md) | D-01～D-43 决策、建议、截止阶段 |
+| [决策登记册](docs/02-DECISION-REGISTER.md) | D-01～D-47 决策、建议、截止阶段 |
 | [统一数据字典](docs/04-DATA-DICTIONARY.md) | 合并五文档表清单、版本基线、资源目录映射 |
 | [阶段 0 规格](specs/001-phase0-foundation/spec.md) | 6 个用户故事、23 条功能需求、10 条成功标准 |
 | [开发指引](AGENTS.md) | 代理/开发者运行时约定、目录、流程 |
 
 ### 五份规范（`docs/`）
 
-1. **SRS v0.4** — 软件需求规格：做什么、边界、功能、验收、阶段。
+1. **SRS v0.5** — 软件需求规格：做什么、边界、功能、验收、阶段、完整过程报告与依据链接。
 2. **ARS v0.2** — 易学算法与规则：梅花/焦氏/纳甲/择吉公式、映射、金标准。
 3. **IR v0.1** — 推演解释规则：措辞等级、模板、冲突解释、合规扫描。
 4. **CAL v0.2** — 历法服务：公农历、节气、干支、日界、时区、旬空；规则集已冻结（`CAL-RULE-v0.2`）。
-5. **TDS v0.1** — 技术设计：架构、接口、SQLite、隐私、部署、测试。
+5. **TDS v0.2** — 技术设计：架构、接口、SQLite、隐私、部署、报告渲染与依据链接。
 
 依赖关系：
 

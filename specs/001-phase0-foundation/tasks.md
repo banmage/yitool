@@ -230,6 +230,27 @@ tests/golden/
 
 ---
 
+## Phase 10: User Story 7 — 完整过程与依据链接 (P1)
+
+**Goal**: 完整过程报告窗口/复制/下载同源；所有规则、依据、附件可通过只读链接查看。
+
+**Independent Test**: 生成报告并比对三处文本；遍历全部 `rule_id`/`source_ref`/`data_ref`/manifest 资源；删除资源后确认断链提示。
+
+### Tests
+
+- [x] T080 [P] [US7] `crates/app/tests/report.rs`：报告含全部步骤与字段；窗口/复制/下载同一字符串；保存后可逐字读回
+- [x] T081 [P] [US7] `crates/app/tests/report.rs`：全部规则/出处/资源链接可解析；缺失/未知引用拒绝渲染
+
+### Implementation
+
+- [x] T082 [US7] `crates/app/evidence.rs`：`EvidenceIndex`、`yitool://rule|source|resource/<id>`、Markdown 锚点、步骤覆盖校验
+- [x] T083 [US7] `crates/app/report.rs`：`REPORT-v1` Markdown 渲染（摘要/步骤/依据/版本/免责声明）与 `.md` 保存
+- [x] T084 [US7] `crates/cli`：`report`（stdout 或 `--out`）与 `evidence`（全量链接索引）命令
+- [x] T085 [US7] `crates/app/context.rs`：加载 manifest/registry 并暴露 `evidence_index()`/`meihua_report()`
+- [x] T086 [US7] 文档同步：SRS v0.5、TDS v0.2、ADR-020、决策登记、数据字典、README、roadmap
+
+---
+
 ## Dependencies & Execution Order
 
 ```text
@@ -241,11 +262,13 @@ Phase 1 Setup
         ├→ US4（隐私，依赖 seed HMAC + store）
         └→ US6（存储底座，可与 US1/US2 并行）
 US3 + US4 + US5 + US6 → Phase 9 Polish
+US3（溯源） + US5（步骤日志） → US7（报告/链接）→ Phase 10
 ```
 
 - US2 是 US5 的硬前置（旺衰需要月建）。
 - US4 的删除测试依赖 US6 schema；可先写 trait/mock。
 - US1 与 US2 可并行；US3 依赖 Phase 1 资源。
+- US7 依赖 US3 的 `source_ref`/`data_ref` 与 US5 的完整 `StepLog`；不重新计算卦象。
 
 ## Parallel Example
 
@@ -261,7 +284,7 @@ task T057 & task T058
 ## Implementation Strategy
 
 1. **MVP（P1）**：Phase 1→2→US1→US2→US3→US4。完成后即可承诺“可复现、历法可信、可溯源、隐私可验证”。
-2. **增量（P2）**：US5 金标准一键化 → US6 存储底座 → Polish。
+2. **增量（P2）**：US5 金标准一键化 → US6 存储底座 → US7 报告与依据链接 → Polish。
 3. 每个 Phase 结束运行 `cargo test --workspace`，失败不得进入下一 Phase。
 4. 规则/数据变更必须同步升版本、补测试样例、更新 manifest。
 

@@ -109,7 +109,7 @@ SRS 定义“做什么、行为边界、验收”；ARS 定义“如何计算、
 
 ## Additional Constraints
 
-- **技术栈基线：** TDS v0.1 推荐 Tauri 2.x + React + TypeScript + Vite + Rust + SQLite（WAL）；最终选型以阶段 0 原型验证与 ADR 为准。任何偏离 MUST 记录 ADR 并说明对接口契约的影响。
+- **技术栈基线：** TDS v0.2 推荐 Tauri 2.x + React + TypeScript + Vite + Rust + SQLite（WAL）；最终选型以阶段 0 原型验证与 ADR 为准。任何偏离 MUST 记录 ADR 并说明对接口契约的影响。
 - **支持范围：** 默认公历 `1900-01-31` 至 `2100-12-31`；超出 MUST 返回 `CAL_OUT_OF_RANGE`，不得静默截断。
 - **时间约定：** 所有历法接口 MUST 显式传入 IANA 时区与 `day_bound`；默认 `ZICHU`（23:00 换日），可配置 `ZIZHENG`。
 - **性能基线（SRS 6.2）：** 种子生成 P95 < 50ms；单引擎推演 P95 < 200ms；三引擎平行 P95 < 500ms；一年吉日筛选 P95 < 500ms；1000 条内历史查询 P95 < 1s。

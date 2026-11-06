@@ -1,13 +1,13 @@
 # 技术设计说明书  
-## TDS v0.1（技术设计冻结草案）
+## TDS v0.2（技术设计冻结草案 + 报告/依据链接增补）
 
-**文档编号：** TDS-v0.1  
-**对应 SRS：** SRS v0.4  
+**文档编号：** TDS-v0.2  
+**对应 SRS：** SRS v0.5  
 **对应 ARS：** ARS v0.2  
 **对应 IR：** IR v0.1  
 **对应 CAL：** CAL v0.2  
 **文档状态：** 技术设计冻结草案；标注“待冻结”的技术选型须完成验证后升版  
-**修订日期：** 2026-11-03
+**修订日期：** 2026-11-05（新增报告与依据/附件链接契约）
 
 ---
 
@@ -22,11 +22,11 @@ TDS **不**负责：重新定义易学算法（ARS）、解释规则（IR）、�
 ### 0.2 与上下游文档的关系
 
 ```text
-SRS v0.4  → 定义做什么、行为边界、验收
+SRS v0.5  → 定义做什么、行为边界、验收
 ARS v0.2  → 定义易学计算、映射、金标准
 IR v0.1   → 定义计算结果到文字解释
 CAL v0.2  → 定义历法服务
-TDS v0.1  → 定义架构、模块、接口、存储、技术选型、异常实现、部署
+TDS v0.2  → 定义架构、模块、接口、存储、报告渲染、依据链接、技术选型、异常实现、部署
 ```
 
 强制约束：
@@ -50,7 +50,7 @@ TDS v0.1  → 定义架构、模块、接口、存储、技术选型、异常实
 ### 0.4 版本标识
 
 ```text
-TDS_VERSION = "TDS-v0.1"
+TDS_VERSION = "TDS-v0.2"
 APP_VERSION = "APP-v0.1"
 DB_SCHEMA_VERSION = "DB-v0.2"
 CONFIG_SCHEMA_VERSION = "CFG-v0.1"
@@ -106,10 +106,12 @@ LOG_SCHEMA_VERSION = "LOG-v0.1"
 ```text
 ┌──────────────────────────────────────────────┐
 │ 交互展示层 UI                                 │
-│ 起卦/抽卡 · 结果三栏 · 日志折叠 · 历史 · 设置 │
+│ 起卦/抽卡 · 结果三栏 · 完整过程窗口 · 依据阅读器 │
+│ 历史 · 设置 · 复制/下载 Markdown               │
 ├──────────────────────────────────────────────┤
 │ 应用服务层 App Services                       │
 │ 一事推演 · A/B 对照 · 择吉 · 黄历 · 方位 · 档案│
+│ 报告渲染 · 依据/附件链接索引                    │
 ├──────────────────────────────────────────────┤
 │ 引擎层 Engines                                │
 │ MEIHUA · JIAOLIN · LIUYAO · ZEJI · IR · CAL  │
@@ -134,6 +136,8 @@ LOG_SCHEMA_VERSION = "LOG-v0.1"
 | `ir` | 结构化结果→解释模板、措辞等级、合规扫描 | 重新计算卦象 |
 | `seed` | 基础种子、抽卡子种子、输入快照、推演种子 | 业务规则 |
 | `store` | SQLite 持久化、档案、历史、版本 | 业务计算 |
+| `report` | 结构化结果→完整 Markdown；窗口/复制/下载同源 | 重新计算、解释生成 |
+| `evidence` | 规则/出处/资源链接索引、白名单解析、断链检测 | 修改资源、业务计算 |
 | `crypto` | 本地 HMAC 密钥、数据库加密、导出摘要 | 业务规则 |
 | `ui` | 交互、渲染、动画、可访问性 | 算法实现 |
 
@@ -342,6 +346,78 @@ restore_database(path) -> RestoreResult
 2. 历史记录保存完整版本信息。
 3. 删除语义遵循 SRS 4.12。
 4. 导出快照默认不含生辰与问事原文。
+
+### 3.10 报告接口 `TDS-API-REPORT-001`
+
+```text
+render_run_report(run_record, steps, evidence_index, options) -> ReportDocument
+render_meihua_report(meihua_result, versions, evidence_index, meta) -> ReportDocument
+save_report(document, path) -> SaveResult
+copy_report(document) -> CopyResult        # UI 适配层；非 CLI 必需
+```
+
+`ReportDocument`：
+
+```json
+{
+  "schema": "REPORT-v1",
+  "run_id": "string",
+  "created_at": "ISO8601",
+  "markdown": "string",
+  "sha256": "hex",
+  "status": "PENDING|VERIFIED|FROZEN",
+  "formal_allowed": false,
+  "evidence_count": 41
+}
+```
+
+约束：
+
+1. **同源：** 窗口展示、复制到剪贴板、下载 `.md` 必须使用同一个 `ReportDocument.markdown`；禁止 UI/CLI 各自拼接。
+2. **完整性：** `markdown` 必须包含全部 `steps`、每步的 `rule_ids[]`/`data_refs[]`/`source_ref`/`rule_level`/`formula_summary`/`output`/`status`、版本、免责声明与依据/附件链接。
+3. **只渲染不重算：** 报告层不调用引擎、不重新计算卦象；历史记录按原版本字段渲染。
+4. **覆盖校验：** 渲染前调用 `assert_step_coverage(steps)`；任一规则/出处/资源无法解析则拒绝生成，返回明确错误。
+5. **保存：** UTF-8；扩展名 `.md`；用户取消不产生文件；父目录不可写时返回错误并保留原内容。
+6. **复制：** UI 使用系统剪贴板 API；失败时返回错误并提供全选文本手动复制降级。
+7. **隐私：** 报告不含生辰原始值/派生值、问事原文（未显式加密保存时）、HMAC 密钥；保存/复制前执行敏感值扫描。
+8. **历史：** 旧记录按原 `VersionSet` 与原始 `run_steps` 渲染；当前资源升级不得改变已保存步骤。
+
+### 3.11 依据/附件链接接口 `TDS-API-EVIDENCE-001`
+
+```text
+build_evidence_index(manifest, rule_registry) -> EvidenceIndex
+list_evidence(kind?) -> EvidenceEntry[]
+resolve_evidence(href) -> EvidenceEntry | EvidenceError
+assert_step_coverage(steps) -> Result
+```
+
+`EvidenceEntry`：
+
+```json
+{
+  "kind": "RULE|SOURCE|RESOURCE",
+  "id": "SRC-MEIHUA-001",
+  "title": "梅花易数 · 起卦",
+  "href": "yitool://source/SRC-MEIHUA-001",
+  "anchor": "evidence-source-SRC-MEIHUA-001",
+  "path": null,
+  "version": "传世本",
+  "status": "PENDING",
+  "source_ref": null,
+  "summary": "九色/传统数字起卦公式",
+  "fields": [["书名", "梅花易数"], ["篇目", "起卦"]]
+}
+```
+
+约束：
+
+1. **稳定 ID：** 链接只用 `rule_id`、`source_ref`、manifest `id`，不得使用文件路径、数据库 rowid 或可变索引。
+2. **协议：** `yitool://rule/<id>`、`yitool://source/<id>`、`yitool://resource/<id>`；Markdown 同时输出 `#evidence-<kind>-<id>` 文档内锚点。
+3. **只读：** 解析器只返回元数据与原文/摘要；打开阅读器不得修改资源、不得触发重算。
+4. **白名单与路径：** 仅允许协议白名单；资源路径必须来自 manifest 且拒绝绝对路径、`..`、符号链接逃逸；禁止任意本地文件读取与外部 URL。
+5. **断链：** 目标缺失、checksum 失败、版本不兼容时返回结构化错误（`MISSING|CHECKSUM_FAILED|VERSION_MISMATCH|INVALID_HREF`），UI 显示“链接不可用/依据缺失/待校核”。
+6. **全覆盖：** 每个 `rule_id`、`source_ref`、`data_ref`、manifest 资源、导出记录都必须能生成链接；`assert_step_coverage` 对断链返回步骤 ID 与引用 ID。
+7. **无网络：** 链接解析不发起网络请求；后续如引入外部典籍 URL，必须单独开关、显示域名并二次确认。
 
 ---
 
@@ -678,6 +754,8 @@ resources/
 6. 择吉建除、规则命中、过滤、冲突。
 7. IR 模板匹配、禁用措辞扫描、措辞等级。
 8. 隐私扫描：日志/数据库/导出无生辰与问事原文。
+9. 报告渲染：步骤完整性、同源字符串、Markdown 结构、断链拒绝、保存/读回一致。
+10. 依据链接：全部 rule/source/resource 解析、断链状态、路径穿越与协议白名单。
 
 ### 10.2 集成测试 `TDS-TEST-002`
 
@@ -687,6 +765,8 @@ resources/
 4. 历史复现：固定模式无生辰可复现；摇卦模式快照可复现。
 5. 版本不兼容：旧记录按原版本渲染。
 6. 删除与备份清理。
+7. 报告链路：结果→报告→复制/保存→依据链接阅读；窗口、剪贴板、文件内容一致。
+8. 依据链接遍历：全部规则/出处/资源/导出记录可解析；断链、缺失、checksum 失败显示明确状态。
 
 ### 10.3 性能测试 `TDS-TEST-003`
 
@@ -699,6 +779,8 @@ resources/
 3. 导出文件扫描：默认脱敏。
 4. 密钥不可用时降级提示。
 5. 资源 checksum 篡改检测。
+6. 报告/剪贴板/阅读器缓存扫描：无生辰、问事原文、HMAC 密钥。
+7. 依据链接安全：绝对路径、`..`、符号链接逃逸、外部 URL、非白名单协议全部拒绝。
 
 ### 10.5 可访问性测试 `TDS-TEST-005`
 
@@ -706,6 +788,7 @@ resources/
 2. 色盲友好标识。
 3. 动画可关闭。
 4. 字体缩放不破坏布局。
+5. 键盘打开完整过程窗口、触发复制/下载、打开依据链接；Esc 关闭后焦点返回原控件。
 
 ---
 
@@ -738,6 +821,15 @@ seed_algo, rng_version, ir_rule_set, ir_template_set
 3. 含完整性摘要与导出时间。
 4. 导入时校验版本与摘要；不兼容时提示。
 
+### 11.4 Markdown 报告 `TDS-VER-004`
+
+1. 报告 schema 为 `REPORT-v1`，由 `TDS-API-REPORT-001` 生成；窗口/复制/下载同源。
+2. 报告含记录元数据、完整步骤、规则/出处/附件链接、版本与免责声明。
+3. 报告生成时计算 `markdown_sha256`；保存后可在 `exports` 表登记路径、摘要、生成时间与记录 ID。
+4. 报告不含敏感值；保存/复制前执行与导出快照相同的隐私扫描。
+5. 历史报告按原记录版本渲染；资源升级不重算旧报告。
+6. 报告文件由用户选择路径；应用内删除记录不自动删除用户已保存的 `.md` 文件，界面须提示。
+
 ---
 
 ## 12. 待冻结项清单
@@ -756,6 +848,7 @@ seed_algo, rng_version, ir_rule_set, ir_template_set
 | TF-10 | 安装包签名与发布流程 | 部署 | 阶段 1 |
 | TF-11 | 古籍文本存储与检索方案 | 古籍 | 阶段 5 |
 | TF-12 | 天气 API 与离线降级实现 | 二期 | 二期 |
+| TF-13 | 报告渲染与依据/附件链接方案（已关闭：ADR-020） | 展示、导出、溯源 | 阶段 0 |
 
 ---
 
@@ -811,6 +904,6 @@ src/
 | ADR-009 | 历史记录按原版本渲染 | 已确定 |
 | ADR-010 | 资源 checksum 校验 | 待确认 |
 
-## 附录 C：TDS v0.1 结论
+## 附录 C：TDS v0.2 结论
 
-本规范已建立技术栈选型、分层架构、模块边界、接口契约、SQLite 数据模型、资源文件管理、隐私与加密实现、种子链实现、日志、异常处理、部署、测试与版本迁移。TDS v0.1 **不是**可直接编码的最终技术方案；`TF-01` 至 `TF-12` 完成原型验证与冻结后，方可进入阶段 0 开发。TDS 不重新定义 ARS/IR/CAL 规则；任何实现冲突以 ARS/IR/CAL 为准并回退修订 TDS。
+本规范已建立技术栈选型、分层架构、模块边界、接口契约、SQLite 数据模型、资源文件管理、隐私与加密实现、种子链实现、日志、异常处理、部署、测试与版本迁移。TDS v0.2 新增报告渲染（`TDS-API-REPORT-001`）与依据/附件链接（`TDS-API-EVIDENCE-001`）契约：窗口、复制、下载使用同一份 Markdown；所有规则/出处/资源通过 `yitool://` 只读链接解析，断链显式失败。TDS v0.2 **不是**可直接编码的最终技术方案；`TF-01` 至 `TF-13` 完成原型验证与冻结后，方可进入阶段 0 开发。TDS 不重新定义 ARS/IR/CAL 规则；任何实现冲突以 ARS/IR/CAL 为准并回退修订 TDS。

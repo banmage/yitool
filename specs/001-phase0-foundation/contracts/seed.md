@@ -1,7 +1,7 @@
 # Seed Contract: 种子链与随机
 
 **Version**: SEED-v2
-**Source**: ARS v0.2 第 2 章、TDS v0.1 第 6 章
+**Source**: ARS v0.2 第 2 章、TDS v0.2 第 6 章
 
 ## 类型
 

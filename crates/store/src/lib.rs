@@ -789,7 +789,7 @@ mod tests {
                  cal_version, rule_set, data_version, tzdata_version, seed_algo,
                  rng_version, disclaimer_present)
              VALUES(?1, 'a', '2026-11-04T12:00:00+08:00', 'FIXED', 'MEIHUA',
-                 ?2, 0, 0, ?3, NULL, 'SRS-v0.4', 'ARS-v0.2', 'IR-v0.1',
+                 ?2, 0, 0, ?3, NULL, 'SRS-v0.5', 'ARS-v0.2', 'IR-v0.1',
                  'CAL-v0.2', 'RULE-v0.2', 'DATA-v0.2', '2025b', 'SEED-v2',
                  'RNG-v1', 1)",
             params![run_id, hmac, key_id],

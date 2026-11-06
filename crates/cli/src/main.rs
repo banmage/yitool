@@ -87,6 +87,37 @@ enum Command {
         #[arg(long, default_value = "ZICHU")]
         day_bound: String,
     },
+    /// 生成完整推演过程 Markdown（可保存为 .md）
+    Report {
+        #[arg(long)]
+        color: Option<u8>,
+        #[arg(long)]
+        aux: Option<u8>,
+        #[arg(long, num_args = 2, value_names = ["U0", "D0"])]
+        traditional: Option<Vec<u32>>,
+        #[arg(long, default_value_t = 0)]
+        q_mod: u32,
+        #[arg(long, default_value_t = 0)]
+        b_mod: u32,
+        #[arg(long)]
+        datetime: String,
+        #[arg(long, default_value = "Asia/Shanghai")]
+        timezone: String,
+        #[arg(long, default_value = "ZICHU")]
+        day_bound: String,
+        /// 保存路径；省略时输出到 stdout（可用 --format text 直接重定向）
+        #[arg(long)]
+        out: Option<PathBuf>,
+        #[arg(long, default_value = "FIXED")]
+        mode: String,
+        #[arg(long)]
+        run_id: Option<String>,
+        /// RFC 3339 生成时间；省略时使用本机当前时间
+        #[arg(long)]
+        created_at: Option<String>,
+    },
+    /// 列出所有规则、典籍出处与附件链接
+    Evidence,
     /// 校验资源清单与 checksum
     Verify,
     /// 扫描日志/数据库/导出文件中的敏感值
@@ -314,6 +345,90 @@ fn run(cli: &Cli, resources: &PathBuf) -> Result<(serde_json::Value, String), (S
             );
             Ok((serde_json::to_value(result).unwrap(), text))
         }
+        Command::Report {
+            color,
+            aux,
+            traditional,
+            q_mod,
+            b_mod,
+            datetime,
+            timezone,
+            day_bound,
+            out,
+            mode,
+            run_id,
+            created_at,
+        } => {
+            let ctx = load_context(resources)?;
+            let query = CalQuery {
+                time: parse_time(datetime)?,
+                timezone: timezone.clone(),
+                day_bound: parse_day_bound(day_bound)?,
+            };
+            let input = match traditional {
+                Some(v) => MeihuaInput::Traditional {
+                    u0: v[0],
+                    d0: v[1],
+                    q_mod: *q_mod,
+                    b_mod: *b_mod,
+                },
+                None => MeihuaInput::NineColor {
+                    color: color.ok_or(("ARGUMENT".into(), "缺少 --color".into()))?,
+                    aux: aux.ok_or(("ARGUMENT".into(), "缺少 --aux".into()))?,
+                    q_mod: *q_mod,
+                    b_mod: *b_mod,
+                },
+            };
+            let result = ctx.meihua(input, &query).map_err(|e| app_code(&e))?;
+            let run_id = run_id.clone().unwrap_or_else(|| "ADHOC".into());
+            let created_at = created_at.clone().unwrap_or_else(|| {
+                chrono::Local::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, false)
+            });
+            let markdown = ctx
+                .meihua_report(&result, &run_id, &created_at, mode)
+                .map_err(|e| app_code(&e))?;
+            let out_path = match out {
+                Some(path) => {
+                    app::write_markdown(path, &markdown)
+                        .map_err(|e| ("INTERNAL".into(), e.to_string()))?;
+                    Some(path.display().to_string())
+                }
+                None => None,
+            };
+            let value = json!({
+                "run_id": run_id,
+                "created_at": created_at,
+                "out": out_path,
+                "status": result.status.label(),
+                "formal_allowed": result.formal_allowed,
+                "markdown": markdown.clone(),
+            });
+            let text = match &out_path {
+                Some(path) => format!("报告已保存: {path}"),
+                None => markdown,
+            };
+            Ok((value, text))
+        }
+        Command::Evidence => {
+            let ctx = load_context(resources)?;
+            let evidence = ctx.evidence_index().map_err(|e| app_code(&e))?;
+            let entries = evidence.all();
+            let value = json!({
+                "count": entries.len(),
+                "rules": evidence.by_kind(app::EvidenceKind::Rule).count(),
+                "sources": evidence.by_kind(app::EvidenceKind::Source).count(),
+                "resources": evidence.by_kind(app::EvidenceKind::Resource).count(),
+                "entries": entries,
+            });
+            let text = format!(
+                "{} 条依据/附件链接：规则 {}、出处 {}、资源 {}",
+                entries.len(),
+                evidence.by_kind(app::EvidenceKind::Rule).count(),
+                evidence.by_kind(app::EvidenceKind::Source).count(),
+                evidence.by_kind(app::EvidenceKind::Resource).count()
+            );
+            Ok((value, text))
+        }
         Command::Verify => {
             let (manifest, reports) =
                 rules::verify_manifest(resources).map_err(|e| ("DATA".into(), e.to_string()))?;
@@ -426,6 +541,7 @@ fn app_code(err: &app::AppError) -> (String, String) {
         app::AppError::Registry(_) | app::AppError::Compliance(_) => {
             ("DATA".into(), err.to_string())
         }
+        app::AppError::Evidence(_) | app::AppError::Report(_) => ("DATA".into(), err.to_string()),
         app::AppError::Meihua(e) => (
             match e {
                 meihua::MeihuaError::InvalidColor(_)

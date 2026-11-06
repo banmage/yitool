@@ -167,7 +167,7 @@ Run * ─── 1 VersionSet
 
 ```json
 {
-  "srs": "SRS-v0.4",
+  "srs": "SRS-v0.5",
   "ars": "ARS-v0.2",
   "ir": "IR-v0.1",
   "cal": "CAL-v0.2",
@@ -192,7 +192,40 @@ Run * ─── 1 VersionSet
 
 **约束**：不实现 `Serialize`；`Debug` 输出 `<redacted>`；生命周期限于单次推演调用；不写入任何日志/DB/快照/导出。
 
-### 2.12 CalResult（历法结果）
+### 2.12 ReportDocument（完整过程报告）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `schema` | TEXT | `REPORT-v1` |
+| `run_id` | TEXT | 记录 ID；未保存时为 `ADHOC` |
+| `created_at` | TEXT | ISO 8601 生成时间 |
+| `markdown` | TEXT | 规范化完整 Markdown；窗口/复制/下载同源 |
+| `sha256` | TEXT | Markdown UTF-8 字节摘要 |
+| `status` | TEXT | PENDING/VERIFIED/FROZEN |
+| `formal_allowed` | BOOL | 是否允许正式结论 |
+| `evidence_count` | INT | 链接条目数 |
+
+**约束**：只渲染不重算；步骤为空或依据断链时拒绝生成；不含生辰、问事原文（未显式保存时）与密钥；历史按原版本渲染。
+
+### 2.13 EvidenceLink（依据/附件链接）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `kind` | ENUM | RULE/SOURCE/RESOURCE |
+| `id` | TEXT | `rule_id`/`source_ref`/manifest `id` |
+| `title` | TEXT | 可读标题 |
+| `href` | TEXT | `yitool://rule|source|resource/<id>` |
+| `anchor` | TEXT | `evidence-<kind>-<id>`，供 Markdown 内跳转 |
+| `path` | TEXT? | 资源相对 `resources/` 路径；规则/出处为空 |
+| `version` | TEXT | 规则/资源版本或出处版本 |
+| `status` | TEXT | 校核/资源状态 |
+| `source_ref` | TEXT? | 规则的出处链接 |
+| `summary` | TEXT | 原文摘要或资源来源 |
+| `fields` | ARRAY | 只读详情字段 |
+
+**约束**：链接 ID 稳定，不使用文件路径/rowid；解析只读、白名单、防路径穿越；缺失/checksum 失败/版本不兼容返回结构化错误，UI 显示“链接不可用/依据缺失/待校核”。
+
+### 2.14 CalResult（历法结果）
 
 ```json
 {
@@ -212,7 +245,7 @@ Run * ─── 1 VersionSet
 }
 ```
 
-### 2.13 BaselineRecord（逐日基准）
+### 2.15 BaselineRecord（逐日基准）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|

@@ -20,15 +20,15 @@
 - [x] No [NEEDS CLARIFICATION] markers remain
   - 说明：关键分歧已转为 Assumptions 与决策登记册 D-01～D-20；未阻塞规格。
 - [x] Requirements are testable and unambiguous
-  - 说明：FR-001～FR-023 均有可观察行为或明确状态。
+  - 说明：FR-001～FR-025 均有可观察行为或明确状态；FR-024/025 以报告同源、链接遍历与断链状态验收。
 - [x] Success criteria are measurable
-  - 说明：SC-001～SC-010 均含比率、时间、数量或 0 命中。
+  - 说明：SC-001～SC-012 均含比率、时间、数量或 0 命中。
 - [x] Success criteria are technology-agnostic (no implementation details)
   - 说明：未绑定 Tauri/Rust/SQLite；仅描述结果与验收方式。
 - [x] All acceptance scenarios are defined
-  - 说明：6 个用户故事均含 Given/When/Then 场景。
+  - 说明：7 个用户故事均含 Given/When/Then 场景；US7 覆盖报告完整性与依据链接。
 - [x] Edge cases are identified
-  - 说明：闰月、日界、DST、越界、资源损坏、PENDING、颜色越界、密钥、删除、动画中断、随机源失败。
+  - 说明：闰月、日界、DST、越界、资源损坏、PENDING、颜色越界、密钥、删除、动画中断、随机源失败、空报告、剪贴板/下载失败、断链、路径穿越、历史版本。
 - [x] Scope is clearly bounded
   - 说明：Assumptions 明确阶段 0 不做焦氏 4096、纳甲装卦、择吉权重、古籍全文与完整 UI。
 - [x] Dependencies and assumptions identified

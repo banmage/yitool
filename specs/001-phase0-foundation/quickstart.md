@@ -170,6 +170,8 @@ cargo test -p yitool-app --test perf -- --nocapture
 - [x] 2025/2026 逐日基准对照通过（730 天）
 - [x] HKO 1901–2100 逐日交叉校核：农历 0 差异；节气 6 条午夜边界容差（`CAL-DATA-v0.2`）
 - [x] 文档版本/数据字典/决策登记同步
+- [x] 完整推演报告含全部步骤；stdout/`--out` 内容一致，可保存为 `.md`
+- [x] 全部规则/出处/manifest 资源链接可解析；断链用例被拒绝
 
 ## 11. 验收记录
 
@@ -284,3 +286,57 @@ cargo test -p yitool-app --test perf -- --nocapture
 | 状态 | `NJ-01` 数据表不再为 `PENDING`；纳甲引擎、用神映射与变卦六亲仍未实现 |
 
 **说明**：`NJ-01-v0.2` 只校核纳甲干支表本身，不改变装卦、六亲、变卦算法，也不解除 `LIUYAO-YONGSHEN-01`、D-09 与 `JL-01` 对正式结果的阻断。
+
+### 11.8 报告与依据链接后端（FR-024/FR-025，2026-11-05）
+
+**新增能力**：完整推演过程 Markdown 渲染、剪贴板同源文本、`.md` 保存、规则/出处/附件链接索引。
+
+生成完整报告并保存：
+
+```bash
+cargo run -p yitool-cli -- report \
+  --color 1 --aux 3 \
+  --datetime "2026-11-03T12:00:00+08:00" \
+  --run-id demo-001 \
+  --created-at "2026-11-03T12:00:00+08:00" \
+  --out /tmp/yitool-report.md
+```
+
+预期：
+
+- 文件包含 6 个步骤，每步含 `rule_ids[]`、`data_refs[]`、`source_ref`、`rule_level`、公式与 JSON 输出。
+- 包含全部规则（18）、出处（10）、附件/数据资源（13）的链接。
+- 每个链接形如 `yitool://source/SRC-MEIHUA-001`，Markdown 内同时有 `#evidence-source-SRC-MEIHUA-001` 锚点。
+- 文件头部与末尾含免责声明；不含生辰/问事原文/密钥。
+
+不指定 `--out` 时输出到 stdout；`--format text` 可直接重定向：
+
+```bash
+cargo run -p yitool-cli -- --format text report \
+  --color 1 --aux 3 --datetime "2026-11-03T12:00:00+08:00" > /tmp/report.md
+```
+
+> 窗口展示、复制按钮与下载对话框属于阶段 1 UI；阶段 0 已保证三处使用同一份 Markdown 字符串。
+
+查看全部依据/附件链接索引：
+
+```bash
+cargo run -p yitool-cli -- --format text evidence
+```
+
+预期：`41 条依据/附件链接：规则 18、出处 10、资源 13`。
+
+自动验收：
+
+```bash
+cargo test -p yitool-app --test report
+```
+
+| 用例 | 结果 |
+|---|---|
+| 报告含全部步骤与字段 | PASS |
+| 规则/出处/资源链接全部可解析 | PASS |
+| 缺失规则/出处/资源拒绝渲染 | PASS |
+| 保存 `.md` 后逐字读回一致 | PASS |
+
+**阶段 1 待接入**：独立窗口、复制到剪贴板、系统保存对话框、只读阅读器 UI、键盘焦点与滚动恢复。
