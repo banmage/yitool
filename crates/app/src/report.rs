@@ -13,6 +13,8 @@ use crate::evidence::{EvidenceError, EvidenceIndex, EvidenceKind};
 
 #[derive(Debug, Error)]
 pub enum ReportError {
+    #[error("报告不含任何步骤，拒绝生成“完整”报告")]
+    EmptySteps,
     #[error(transparent)]
     Evidence(#[from] EvidenceError),
     #[error("报告写入失败: {0}")]
@@ -44,6 +46,10 @@ pub fn render_markdown(
     versions: &VersionSet,
     disclaimer: &str,
 ) -> Result<String, ReportError> {
+    // SRS FR-13：空步骤不得输出“完整”报告或可下载的空壳 Markdown。
+    if steps.is_empty() {
+        return Err(ReportError::EmptySteps);
+    }
     evidence.assert_step_coverage(steps)?;
 
     let mut out = String::new();

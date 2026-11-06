@@ -56,4 +56,5 @@
 2. `yitool report ... --out /tmp/report.md` 与 stdout 输出逐字一致；保存后可读回。
 3. `yitool evidence` 输出 41 条链接，遍历 `resolve_href` 成功率 100%。
 4. 构造未知 `rule_id`/`source_ref`/`data_ref`，渲染返回 `MissingRule`/`MissingSource`/`MissingResource`。
-5. 阶段 1 UI 验收：窗口/复制/下载三处文本一致；断链、路径穿越、外部 URL 用例 100% 被拒绝。
+5. 空步骤渲染返回 `EmptySteps`；`https://`、`file://`、`..`、百分号编码与未知 kind 链接返回 `InvalidHref`，未知 ID 返回 `LinkNotFound`。
+6. 阶段 1 UI 验收：窗口/复制/下载三处文本一致；断链、路径穿越、外部 URL 用例 100% 被拒绝。

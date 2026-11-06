@@ -88,6 +88,25 @@ fn meihua_report_contains_full_process_and_links() {
 }
 
 #[test]
+fn report_rejects_empty_steps() {
+    let ctx = context();
+    let evidence = ctx.evidence_index().unwrap();
+    let meta = app::ReportMeta {
+        title: "空报告".into(),
+        run_id: "run-empty".into(),
+        created_at: "2026-11-03T12:00:00+08:00".into(),
+        engine: "MEIHUA".into(),
+        mode: "FIXED".into(),
+        scheme: "NINE_COLOR".into(),
+        status: "PENDING".into(),
+        formal_allowed: false,
+        summary: Vec::new(),
+    };
+    let err = app::render_markdown(&meta, &[], &evidence, &ctx.versions(), "免责声明").unwrap_err();
+    assert!(matches!(err, app::ReportError::EmptySteps));
+}
+
+#[test]
 fn evidence_index_covers_every_manifest_entry_and_source() {
     let ctx = context();
     let evidence = ctx.evidence_index().unwrap();
@@ -119,7 +138,20 @@ fn evidence_index_covers_every_manifest_entry_and_source() {
             evidence.resolve_href(&entry.href).map(|e| e.id.as_str()),
             Some(entry.id.as_str())
         );
+        assert_eq!(evidence.resolve(&entry.href).unwrap().id, entry.id);
     }
+
+    assert!(matches!(
+        evidence.resolve("yitool://rule/RULE-DOES-NOT-EXIST"),
+        Err(app::EvidenceError::LinkNotFound(_))
+    ));
+    assert!(matches!(
+        evidence.resolve("file:///etc/passwd"),
+        Err(app::EvidenceError::InvalidHref(_))
+    ));
+    assert!(evidence
+        .resolve_href("https://example.com/rule/x")
+        .is_none());
 }
 
 #[test]

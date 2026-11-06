@@ -23,6 +23,8 @@ pub enum EvidenceError {
     MissingResource { step_id: String, ref_id: String },
     #[error("无法解析的依据链接: {0}")]
     InvalidHref(String),
+    #[error("依据链接不存在: {0}")]
+    LinkNotFound(String),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -186,7 +188,17 @@ impl EvidenceIndex {
         self.entries.iter().filter(move |entry| entry.kind == kind)
     }
 
+    /// 解析并校验链接；外部 URL、路径穿越与未知协议返回结构化错误。
+    pub fn resolve(&self, href: &str) -> Result<&EvidenceEntry, EvidenceError> {
+        let _ = parse_href(href)?;
+        self.by_href
+            .get(href)
+            .map(|index| &self.entries[*index])
+            .ok_or_else(|| EvidenceError::LinkNotFound(href.to_string()))
+    }
+
     pub fn resolve_href(&self, href: &str) -> Option<&EvidenceEntry> {
+        parse_href(href).ok()?;
         self.by_href.get(href).map(|index| &self.entries[*index])
     }
 
@@ -267,6 +279,31 @@ pub fn href(kind: EvidenceKind, id: &str) -> String {
     format!("yitool://{}/{}", kind.slug(), id)
 }
 
+/// 解析 `yitool://<kind>/<id>`；拒绝外部协议、绝对路径、路径穿越与空 ID。
+pub fn parse_href(href: &str) -> Result<(EvidenceKind, &str), EvidenceError> {
+    let rest = href
+        .strip_prefix("yitool://")
+        .ok_or_else(|| EvidenceError::InvalidHref(href.to_string()))?;
+    let (kind, id) = rest
+        .split_once('/')
+        .ok_or_else(|| EvidenceError::InvalidHref(href.to_string()))?;
+    let kind = match kind {
+        "rule" => EvidenceKind::Rule,
+        "source" => EvidenceKind::Source,
+        "resource" => EvidenceKind::Resource,
+        _ => return Err(EvidenceError::InvalidHref(href.to_string())),
+    };
+    let unsafe_id = id.is_empty()
+        || id.starts_with('.')
+        || !id
+            .chars()
+            .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_' | '.'));
+    if unsafe_id {
+        return Err(EvidenceError::InvalidHref(href.to_string()));
+    }
+    Ok((kind, id))
+}
+
 pub fn anchor(kind: EvidenceKind, id: &str) -> String {
     // Markdown 锚点不使用 yitool://，保证导出的 .md 在任意阅读器中可跳转。
     format!("evidence-{}-{}", kind.slug(), id)
@@ -294,5 +331,32 @@ mod tests {
             anchor(EvidenceKind::Resource, "HEX-01"),
             "evidence-resource-HEX-01"
         );
+    }
+
+    #[test]
+    fn parse_href_accepts_only_known_local_links() {
+        for (link, kind) in [
+            ("yitool://rule/MEIHUA-QIGUA-001", EvidenceKind::Rule),
+            ("yitool://source/SRC-MEIHUA-001", EvidenceKind::Source),
+            ("yitool://resource/HEX-01", EvidenceKind::Resource),
+        ] {
+            assert_eq!(parse_href(link).unwrap().0, kind);
+        }
+
+        for link in [
+            "https://example.com/rule/MEIHUA-QIGUA-001",
+            "file:///etc/passwd",
+            "yitool://resource/../../etc/passwd",
+            "yitool://resource/%2e%2e/secret",
+            "yitool://resource/.hidden",
+            "yitool://rule/",
+            "yitool://unknown/HEX-01",
+            "yitool://rule/a/b",
+        ] {
+            assert!(
+                matches!(parse_href(link), Err(EvidenceError::InvalidHref(_))),
+                "unsafe link accepted: {link}"
+            );
+        }
     }
 }
