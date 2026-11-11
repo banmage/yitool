@@ -200,6 +200,27 @@ fn saved_history_renders_original_report_and_isolates_profiles() {
 }
 
 #[test]
+fn history_survives_store_reopen_with_the_saved_report() {
+    let ctx = context();
+    let dir = tempfile::tempdir().unwrap();
+    let db = dir.path().join("app.db");
+    let markdown = {
+        let store = Store::init(&db).unwrap();
+        app::history::ensure_default_profile(&store, "2026-11-03T12:00:00+08:00").unwrap();
+        let (markdown, _) = save_once(&ctx, &store, "default", "run-restart");
+        markdown
+    };
+
+    let store = Store::init(&db).unwrap();
+    let detail = app::history::load_run(&store, "default", "run-restart")
+        .unwrap()
+        .expect("history survives reopen");
+    assert_eq!(detail.report.report_markdown, markdown);
+    assert_eq!(detail.steps.len(), 6);
+    assert_eq!(detail.report.status, "PENDING");
+}
+
+#[test]
 fn history_database_has_no_birth_or_question_plaintext() {
     let ctx = context();
     let (dir, store) = open_store();

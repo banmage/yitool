@@ -1,10 +1,12 @@
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import {
   castMeihua,
+  createProfile,
+  deleteProfile,
   drawColors,
   getFormOptions,
   getHistory,
@@ -12,12 +14,14 @@ import {
   listHistory,
   listProfiles,
   resolveEvidence,
+  saveSettings,
 } from "./api";
 import type {
   CastingPayload,
   FormOptions,
   HistoryDetail,
   Profile,
+  RunSummary,
   Setting,
 } from "./types";
 
@@ -57,6 +61,26 @@ const profile: Profile = {
   display_name: "默认档案",
   created_at: "2026-11-11T12:00:00+08:00",
   is_default: true,
+};
+
+const familyB: Profile = {
+  profile_id: "family-b",
+  display_name: "家人 B",
+  created_at: "2026-11-11T12:00:00+08:00",
+  is_default: false,
+};
+
+const historySummary: RunSummary = {
+  run_id: "MEIHUA-FAMILY-B",
+  profile_id: "family-b",
+  created_at: "2026-11-11T13:00:00+08:00",
+  mode: "FIXED",
+  scheme: "NINE_COLOR",
+  status: "PENDING",
+  original_name: "家人 B 本卦",
+  changed_name: "家人 B 变卦",
+  moving_line: 2,
+  formal_allowed: false,
 };
 
 const settings: Setting = {
@@ -362,5 +386,121 @@ describe("Meihua desktop workflow", () => {
     expect(dialog.querySelector("pre")?.textContent).toBe(report);
     expect(getHistory).toHaveBeenCalledWith("default", "MEIHUA-TEST");
     expect(castMeihua).not.toHaveBeenCalled();
+  });
+
+  it("switches profiles and reloads settings and history for that profile", async () => {
+    vi.mocked(listProfiles).mockResolvedValue([profile, familyB]);
+    vi.mocked(getSettings).mockImplementation(async (profileId: string) => ({
+      ...settings,
+      profile_id: profileId,
+      day_bound: profileId === "family-b" ? "ZIZHENG" : "ZICHU",
+    }));
+    vi.mocked(listHistory).mockImplementation(async (profileId: string) =>
+      profileId === "family-b" ? [historySummary] : [],
+    );
+
+    render(<App />);
+    await screen.findByRole("combobox", { name: "九色" });
+    fireEvent.change(screen.getByLabelText("当前档案"), {
+      target: { value: "family-b" },
+    });
+
+    await waitFor(() =>
+      expect(getSettings).toHaveBeenLastCalledWith("family-b"),
+    );
+    await waitFor(() =>
+      expect(listHistory).toHaveBeenLastCalledWith("family-b"),
+    );
+    expect(screen.getByRole("combobox", { name: "日界" })).toHaveValue(
+      "ZIZHENG",
+    );
+    expect(
+      await screen.findByText("家人 B 本卦 → 家人 B 变卦 · 第 2 爻"),
+    ).toBeInTheDocument();
+  });
+
+  it("creates a profile and switches to it", async () => {
+    vi.mocked(listProfiles)
+      .mockResolvedValueOnce([profile])
+      .mockResolvedValueOnce([profile, familyB]);
+    vi.mocked(createProfile).mockResolvedValue(familyB);
+
+    render(<App />);
+    await screen.findByRole("combobox", { name: "九色" });
+    fireEvent.click(screen.getByRole("button", { name: "档案与设置" }));
+    fireEvent.change(screen.getByLabelText("新档案名称"), {
+      target: { value: "家人 B" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "创建档案" }));
+
+    await waitFor(() =>
+      expect(createProfile).toHaveBeenCalledWith("家人 B"),
+    );
+    expect(
+      (await screen.findAllByText("已创建档案：家人 B")).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByLabelText("当前档案")).toHaveValue("family-b");
+  });
+
+  it("protects the default profile and deletes a non-default profile after confirmation", async () => {
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.mocked(listProfiles)
+      .mockResolvedValueOnce([profile, familyB])
+      .mockResolvedValueOnce([profile]);
+    vi.mocked(deleteProfile).mockResolvedValue(undefined);
+
+    render(<App />);
+    await screen.findByRole("combobox", { name: "九色" });
+    fireEvent.click(screen.getByRole("button", { name: "档案与设置" }));
+
+    const deleteButtons = screen.getAllByRole("button", { name: "删除" });
+    expect(deleteButtons[0]).toBeDisabled();
+    fireEvent.click(deleteButtons[1]);
+
+    await waitFor(() => expect(deleteProfile).toHaveBeenCalledWith("family-b"));
+    expect(confirm).toHaveBeenCalledWith(
+      "删除档案“家人 B”及其全部历史？",
+    );
+    expect(
+      (
+        await screen.findAllByText(
+          "档案已删除；导出文件与系统备份不受本操作控制",
+        )
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByLabelText("当前档案")).toHaveValue("default");
+  });
+
+  it("saves settings for the active profile and applies them", async () => {
+    vi.mocked(saveSettings).mockResolvedValue(undefined);
+
+    render(<App />);
+    await screen.findByRole("combobox", { name: "九色" });
+    fireEvent.click(screen.getByRole("button", { name: "档案与设置" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "打开当前档案设置" }),
+    );
+    const settingsDialog = screen.getByRole("dialog", {
+      name: "当前档案设置",
+    });
+    fireEvent.change(within(settingsDialog).getByLabelText("日界"), {
+      target: { value: "ZIZHENG" },
+    });
+    fireEvent.click(
+      within(settingsDialog).getByRole("button", { name: "保存设置" }),
+    );
+
+    await waitFor(() =>
+      expect(saveSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          profile_id: "default",
+          day_bound: "ZIZHENG",
+        }),
+      ),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.getByRole("combobox", { name: "日界" })).toHaveValue(
+      "ZIZHENG",
+    );
   });
 });

@@ -1101,6 +1101,30 @@ mod tests {
     }
 
     #[test]
+    fn settings_are_profile_scoped_and_survive_reopen() {
+        let dir = tempfile::tempdir().unwrap();
+        let db = dir.path().join("app.db");
+        {
+            let store = Store::init(&db).unwrap();
+            store.create_profile(&profile("a", true)).unwrap();
+            store.create_profile(&profile("b", false)).unwrap();
+            let mut a = Setting::default_for("a");
+            a.day_bound = "ZIZHENG".into();
+            let mut b = Setting::default_for("b");
+            b.timezone = "UTC".into();
+            store.save_setting(&a).unwrap();
+            store.save_setting(&b).unwrap();
+        }
+
+        let store = Store::init(&db).unwrap();
+        let a = store.get_setting("a").unwrap().unwrap();
+        let b = store.get_setting("b").unwrap().unwrap();
+        assert_eq!(a.day_bound, "ZIZHENG");
+        assert_eq!(b.day_bound, "ZICHU");
+        assert_eq!(b.timezone, "UTC");
+    }
+
+    #[test]
     fn delete_cascades_without_touching_other_profile() {
         let (_dir, store) = open_temp();
         store.create_profile(&profile("a", true)).unwrap();
