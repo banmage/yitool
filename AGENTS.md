@@ -93,7 +93,7 @@ tests/golden/         跨 crate 金标准 JSON
 - 当前阶段：**阶段 1 梅花单引擎桌面闭环已实现并通过 GUI 冒烟（2026-11-11，WSLg/X11，见 `docs/reports/PHASE1-GUI-SMOKE-v0.1.md`）；阶段 2 规格已启动（`specs/004-phase2-jiaolin`，结构先行）；阶段 0 未整体关闭，JL-01 仍待校勘**。
 - 已批准：D-01 九色、D-02 技术栈、D-05 版本基线、D-06 A/B 随机语义、D-07 Q/B 扰动、D-08 HMAC 密钥、D-10 数据字典、D-11 忌神算法、D-14 DST 策略、D-15 数据库加密、D-16 资源 manifest、D-17 schema 迁移、D-18 性能基准、D-19 CAL 算法/库、D-22 含生辰复现提示、D-23 单库多档案、D-24 日志策略、D-25 备份保留、D-26 安装包签名/发布流程、D-27 九色 L3 文案、D-41 午夜边界容差、D-42 tzdata 版本、D-44 W-01 旺衰表、D-45 HEX-01 八宫表、D-46 NJ-01 纳甲表、D-48 梅花核心规则；D-03/D-04/D-12/D-13 见 ADR-013，D-19/D-20/D-41 见 ADR-014，D-42 见 ADR-015，CAL 规则集冻结见 ADR-016，W-01 校核见 ADR-017，HEX-01 校核见 ADR-018，NJ-01 校核见 ADR-019，梅花核心规则校核见 ADR-021，历史/档案/设置见 ADR-022，复现提示与九色文案见 ADR-023，安装包签名/发布见 ADR-024。
 - 阻塞点：JL-01 实际 4096 条校勘（D-28/O-06 底本、校勘、版权；D-29 白话提示审核）、D-09 变卦六亲（阶段 3 前）、Windows NSIS 安装/运行验证（CI 已配置构建与 SHA-256，需 Windows 手工验证）。
-- 下一步：评审 `specs/004-phase2-jiaolin/spec.md` 与 `checklists/requirements.md`，通过后生成 `plan.md`/`tasks.md`；实现顺序为 4096 键骨架与校验测试 → 查询联动 → PENDING 展示 → 增量校勘工作流。JL-01 在 D-28/O-06 关闭前保持 `PENDING`。GUI 冒烟与 deb 验证记录见 `docs/reports/PHASE1-GUI-SMOKE-v0.1.md`、`docs/reports/PHASE1-DEB-PACKAGE-v0.1.md`。
+- 下一步：阶段 2 `spec.md`、`plan.md`、`tasks.md` 已创建；按 `specs/004-phase2-jiaolin/tasks.md` 执行 T001（ADR-025）→ 4096 键骨架与校验测试 → 查询联动 → PENDING 展示 → 增量校勘工作流。JL-01 在 D-28/O-06 关闭前保持 `PENDING`。GUI 冒烟与 deb 验证记录见 `docs/reports/PHASE1-GUI-SMOKE-v0.1.md`、`docs/reports/PHASE1-DEB-PACKAGE-v0.1.md`。
 
 ## 7. 代码与提交约定
 

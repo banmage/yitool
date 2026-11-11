@@ -140,7 +140,7 @@
 3. **校勘规则数据**：`W-01`、`HEX-01`、`NJ-01` 已完成（ADR-017/018/019）；梅花起卦/互卦/变卦/体用 `MEIHUA-CORE-v0.2` 已完成（ADR-021）；`JL-01` 分批入库，未完成前保持 `PENDING`。
 4. ~~**接入 CI**~~：已接入 GitHub Actions（`.github/workflows/check.yml`），运行 `scripts/check.sh`、manifest checksum 与隐私扫描。
 5. **阶段 1（已完成 Linux 侧）**：`specs/002` 已交付九色桌面竖切；`specs/003-phase1-complete` 补齐传统数字、随机抽卡、种子链展示、SQLite 历史、档案与设置（ADR-022/023，`DB-v0.3`/`APP-v0.2`）。Tauri GUI 冒烟与 Linux `.deb` 包验证已通过（见 `docs/reports/PHASE1-GUI-SMOKE-v0.1.md`、`docs/reports/PHASE1-DEB-PACKAGE-v0.1.md`）；D-26 已批准为未签名本地测试包 + SHA-256（ADR-024）。剩余为 Windows NSIS 安装包的安装/运行验证（CI 已加入 `windows-latest` 构建与校验和任务，需 Windows 手工验证）。JL-01 与阶段 0 冻结状态不因 UI 接入而变更。
-6. **阶段 2 规格（已启动）**：`specs/004-phase2-jiaolin/spec.md` 定义 4096 键索引骨架、稳定卦 ID、`PENDING`/`VERIFIED` 语义、查询联动与增量校勘工作流。先锁结构与校验工具，不批量录入原文；D-28（底本/校勘/版权）与 D-29（白话提示审核）关闭前，`JL-01` 保持 `PENDING`，不关闭阶段 0。
+6. **阶段 2 规格与计划（已启动）**：`specs/004-phase2-jiaolin/` 已包含 `spec.md`、`plan.md`、`tasks.md`，定义 4096 键索引骨架、稳定卦 ID、`PENDING`/`VERIFIED` 语义、查询联动与增量校勘工作流。先锁结构与校验工具，不批量录入原文；D-28（底本/校勘/版权）与 D-29（白话提示审核）关闭前，`JL-01` 保持 `PENDING`，不关闭阶段 0。
 
 ---
 
