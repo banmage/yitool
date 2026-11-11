@@ -38,3 +38,9 @@
 
 - [x] T018 Run Rust workspace, desktop command, frontend, and quality-gate checks.
 - [x] T019 Record unavailable GUI prerequisites explicitly and update status docs.
+
+## Phase 7: Packaging
+
+- [x] T020 Record ADR-024 for D-26: unsigned local packages plus SHA-256.
+- [x] T021 Build and verify the Linux amd64 `.deb`, record contents and checksum.
+- [ ] T022 Verify the Windows x64 NSIS package on Windows or a complete cross-build toolchain.

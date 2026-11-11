@@ -62,17 +62,21 @@ npm test
 npm run build
 npm run tauri dev
 
-# 生成 Ubuntu/Debian amd64 部署测试包
-npm run tauri -- build --bundles deb
+# 回到仓库根目录，生成 Ubuntu/Debian amd64 部署测试包与 SHA256SUMS
+cd ../..
+./scripts/package-desktop.sh deb
+
+# 等价的直接构建命令（在 apps/desktop 下）
+npm --prefix apps/desktop run tauri -- build --bundles deb
 
 # Linux 上交叉生成 Windows x64 NSIS 安装包（需 LLVM/LLD、Clang、NSIS）
 rustup target add x86_64-pc-windows-msvc
 cargo install --locked cargo-xwin
-npm run tauri -- build --target x86_64-pc-windows-msvc --bundles nsis --runner cargo-xwin
+npm --prefix apps/desktop run tauri -- build --target x86_64-pc-windows-msvc --bundles nsis --runner cargo-xwin
 ```
 
 应用从已校验的本地资源载入九色/生肖选项与梅花规则。Linux 的 WebKitGTK/GTK 构建依赖见 [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)。UI 仅接入梅花单引擎，支持九色与传统数字输入、手动/随机抽卡、种子链展示、本地 SQLite 历史、单库多档案与档案级设置；未冻结项目保持“待校核”。历史只保存非敏感推演记录、步骤、报告与版本，不保存生辰、问事原文或 HMAC 密钥，全程离线。
-部署包输出到 `apps/desktop/src-tauri/target/release/bundle/deb/`。该包仅用于部署验证；阶段 1 与 JL-01 尚未关闭，不代表正式发行授权。
+部署包输出到 `apps/desktop/src-tauri/target/release/bundle/deb/`。该包未签名，仅用于部署验证；每次构建应同时生成 SHA-256 校验和（只证明完整性，不证明来源真实性）。阶段 1 与 JL-01 尚未关闭，不代表正式发行授权。签名与发布策略见 [ADR-024](docs/adr/ADR-024-package-signing-release.md)。
 Windows NSIS 安装包输出到 `apps/desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/`。Linux 交叉构建属实验性且当前未签名；Windows 安装与运行仍需在 Windows 环境验证。MSI 安装包只能在 Windows 上构建。
 
 若在其他机器克隆后没有 `.dsh/skills/`，执行：
@@ -134,7 +138,7 @@ SRS ── ARS ── 易学计算结果
 
 1. 关闭阶段 0 剩余决策：CAL 规则集已冻结（`CAL v0.2` / `CAL-RULE-v0.2`，ADR-016）；W-01 旺衰表、HEX-01 八宫表、NJ-01 纳甲表、梅花核心规则已校核（ADR-017～019、021）；剩余 D-09（变卦六亲，阶段 3 前）。
 2. 校勘规则数据：`W-01`、`HEX-01`、`NJ-01`、`MEIHUA-CORE-v0.2` 已完成；`JL-01` 分批入库，未完成前保持 `PENDING`。
-3. 阶段 1：Tauri 2 + React UI 已复用现有 `app` 服务层完成九色/传统数字、抽卡、历史、档案与设置；剩余 D-26 安装包签名决策。
+3. 阶段 1：Tauri 2 + React UI 已复用现有 `app` 服务层完成九色/传统数字、抽卡、历史、档案与设置；D-26 已批准为未签名本地测试包 + SHA-256（ADR-024），剩余 Windows NSIS 安装包验证。
 4. 补充 Q/B 扰动材料定义、HMAC OS Keychain 真实实现与密钥轮换流程。
 
 ---

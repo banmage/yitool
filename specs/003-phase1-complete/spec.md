@@ -2,7 +2,7 @@
 
 **Feature Branch**: `003-phase1-complete`
 **Created**: 2026-11-11
-**Status**: Implemented — 质量门与 GUI 冒烟通过（2026-11-11）；D-26 安装包签名仍待决策
+**Status**: Implemented — 质量门、GUI 冒烟与 Linux `.deb` 包验证通过（2026-11-11）；D-26 已关闭（ADR-024），Windows NSIS 验证待工具链环境
 **Input**: SRS v0.5 9.1 阶段 1 范围；FR-01/FR-02/FR-09/FR-11/FR-12；`specs/002-phase1-meihua-desktop/` 已交付的九色竖切；ADR-022、ADR-023。
 
 ## 背景
