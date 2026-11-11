@@ -112,7 +112,7 @@ cargo build --workspace            # 构建
 cargo test --workspace             # 单元 + 金标准 + 基准 + 隐私 + 分布 + 性能
 cargo clippy --workspace --all-targets -- -D warnings
 cargo fmt --all -- --check
-./scripts/check.sh                 # 全量质量门
+./scripts/check.sh                 # 全量质量门（workspace + 桌面命令层 + 前端，前端需先 npm ci）
 
 cargo run -p yitool-cli -- cal --datetime "2026-11-03T12:00:00+08:00"
 cargo run -p yitool-cli -- meihua --color 1 --aux 3 --datetime "2026-11-03T12:00:00+08:00"

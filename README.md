@@ -34,7 +34,7 @@ cargo run -p yitool-cli -- cal --datetime "2026-11-03T12:00:00+08:00"
 cargo run -p yitool-cli -- meihua --color 1 --aux 3 --datetime "2026-11-03T12:00:00+08:00"
 cargo run -p yitool-cli -- verify --resources resources
 
-# 3. 全量质量门（fmt + clippy + test + verify + privacy-scan）
+# 3. 全量质量门（Rust workspace + 桌面命令层 + 前端 + verify + privacy-scan）
 ./scripts/check.sh
 
 # CI: push/PR 由 .github/workflows/check.yml 运行同一脚本
