@@ -10,7 +10,7 @@ use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-pub const SCHEMA_VERSION: &str = "DB-v0.2";
+pub const SCHEMA_VERSION: &str = "DB-v0.3";
 
 #[derive(Debug, Error)]
 pub enum StoreError {
@@ -94,6 +94,44 @@ pub struct RunRecord {
     pub random_snapshot_digest: Option<String>,
     pub versions: VersionSet,
     pub disclaimer_present: bool,
+}
+
+/// 历史列表使用的非敏感摘要；不解析完整结果 JSON。
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RunSummary {
+    pub run_id: String,
+    pub profile_id: String,
+    pub created_at: String,
+    pub mode: String,
+    pub scheme: String,
+    pub status: String,
+    pub original_name: String,
+    pub changed_name: String,
+    pub moving_line: u8,
+    pub formal_allowed: bool,
+}
+
+/// 保存时生成的报告与结果快照；历史复盘按此原样渲染。
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RunReport {
+    pub run_id: String,
+    pub scheme: String,
+    pub status: String,
+    pub original_name: String,
+    pub changed_name: String,
+    pub moving_line: u8,
+    pub formal_allowed: bool,
+    pub cal_json: String,
+    pub result_json: String,
+    pub report_markdown: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Note {
+    pub note_id: String,
+    pub run_id: Option<String>,
+    pub body: String,
+    pub created_at: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -409,6 +447,251 @@ impl Store {
             .optional()?)
     }
 
+    pub fn list_profiles(&self) -> Result<Vec<Profile>, StoreError> {
+        let mut stmt = self.conn.prepare(
+            "SELECT profile_id, display_name, created_at, is_default
+             FROM profiles ORDER BY is_default DESC, created_at ASC",
+        )?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(Profile {
+                    profile_id: row.get(0)?,
+                    display_name: row.get(1)?,
+                    created_at: row.get(2)?,
+                    is_default: row.get::<_, i64>(3)? == 1,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(rows)
+    }
+
+    pub fn rename_profile(&self, profile_id: &str, display_name: &str) -> Result<(), StoreError> {
+        if display_name.trim().is_empty() {
+            return Err(StoreError::Invalid("档案名称不能为空".into()));
+        }
+        let n = self.conn.execute(
+            "UPDATE profiles SET display_name=?1 WHERE profile_id=?2",
+            params![display_name.trim(), profile_id],
+        )?;
+        if n == 0 {
+            return Err(StoreError::NotFound(profile_id.into()));
+        }
+        Ok(())
+    }
+
+    pub fn list_run_summaries(&self, profile_id: &str) -> Result<Vec<RunSummary>, StoreError> {
+        let mut stmt = self.conn.prepare(
+            "SELECT r.run_id, r.profile_id, r.created_at, r.mode,
+                    p.scheme, p.status, p.original_name, p.changed_name,
+                    p.moving_line, p.formal_allowed
+             FROM runs r JOIN run_reports p ON p.run_id = r.run_id
+             WHERE r.profile_id=?1
+             ORDER BY r.created_at DESC",
+        )?;
+        let rows = stmt
+            .query_map(params![profile_id], |row| {
+                Ok(RunSummary {
+                    run_id: row.get(0)?,
+                    profile_id: row.get(1)?,
+                    created_at: row.get(2)?,
+                    mode: row.get(3)?,
+                    scheme: row.get(4)?,
+                    status: row.get(5)?,
+                    original_name: row.get(6)?,
+                    changed_name: row.get(7)?,
+                    moving_line: row.get::<_, i64>(8)? as u8,
+                    formal_allowed: row.get::<_, i64>(9)? == 1,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(rows)
+    }
+
+    pub fn get_run(&self, profile_id: &str, run_id: &str) -> Result<Option<RunRecord>, StoreError> {
+        Ok(self
+            .conn
+            .query_row(
+                "SELECT run_id, profile_id, created_at, mode, engine_scope, question_hmac,
+                        question_saved, bazi_present, hmac_key_id, random_snapshot_digest,
+                        srs_version, ars_version, ir_version, cal_version, rule_set,
+                        data_version, tzdata_version, seed_algo, rng_version,
+                        disclaimer_present
+                 FROM runs WHERE run_id=?1 AND profile_id=?2",
+                params![run_id, profile_id],
+                |row| {
+                    Ok(RunRecord {
+                        run_id: row.get(0)?,
+                        profile_id: row.get(1)?,
+                        created_at: row.get(2)?,
+                        mode: row.get(3)?,
+                        engine_scope: row.get(4)?,
+                        question_hmac: row.get(5)?,
+                        question_saved: row.get::<_, i64>(6)? == 1,
+                        bazi_present: row.get::<_, i64>(7)? == 1,
+                        hmac_key_id: row.get(8)?,
+                        random_snapshot_digest: row.get(9)?,
+                        versions: VersionSet {
+                            srs: row.get(10)?,
+                            ars: row.get(11)?,
+                            ir: row.get(12)?,
+                            cal: row.get(13)?,
+                            rule_set: row.get(14)?,
+                            data: row.get(15)?,
+                            cal_data: VersionSet::default().cal_data,
+                            tzdata: row.get(16)?,
+                            seed_algo: row.get(17)?,
+                            rng: row.get(18)?,
+                            app: VersionSet::default().app,
+                            db_schema: SCHEMA_VERSION.into(),
+                        },
+                        disclaimer_present: row.get::<_, i64>(19)? == 1,
+                    })
+                },
+            )
+            .optional()?)
+    }
+
+    pub fn save_run_report(&self, report: &RunReport) -> Result<(), StoreError> {
+        self.conn.execute(
+            "INSERT INTO run_reports(run_id, scheme, status, original_name, changed_name,
+                 moving_line, formal_allowed, cal_json, result_json, report_markdown)
+             VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)
+             ON CONFLICT(run_id) DO UPDATE SET
+               scheme=excluded.scheme, status=excluded.status,
+               original_name=excluded.original_name, changed_name=excluded.changed_name,
+               moving_line=excluded.moving_line, formal_allowed=excluded.formal_allowed,
+               cal_json=excluded.cal_json, result_json=excluded.result_json,
+               report_markdown=excluded.report_markdown",
+            params![
+                report.run_id,
+                report.scheme,
+                report.status,
+                report.original_name,
+                report.changed_name,
+                report.moving_line as i64,
+                report.formal_allowed as i64,
+                report.cal_json,
+                report.result_json,
+                report.report_markdown
+            ],
+        )?;
+        Ok(())
+    }
+
+    pub fn get_run_report(
+        &self,
+        profile_id: &str,
+        run_id: &str,
+    ) -> Result<Option<RunReport>, StoreError> {
+        Ok(self
+            .conn
+            .query_row(
+                "SELECT p.run_id, p.scheme, p.status, p.original_name, p.changed_name,
+                        p.moving_line, p.formal_allowed, p.cal_json, p.result_json,
+                        p.report_markdown
+                 FROM run_reports p JOIN runs r ON r.run_id = p.run_id
+                 WHERE p.run_id=?1 AND r.profile_id=?2",
+                params![run_id, profile_id],
+                |row| {
+                    Ok(RunReport {
+                        run_id: row.get(0)?,
+                        scheme: row.get(1)?,
+                        status: row.get(2)?,
+                        original_name: row.get(3)?,
+                        changed_name: row.get(4)?,
+                        moving_line: row.get::<_, i64>(5)? as u8,
+                        formal_allowed: row.get::<_, i64>(6)? == 1,
+                        cal_json: row.get(7)?,
+                        result_json: row.get(8)?,
+                        report_markdown: row.get(9)?,
+                    })
+                },
+            )
+            .optional()?)
+    }
+
+    pub fn list_steps(&self, run_id: &str) -> Result<Vec<StepLog>, StoreError> {
+        let mut stmt = self.conn.prepare(
+            "SELECT step_index, step_id, engine, rule_ids_json, data_refs_json,
+                    source_ref, rule_level, formula_summary, output_json, status
+             FROM run_steps WHERE run_id=?1 ORDER BY step_index ASC",
+        )?;
+        let rows = stmt
+            .query_map(params![run_id], |row| {
+                let engine: String = row.get(2)?;
+                let rule_level: String = row.get(6)?;
+                let status: String = row.get(9)?;
+                let rule_ids: String = row.get(3)?;
+                let data_refs: String = row.get(4)?;
+                let output: String = row.get(8)?;
+                Ok(StepLog {
+                    step_index: row.get::<_, i64>(0)? as usize,
+                    step_id: row.get(1)?,
+                    engine: parse_engine(&engine)?,
+                    rule_ids: serde_json::from_str(&rule_ids)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    data_refs: serde_json::from_str(&data_refs)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    source_ref: row.get(5)?,
+                    rule_level: parse_rule_level(&rule_level)?,
+                    formula_summary: row.get(7)?,
+                    output: serde_json::from_str(&output)
+                        .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?,
+                    status: parse_status(&status)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(rows)
+    }
+
+    pub fn add_note(&self, note: &Note) -> Result<(), StoreError> {
+        self.conn.execute(
+            "INSERT INTO notes(note_id, run_id, body, created_at) VALUES(?1,?2,?3,?4)",
+            params![note.note_id, note.run_id, note.body, note.created_at],
+        )?;
+        Ok(())
+    }
+
+    pub fn list_notes(&self, run_id: &str) -> Result<Vec<Note>, StoreError> {
+        let mut stmt = self.conn.prepare(
+            "SELECT note_id, run_id, body, created_at FROM notes
+             WHERE run_id=?1 ORDER BY created_at ASC",
+        )?;
+        let rows = stmt
+            .query_map(params![run_id], |row| {
+                Ok(Note {
+                    note_id: row.get(0)?,
+                    run_id: row.get(1)?,
+                    body: row.get(2)?,
+                    created_at: row.get(3)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(rows)
+    }
+
+    /// 事务内保存一次完整推演；任一步失败即回滚，不留下半条历史。
+    #[allow(clippy::too_many_arguments)]
+    pub fn save_run_bundle(
+        &self,
+        run: &RunRecord,
+        steps: &[StepLog],
+        report: &RunReport,
+        snapshot: Option<(&str, &str, &str)>,
+    ) -> Result<(), StoreError> {
+        let tx = self.conn.unchecked_transaction()?;
+        self.insert_run(run)?;
+        for step in steps {
+            self.insert_step(&run.run_id, step)?;
+        }
+        self.save_run_report(report)?;
+        if let Some((snapshot_json, snapshot_digest, rng_version)) = snapshot {
+            self.insert_random_snapshot(&run.run_id, snapshot_json, snapshot_digest, rng_version)?;
+        }
+        tx.commit()?;
+        Ok(())
+    }
+
     pub fn insert_run(&self, run: &RunRecord) -> Result<(), StoreError> {
         self.conn.execute(
             "INSERT INTO runs(run_id, profile_id, created_at, mode, engine_scope, question_hmac,
@@ -653,6 +936,50 @@ CREATE INDEX runs_by_profile_time ON runs(profile_id, created_at DESC);
 CREATE INDEX runs_by_mode_time ON runs(mode, created_at);
 "#;
 
+/// DB-v0.3：保存历史报告，并允许 `VERIFIED/FROZEN/DEPRECATED` 步骤状态。
+///
+/// 原有 `run_steps` 的 CHECK 不允许 `VERIFIED`；SQLite 不能直接修改 CHECK，
+/// 因此重建表并保留全部历史行。
+const MIGRATION_V3_SQL: &str = r#"
+CREATE TABLE IF NOT EXISTS run_reports (
+    run_id TEXT PRIMARY KEY REFERENCES runs(run_id) ON DELETE CASCADE,
+    scheme TEXT NOT NULL,
+    status TEXT NOT NULL,
+    original_name TEXT NOT NULL,
+    changed_name TEXT NOT NULL,
+    moving_line INTEGER NOT NULL CHECK(moving_line BETWEEN 1 AND 6),
+    formal_allowed INTEGER NOT NULL DEFAULT 0 CHECK(formal_allowed IN (0,1)),
+    cal_json TEXT NOT NULL,
+    result_json TEXT NOT NULL,
+    report_markdown TEXT NOT NULL
+);
+
+CREATE TABLE run_steps_v3 (
+    run_id TEXT NOT NULL REFERENCES runs(run_id) ON DELETE CASCADE,
+    step_index INTEGER NOT NULL,
+    engine TEXT NOT NULL,
+    step_id TEXT NOT NULL,
+    rule_ids_json TEXT NOT NULL,
+    data_refs_json TEXT NOT NULL,
+    source_ref TEXT,
+    rule_level TEXT NOT NULL CHECK(rule_level IN ('L1','L2','L3','PROVISIONAL')),
+    formula_summary TEXT,
+    output_json TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status IN ('OK','PENDING','ERROR','VERIFIED','FROZEN','DEPRECATED')),
+    PRIMARY KEY(run_id, step_index)
+);
+INSERT INTO run_steps_v3 (
+    run_id, step_index, engine, step_id, rule_ids_json, data_refs_json,
+    source_ref, rule_level, formula_summary, output_json, status
+)
+SELECT
+    run_id, step_index, engine, step_id, rule_ids_json, data_refs_json,
+    source_ref, rule_level, formula_summary, output_json, status
+FROM run_steps;
+DROP TABLE run_steps;
+ALTER TABLE run_steps_v3 RENAME TO run_steps;
+"#;
+
 struct Migration {
     version: &'static str,
     sql: &'static str,
@@ -667,7 +994,56 @@ const MIGRATIONS: &[Migration] = &[
         version: "DB-v0.2",
         sql: MIGRATION_V2_SQL,
     },
+    Migration {
+        version: "DB-v0.3",
+        sql: MIGRATION_V3_SQL,
+    },
 ];
+
+fn parse_engine(value: &str) -> rusqlite::Result<domain::Engine> {
+    match value {
+        "MEIHUA" => Ok(domain::Engine::Meihua),
+        "JIAOLIN" => Ok(domain::Engine::Jiaolin),
+        "LIUYAO" => Ok(domain::Engine::Liuyao),
+        "ZEJI" => Ok(domain::Engine::Zeji),
+        "CAL" => Ok(domain::Engine::Cal),
+        "SEED" => Ok(domain::Engine::Seed),
+        "IR" => Ok(domain::Engine::Ir),
+        "RNG" => Ok(domain::Engine::Rng),
+        "LOG" => Ok(domain::Engine::Log),
+        "STORE" => Ok(domain::Engine::Store),
+        "APP" => Ok(domain::Engine::App),
+        other => Err(rusqlite::Error::InvalidParameterName(format!(
+            "未知引擎: {other}"
+        ))),
+    }
+}
+
+fn parse_rule_level(value: &str) -> rusqlite::Result<domain::RuleLevel> {
+    match value {
+        "L1" => Ok(domain::RuleLevel::L1),
+        "L2" => Ok(domain::RuleLevel::L2),
+        "L3" => Ok(domain::RuleLevel::L3),
+        "PROVISIONAL" => Ok(domain::RuleLevel::Provisional),
+        other => Err(rusqlite::Error::InvalidParameterName(format!(
+            "未知规则层级: {other}"
+        ))),
+    }
+}
+
+fn parse_status(value: &str) -> rusqlite::Result<domain::Status> {
+    match value {
+        "OK" => Ok(domain::Status::Ok),
+        "PENDING" => Ok(domain::Status::Pending),
+        "ERROR" => Ok(domain::Status::Error),
+        "VERIFIED" => Ok(domain::Status::Verified),
+        "FROZEN" => Ok(domain::Status::Frozen),
+        "DEPRECATED" => Ok(domain::Status::Deprecated),
+        other => Err(rusqlite::Error::InvalidParameterName(format!(
+            "未知状态: {other}"
+        ))),
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -746,6 +1122,117 @@ mod tests {
     }
 
     #[test]
+    fn v3_history_saves_verified_steps_and_isolates_profiles() {
+        let (_dir, store) = open_temp();
+        store.create_profile(&profile("a", true)).unwrap();
+        store.create_profile(&profile("b", false)).unwrap();
+        store.insert_run(&run("r1", "a")).unwrap();
+
+        let step = StepLog {
+            step_index: 0,
+            step_id: "MEIHUA-QIGUA".into(),
+            engine: domain::Engine::Meihua,
+            rule_ids: vec!["MEIHUA-QIGUA-001".into()],
+            data_refs: vec!["COLOR-NUM-02".into()],
+            source_ref: "SRC-MEIHUA-001".into(),
+            rule_level: domain::RuleLevel::L3,
+            formula_summary: "C mod 8".into(),
+            output: serde_json::json!({"upper": "乾"}),
+            status: domain::Status::Verified,
+        };
+        store.insert_step("r1", &step).unwrap();
+        store
+            .save_run_report(&RunReport {
+                run_id: "r1".into(),
+                scheme: "NINE_COLOR".into(),
+                status: "PENDING".into(),
+                original_name: "天火同人".into(),
+                changed_name: "风火家人".into(),
+                moving_line: 4,
+                formal_allowed: false,
+                cal_json: "{}".into(),
+                result_json: "{}".into(),
+                report_markdown: "# report".into(),
+            })
+            .unwrap();
+
+        let steps = store.list_steps("r1").unwrap();
+        assert_eq!(steps.len(), 1);
+        assert_eq!(steps[0].status, domain::Status::Verified);
+        assert_eq!(steps[0].output["upper"], "乾");
+
+        let summaries = store.list_run_summaries("a").unwrap();
+        assert_eq!(summaries.len(), 1);
+        assert_eq!(summaries[0].original_name, "天火同人");
+        assert!(store.list_run_summaries("b").unwrap().is_empty());
+        assert!(store.get_run_report("b", "r1").unwrap().is_none());
+        assert!(store.get_run_report("a", "r1").unwrap().is_some());
+
+        store.delete_run("r1").unwrap();
+        assert!(store.get_run_report("a", "r1").unwrap().is_none());
+        assert!(store.list_steps("r1").unwrap().is_empty());
+    }
+
+    #[test]
+    fn v2_steps_survive_v3_rebuild() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("app.db");
+        {
+            let conn = Connection::open(&path).unwrap();
+            conn.execute_batch(MIGRATION_V1_SQL).unwrap();
+            conn.execute_batch(MIGRATION_V2_SQL).unwrap();
+            conn.execute(
+                "INSERT INTO meta(key, value) VALUES('schema_version', 'DB-v0.2')",
+                [],
+            )
+            .unwrap();
+            conn.execute(
+                "INSERT INTO profiles(profile_id, display_name, created_at, is_default)
+                 VALUES('a', 'a', '2026-11-04T12:00:00+08:00', 1)",
+                [],
+            )
+            .unwrap();
+            insert_legacy_run(&conn, "r1", None, None);
+            conn.execute(
+                "INSERT INTO run_steps(run_id, step_index, engine, step_id,
+                     rule_ids_json, data_refs_json, source_ref, rule_level,
+                     formula_summary, output_json, status)
+                 VALUES('r1', 0, 'MEIHUA', 'MEIHUA-QIGUA', '[\"MEIHUA-QIGUA-001\"]',
+                     '[\"COLOR-NUM-02\"]', 'SRC-MEIHUA-001', 'L3', 'C mod 8',
+                     '{\"upper\":\"乾\"}', 'PENDING')",
+                [],
+            )
+            .unwrap();
+        }
+
+        let store = Store::open(&path).unwrap();
+        let report = store.migrate().unwrap();
+        assert_eq!(report.applied, vec!["DB-v0.3".to_string()]);
+        assert!(report.backup.as_ref().unwrap().exists());
+
+        let steps = store.list_steps("r1").unwrap();
+        assert_eq!(steps.len(), 1);
+        assert_eq!(steps[0].step_id, "MEIHUA-QIGUA");
+        assert_eq!(steps[0].status, domain::Status::Pending);
+
+        let verified = StepLog {
+            step_index: 1,
+            step_id: "MEIHUA-HUGUA".into(),
+            engine: domain::Engine::Meihua,
+            rule_ids: vec!["MEIHUA-HUGUA-001".into()],
+            data_refs: vec!["G-01".into()],
+            source_ref: "SRC-MEIHUA-002".into(),
+            rule_level: domain::RuleLevel::L3,
+            formula_summary: "互卦".into(),
+            output: serde_json::json!({"mutual": "乾"}),
+            status: domain::Status::Verified,
+        };
+        store.insert_step("r1", &verified).unwrap();
+        let steps = store.list_steps("r1").unwrap();
+        assert_eq!(steps[1].status, domain::Status::Verified);
+    }
+
+    #[test]
     fn backup_roundtrip() {
         let (dir, store) = open_temp();
         store.create_profile(&profile("a", true)).unwrap();
@@ -806,7 +1293,11 @@ mod tests {
         assert_eq!(report.to, SCHEMA_VERSION);
         assert_eq!(
             report.applied,
-            vec!["DB-v0.1".to_string(), "DB-v0.2".to_string()]
+            vec![
+                "DB-v0.1".to_string(),
+                "DB-v0.2".to_string(),
+                "DB-v0.3".to_string()
+            ]
         );
         assert!(report.backup.is_none());
         assert_eq!(store.check().unwrap().schema_version, SCHEMA_VERSION);
@@ -834,7 +1325,10 @@ mod tests {
         assert_eq!(store.check().unwrap().schema_version, "DB-v0.1");
         let report = store.migrate().unwrap();
         assert_eq!(report.from, "DB-v0.1");
-        assert_eq!(report.applied, vec!["DB-v0.2".to_string()]);
+        assert_eq!(
+            report.applied,
+            vec!["DB-v0.2".to_string(), "DB-v0.3".to_string()]
+        );
         let backup = report.backup.expect("升级前必须备份");
         assert!(backup.exists());
         assert!(store.run_visible("a", "r1").unwrap());

@@ -1,0 +1,35 @@
+[package]
+name = "yitool-desktop"
+version = "0.1.0"
+description = "易学学习与推演记录工具桌面应用"
+edition = "2021"
+rust-version = "1.85"
+
+[features]
+default = ["desktop"]
+desktop = ["dep:tauri"]
+
+[[bin]]
+name = "yitool-desktop"
+path = "src/main.rs"
+required-features = ["desktop"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+app = { package = "yitool-app", path = "../../../crates/app" }
+cal = { package = "yitool-cal", path = "../../../crates/cal" }
+domain = { package = "yitool-domain", path = "../../../crates/domain" }
+meihua = { package = "yitool-meihua", path = "../../../crates/meihua" }
+seed = { package = "yitool-seed", path = "../../../crates/seed" }
+store = { package = "yitool-store", path = "../../../crates/store" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", optional = true , features = [] }
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[workspace]

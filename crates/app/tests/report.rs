@@ -37,6 +37,7 @@ fn meihua_report_contains_full_process_and_links() {
         "run-report-test",
         "2026-11-03T12:00:00+08:00",
         "FIXED",
+        None,
     )
     .unwrap();
 

@@ -1,7 +1,7 @@
 # 统一数据字典（Data Dictionary）
 
-**版本：** DD-v0.3
-**更新日期：** 2026-11-05
+**版本：** DD-v0.4
+**更新日期：** 2026-11-11
 **目的：** 合并 SRS 附录 A、ARS 附录 D、CAL 附录 B 与 IR/TDS 中的表清单，形成**唯一索引**，作为资源加载、manifest、金标准测试与文档修订的依据。
 
 **冲突处理：** 本文档以并集为准；同一 ID 在不同文档中状态/版本不一致时，以“待冻结”优先，并在 `docs/01-DOC-ANALYSIS.md` 的 A-05/A-13/A-14 跟踪。
@@ -41,16 +41,16 @@ IR_RULE_SET        = IR-RULE-v0.1
 IR_TEMPLATE_SET    = IR-TPL-v0.1
 SEED_ALGO          = SEED-v2
 RNG_VERSION        = RNG-v1
-APP_VERSION        = APP-v0.1
+APP_VERSION        = APP-v0.2
 REPORT_SCHEMA      = REPORT-v1       # ADR-020
 EVIDENCE_INDEX     = EVIDENCE-v1     # ADR-020
-DB_SCHEMA_VERSION  = DB-v0.2
+DB_SCHEMA_VERSION  = DB-v0.3
 CONFIG_SCHEMA      = CFG-v0.1
 LOG_SCHEMA         = LOG-v0.1
 ```
 
 > 说明：SRS 附录 B、ARS 0.3 与代码已统一为 `RULE-v0.2`/`DATA-v0.2`；SRS 附录 B 已同步完整 `VersionSet`。
-> **版本记录：** CAL 文档已升为 `CAL-v0.2` 并冻结（`CAL-RULE-v0.2`，ADR-016）；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；`W-01-v0.2` 由 ADR-017 补齐 12 月建 × 5 行旺衰表并升为 `VERIFIED`；`HEX-01-v0.2` 由 ADR-018 补齐宫五行/宫序号并完成八宫表交叉校核；`NJ-01-v0.2` 由 ADR-019 完成纳甲干支表校核；`MEIHUA-CORE-v0.2` 由 ADR-021 校核起卦/互卦/变卦/体用五条核心规则（17 个金标准案例、64 卦 × 6 动爻独立复算），规则与出处升 `VERIFIED`，但规则集仍未整体冻结；SRS 升 `SRS-v0.5`、TDS 升 `TDS-v0.2`，由 ADR-020 新增 `REPORT-v1`/`EVIDENCE-v1`；CAL 日界/日柱/范围/时区由 ADR-013 冻结，CAL 数据源/基准/边界容差由 ADR-014 冻结，tzdata 版本由 ADR-015 冻结；当前校核数据以本表为准。
+> **版本记录：** CAL 文档已升为 `CAL-v0.2` 并冻结（`CAL-RULE-v0.2`，ADR-016）；`DB-v0.2` 由 ADR-007 引入 `hmac_key_id` 强制约束；`G-01-v0.2` 由 ADR-011 增加后天方位字段；`W-01-v0.2` 由 ADR-017 补齐 12 月建 × 5 行旺衰表并升为 `VERIFIED`；`HEX-01-v0.2` 由 ADR-018 补齐宫五行/宫序号并完成八宫表交叉校核；`NJ-01-v0.2` 由 ADR-019 完成纳甲干支表校核；`MEIHUA-CORE-v0.2` 由 ADR-021 校核起卦/互卦/变卦/体用五条核心规则（17 个金标准案例、64 卦 × 6 动爻独立复算），规则与出处升 `VERIFIED`，但规则集仍未整体冻结；SRS 升 `SRS-v0.5`、TDS 升 `TDS-v0.2`，由 ADR-020 新增 `REPORT-v1`/`EVIDENCE-v1`；CAL 日界/日柱/范围/时区由 ADR-013 冻结，CAL 数据源/基准/边界容差由 ADR-014 冻结，tzdata 版本由 ADR-015 冻结；`DB-v0.3` 由 ADR-022 新增 `run_reports` 并扩展步骤状态（`VERIFIED/FROZEN/DEPRECATED`），`APP-v0.2` 同步阶段 1 历史/档案/设置；`D-22`/`D-27` 文案边界见 ADR-023；当前校核数据以本表为准。
 
 ---
 
@@ -130,7 +130,7 @@ LOG_SCHEMA         = LOG-v0.1
 | ID | 名称 | 归属 | 用途 | 状态 | 冻结阶段 | 来源 |
 |---|---|---|---|---|---|---|
 | `LOG-SCHEMA-001` | 推演日志结构 | ARS/TDS | 步骤日志 JSON Schema | `VERIFIED` | 阶段 0 | ARS 8.1、SRS 附录 B |
-| `DB-SCHEMA-v0.2` | 本地数据库 schema | TDS | profiles/runs/steps/snapshots 等 | `VERIFIED` | 阶段 0（TF-08，ADR-008） | TDS 4.2；含 `hmac_key_id`，`DB-v0.1`→`DB-v0.2` 迁移已测试 |
+| `DB-SCHEMA-v0.3` | 本地数据库 schema | TDS | profiles/settings/runs/run_steps/run_reports/random_snapshots/notes 等 | `VERIFIED` | 阶段 0/1（ADR-008、ADR-022） | TDS 4.2；含 `hmac_key_id`、`run_reports` 与步骤全状态；`DB-v0.1`→`DB-v0.2`→`DB-v0.3` 迁移与备份已测试 |
 | `MANIFEST-rules` | 规则资源清单 | TDS | 版本/checksum/status/source | `MERGED` | 阶段 0（TF-04） | TDS 4.3；阶段 0 合并入 `MANIFEST-data`（ADR-012） |
 | `MANIFEST-data` | 数据资源清单 | TDS | 同上 | `VERIFIED` | 阶段 0（TF-04，ADR-012） | TDS 4.3 |
 | `MANIFEST-texts` | 古籍文本清单 | TDS | 同上 | `PENDING` | 阶段 5（TF-11） | TDS 4.3 |
@@ -204,7 +204,7 @@ resources/
 | 4 | `W-01` | 旺衰 |
 | 5 | `XK-01` | 旬空 |
 | 6 | `CAL-BASE-2025/2026`、`CAL-TZDATA` | 历法验收 |
-| 7 | `MANIFEST-*`、`LOG-SCHEMA-001`、`DB-SCHEMA-v0.2` | 资源/日志/存储 |
+| 7 | `MANIFEST-*`、`LOG-SCHEMA-001`、`DB-SCHEMA-v0.3` | 资源/日志/存储 |
 | 8 | `SRC-01` | 溯源 |
 | 9 | `IR-01`（仅禁用词/免责声明子集） | 合规扫描 |
 

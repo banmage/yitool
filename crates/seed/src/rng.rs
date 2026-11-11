@@ -77,6 +77,20 @@ pub fn uniform_below(n: u32, mut next: impl FnMut() -> u8) -> u32 {
     }
 }
 
+/// 使用 OS CSPRNG 做无偏 1..=n 采样；仅用于抽卡等显式随机入口。
+pub fn secure_uniform_1_to(n: u32) -> Result<u32, getrandom::Error> {
+    assert!(n > 0, "n 必须大于 0");
+    let zone = u32::MAX - (u32::MAX % n);
+    loop {
+        let mut bytes = [0u8; 4];
+        getrandom::fill(&mut bytes)?;
+        let v = u32::from_be_bytes(bytes);
+        if v < zone {
+            return Ok(v % n + 1);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

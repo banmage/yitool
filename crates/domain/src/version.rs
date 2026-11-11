@@ -30,8 +30,8 @@ impl Default for VersionSet {
             tzdata: chrono_tz::IANA_TZDB_VERSION.to_string(),
             seed_algo: "SEED-v2".into(),
             rng: "RNG-v1".into(),
-            app: "APP-v0.1".into(),
-            db_schema: "DB-v0.2".into(),
+            app: "APP-v0.2".into(),
+            db_schema: "DB-v0.3".into(),
         }
     }
 }

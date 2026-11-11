@@ -20,7 +20,9 @@
 8. `docs/01-DOC-ANALYSIS.md` — 文档冲突与缺口（A-01～A-22）
 9. `docs/02-DECISION-REGISTER.md` — 决策登记（D-01～D-47）
 10. `docs/04-DATA-DICTIONARY.md` — 统一数据字典与版本基线
-11. `specs/001-phase0-foundation/spec.md` — 当前特性规格
+11. `specs/001-phase0-foundation/spec.md` — 阶段 0 规格
+12. `specs/002-phase1-meihua-desktop/spec.md` — 阶段 1 梅花桌面闭环规格
+13. `specs/003-phase1-complete/spec.md` — 阶段 1 补全规格（输入模式、抽卡、历史、档案、设置）
 
 遇到规则/算法争议，以 ARS/IR/CAL 为准；遇到行为/验收争议，以 SRS 为准；任何实现与它们冲突时，回退修订实现，不得反向改规范。
 
@@ -75,6 +77,7 @@ crates/
   store/              SQLite schema、档案/推演/步骤/快照
   app/                编排、隐私扫描、快照导出、日志白名单
   cli/                `yitool` 验收入口
+apps/desktop/         Tauri 2 + React/TypeScript 桌面 UI（阶段 1）
 tools/gen-cal/        逐日回归基准生成器（读取已校核的 CAL 预计算表）
 resources/            只读规则/数据/历法/合规词表（带 manifest/checksum）
 scripts/              资源生成、manifest、质量门
@@ -85,11 +88,12 @@ tests/golden/         跨 crate 金标准 JSON
 
 - 五份规范：SRS/ARS/IR/TDS 草案已齐且未冻结；CAL v0.2 已冻结（`CAL-RULE-v0.2`，ADR-016）；未校核资源显式标 `PENDING`。
 - 代码：Rust workspace + `yitool` CLI 已落地；阶段 0 P1 内核（CAL/种子/溯源/隐私/梅花金标准）已通过测试；梅花起卦/互卦/变卦/体用核心规则已校核（`MEIHUA-CORE-v0.2`，ADR-021）。
+- 桌面：Tauri 2 + React 阶段 1 已支持九色/传统数字、手动/随机抽卡、种子链展示、SQLite 历史（`DB-v0.3`）、单库多档案与档案级设置（`APP-v0.2`，ADR-022/023）。
 - 历法数据：`CAL-DATA-v0.2` 已按香港天文台 1901–2100 对照表逐日校核（农历 0 差异；节气 6 条午夜边界容差，见 `docs/reports/CAL-HKO-CROSSCHECK-v0.2.md`）。
-- 当前阶段：**阶段 0（进行中）**。
-- 已批准：D-01 九色、D-02 技术栈、D-05 版本基线、D-06 A/B 随机语义、D-07 Q/B 扰动、D-08 HMAC 密钥、D-10 数据字典、D-11 忌神算法、D-14 DST 策略、D-15 数据库加密、D-16 资源 manifest、D-17 schema 迁移、D-18 性能基准、D-19 CAL 算法/库、D-41 午夜边界容差、D-42 tzdata 版本、D-44 W-01 旺衰表、D-45 HEX-01 八宫表、D-46 NJ-01 纳甲表、D-48 梅花核心规则；D-03/D-04/D-12/D-13 见 ADR-013，D-19/D-20/D-41 见 ADR-014，D-42 见 ADR-015，CAL 规则集冻结见 ADR-016，W-01 校核见 ADR-017，HEX-01 校核见 ADR-018，NJ-01 校核见 ADR-019，梅花核心规则校核见 ADR-021。
-- 阻塞点：JL-01 校勘、D-09 变卦六亲（阶段 3 前）。
-- 下一步：校勘规则数据 → 阶段 1 Tauri/React 接入。
+- 当前阶段：**阶段 1 梅花单引擎桌面闭环已实现并通过 GUI 冒烟（2026-11-11，WSLg/X11，见 `docs/reports/PHASE1-GUI-SMOKE-v0.1.md`）；阶段 0 未整体关闭，JL-01 仍待校勘**。
+- 已批准：D-01 九色、D-02 技术栈、D-05 版本基线、D-06 A/B 随机语义、D-07 Q/B 扰动、D-08 HMAC 密钥、D-10 数据字典、D-11 忌神算法、D-14 DST 策略、D-15 数据库加密、D-16 资源 manifest、D-17 schema 迁移、D-18 性能基准、D-19 CAL 算法/库、D-22 含生辰复现提示、D-23 单库多档案、D-24 日志策略、D-25 备份保留、D-27 九色 L3 文案、D-41 午夜边界容差、D-42 tzdata 版本、D-44 W-01 旺衰表、D-45 HEX-01 八宫表、D-46 NJ-01 纳甲表、D-48 梅花核心规则；D-03/D-04/D-12/D-13 见 ADR-013，D-19/D-20/D-41 见 ADR-014，D-42 见 ADR-015，CAL 规则集冻结见 ADR-016，W-01 校核见 ADR-017，HEX-01 校核见 ADR-018，NJ-01 校核见 ADR-019，梅花核心规则校核见 ADR-021，历史/档案/设置见 ADR-022，复现提示与九色文案见 ADR-023。
+- 阻塞点：JL-01 校勘、D-09 变卦六亲（阶段 3 前）、D-26 安装包签名（阶段 1 末）。
+- 下一步：完成 D-26 安装包签名决策与 Windows 安装包验证；JL-01 保持 PENDING。GUI 冒烟记录见 `docs/reports/PHASE1-GUI-SMOKE-v0.1.md`。
 
 ## 7. 代码与提交约定
 
@@ -116,6 +120,9 @@ cargo run -p yitool-cli -- meihua --traditional 9 16 --datetime "2026-11-03T12:0
 cargo run -p yitool-cli -- seed --profile family-a --run-time "2026-11-03T12:00:00+08:00" --color 1 --aux 3
 cargo run -p yitool-cli -- verify --resources resources
 cargo run -p yitool-cli -- db init --path /tmp/yitool.db
+
+cd apps/desktop && npm ci && npm test && npm run build
+npm run tauri dev
 
 python3 scripts/gen_resources.py   # 从 ARS 生成 JSON 资源
 .venv-cal/bin/python scripts/gen_cal_precise.py            # sxtwl 生成 CAL 表（PENDING）

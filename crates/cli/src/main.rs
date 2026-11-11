@@ -385,7 +385,7 @@ fn run(cli: &Cli, resources: &PathBuf) -> Result<(serde_json::Value, String), (S
                 chrono::Local::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, false)
             });
             let markdown = ctx
-                .meihua_report(&result, &run_id, &created_at, mode)
+                .meihua_report(&result, &run_id, &created_at, mode, None)
                 .map_err(|e| app_code(&e))?;
             let out_path = match out {
                 Some(path) => {

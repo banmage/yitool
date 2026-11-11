@@ -123,6 +123,7 @@ impl AppContext {
         run_id: &str,
         created_at: &str,
         mode: &str,
+        seed: Option<&SeedChain>,
     ) -> Result<String, AppError> {
         let evidence = self.evidence_index()?;
         Ok(crate::report::render_meihua_report(
@@ -132,6 +133,7 @@ impl AppContext {
             run_id,
             created_at,
             mode,
+            seed,
         )?)
     }
 

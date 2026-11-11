@@ -7,6 +7,7 @@ use std::path::Path;
 
 use domain::{StepLog, VersionSet};
 use meihua::MeihuaResult;
+use seed::SeedChain;
 use thiserror::Error;
 
 use crate::evidence::{EvidenceError, EvidenceIndex, EvidenceKind};
@@ -117,6 +118,11 @@ pub fn render_markdown(
     out.push_str(
         "3. 本报告为传统易学文化学习与娱乐参考，不构成医疗、法律、投资、安全、婚姻等专业建议。\n",
     );
+    if meta.scheme == "NINE_COLOR" {
+        out.push_str(
+            "4. 九色为系统自定义扩展象数（L3），不是传统梅花易数原典标准；不得冒充 L1 典籍结论。\n",
+        );
+    }
     Ok(out)
 }
 
@@ -128,6 +134,7 @@ pub fn render_meihua_report(
     run_id: &str,
     created_at: &str,
     mode: &str,
+    seed: Option<&SeedChain>,
 ) -> Result<String, ReportError> {
     let mut summary = vec![
         ("本卦".into(), hex_summary(&result.original)),
@@ -169,6 +176,33 @@ pub fn render_meihua_report(
             }
         ),
     ));
+    if let Some(chain) = seed {
+        summary.push((
+            "抽卡结果".into(),
+            format!(
+                "颜色 {}；生肖 {}；传统数字 {}",
+                chain
+                    .draw_result
+                    .color_id
+                    .map(|v| v.to_string())
+                    .unwrap_or_else(|| "—".into()),
+                chain
+                    .draw_result
+                    .aux_id
+                    .map(|v| v.to_string())
+                    .unwrap_or_else(|| "—".into()),
+                chain
+                    .draw_result
+                    .traditional_numbers
+                    .map(|v| format!("{}, {}", v[0], v[1]))
+                    .unwrap_or_else(|| "—".into())
+            ),
+        ));
+        summary.push(("基础种子".into(), chain.base_seed_hex()));
+        summary.push(("抽卡子种子".into(), chain.draw_seed_hex()));
+        summary.push(("输入快照摘要".into(), chain.snapshot_digest_hex()));
+        summary.push(("推演种子".into(), chain.run_seed_hex()));
+    }
 
     let meta = ReportMeta {
         title: format!("梅花推演记录 · {}", run_id),
