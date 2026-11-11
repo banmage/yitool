@@ -43,4 +43,5 @@
 
 - [x] T020 Record ADR-024 for D-26: unsigned local packages plus SHA-256.
 - [x] T021 Build and verify the Linux amd64 `.deb`, record contents and checksum.
-- [ ] T022 Verify the Windows x64 NSIS package on Windows or a complete cross-build toolchain.
+- [x] T022 Add Windows NSIS packaging CI with SHA256SUMS generation.
+- [ ] T023 Verify Windows NSIS installation and runtime on a Windows machine.

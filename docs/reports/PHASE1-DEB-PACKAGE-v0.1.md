@@ -57,7 +57,7 @@ WEBKIT_DISABLE_DMABUF_RENDERER=1 \
 
 ## 未覆盖项
 
-- Windows x64 NSIS 安装包：本机缺少 Clang/LLD 与 NSIS，未构建；需在 Windows 环境或具备完整交叉工具链的环境验证。
+- Windows x64 NSIS 安装包：本机缺少 Clang/LLD 与 NSIS，未本地构建；已新增 GitHub Actions `desktop-windows-package` 任务在 `windows-latest` 构建并生成 `SHA256SUMS`，安装与运行仍需 Windows 手工验证。
 - macOS `.dmg`：无构建环境，不声明支持。
 - 代码签名、公证、自动更新：阶段 1 不启用（ADR-024）。
 - 安装到系统路径后的桌面菜单启动未验证（解包运行已覆盖资源与数据库初始化）。

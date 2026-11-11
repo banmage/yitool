@@ -77,7 +77,7 @@ npm --prefix apps/desktop run tauri -- build --target x86_64-pc-windows-msvc --b
 
 应用从已校验的本地资源载入九色/生肖选项与梅花规则。Linux 的 WebKitGTK/GTK 构建依赖见 [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)。UI 仅接入梅花单引擎，支持九色与传统数字输入、手动/随机抽卡、种子链展示、本地 SQLite 历史、单库多档案与档案级设置；未冻结项目保持“待校核”。历史只保存非敏感推演记录、步骤、报告与版本，不保存生辰、问事原文或 HMAC 密钥，全程离线。
 部署包输出到 `apps/desktop/src-tauri/target/release/bundle/deb/`。该包未签名，仅用于部署验证；每次构建应同时生成 SHA-256 校验和（只证明完整性，不证明来源真实性）。阶段 1 与 JL-01 尚未关闭，不代表正式发行授权。签名与发布策略见 [ADR-024](docs/adr/ADR-024-package-signing-release.md)。
-Windows NSIS 安装包输出到 `apps/desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/`。Linux 交叉构建属实验性且当前未签名；Windows 安装与运行仍需在 Windows 环境验证。MSI 安装包只能在 Windows 上构建。
+Windows NSIS 安装包输出到 `apps/desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/`。GitHub Actions 的 `desktop-windows-package` 任务会在 `windows-latest` 构建 NSIS 包并生成 `SHA256SUMS`；Linux 交叉构建属实验性且当前未签名，Windows 安装与运行仍需在 Windows 环境手工验证。MSI 安装包只能在 Windows 上构建。
 
 若在其他机器克隆后没有 `.dsh/skills/`，执行：
 
